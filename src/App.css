@@ -1069,6 +1069,55 @@ section h2 {
   box-shadow: 0 8px 20px rgba(226, 232, 240, 0.5);
 }
 
+/* Sensitivity Table */
+.sensitivity-table {
+  overflow-x: auto;
+}
+
+.sensitivity-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.sensitivity-table th,
+.sensitivity-table td {
+  padding: 12px 16px;
+  text-align: center;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.sensitivity-table th {
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sensitivity-table td {
+  background: rgba(15, 23, 42, 0.4);
+  color: #f1f5f9;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.sensitivity-table td.row-label {
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+}
+
+.sensitivity-table td.negative {
+  color: #fca5a5;
+}
+
+.sensitivity-table td.current {
+  background: rgba(226, 232, 240, 0.2);
+  border: 2px solid #e2e8f0;
+  font-weight: 700;
+}
+
 /* Footer */
 footer {
   text-align: center;

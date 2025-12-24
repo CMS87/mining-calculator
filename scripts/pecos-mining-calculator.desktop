@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Pecos Mining Calculator
+Comment=Run the Pecos mining calculator locally
+Exec=/home/cms87/projects/SItes/pecos/mining-calculator/scripts/run-local.sh
+Path=/home/cms87/projects/SItes/pecos/mining-calculator
+Terminal=true
+Icon=utilities-terminal
+Categories=Utility;

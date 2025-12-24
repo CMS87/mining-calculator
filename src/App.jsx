@@ -818,6 +818,62 @@ function App() {
             </div>
           </section>
 
+          {/* Sensitivity Table */}
+          <section className="comparison-section">
+            <h2>Sensitivity Analysis - Monthly Investor Return</h2>
+            <p className="section-intro">Based on current blended model ({((1 - modelMix) * 100).toFixed(0)}% Co-Mining / {(modelMix * 100).toFixed(0)}% Self-Mining)</p>
+            <div className="sensitivity-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Energy \ Hashprice</th>
+                    <th>$30/PH</th>
+                    <th>$38/PH</th>
+                    <th>$60/PH</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[4, 4.5, 5.5].map(ep => (
+                    <tr key={ep}>
+                      <td className="row-label">{ep}¢/kWh</td>
+                      {[30, 38, 60].map(hp => {
+                        // Calculate for this scenario
+                        const uptime = 1 - curtailment
+                        const miners = Math.floor(facilityMW * 1000 / minerPowerKW)
+                        const totalHashratePH = (miners * hashratePerUnit) / 1000
+                        const effectiveHashratePH = totalHashratePH * uptime
+                        const minerCost = miners * hashratePerUnit * pricePerTh
+
+                        // Co-Mining
+                        const coHashratePH = effectiveHashratePH * coMiningShare
+                        const coGrossRevenue = coHashratePH * hp * 30
+                        const coPowerCost = (ep / 100) * minerPowerKW * miners * 720 * uptime * coMiningShare
+                        const coNetMonthly = coGrossRevenue - coPowerCost - monthlyOpex
+                        const coInvestor = coNetMonthly * coPhase1Pct
+
+                        // Self-Mining
+                        const selfGrossRevenue = effectiveHashratePH * hp * 30
+                        const selfPowerCost = (ep / 100) * minerPowerKW * miners * 720 * uptime
+                        const selfNetMonthly = selfGrossRevenue - selfPowerCost - monthlyOpex
+                        const selfInvestor = selfNetMonthly * selfPhase1Pct
+
+                        // Blended
+                        const mixInvestor = coInvestor * (1 - modelMix) + selfInvestor * modelMix
+                        const isCurrentScenario = ep === energyPrice && hp === hashprice
+
+                        return (
+                          <td key={hp} className={`${mixInvestor < 0 ? 'negative' : ''} ${isCurrentScenario ? 'current' : ''}`}>
+                            ${formatNumber(Math.round(mixInvestor))}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           <div className="next-step">
             <button onClick={() => setMode('models')}>
               ← Back to Business Models
