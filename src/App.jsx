@@ -820,7 +820,7 @@ function App() {
 
           {/* Sensitivity Table */}
           <section className="comparison-section">
-            <h2>Sensitivity Analysis - Monthly Investor Return</h2>
+            <h2>Sensitivity Analysis - Payback Period (Months)</h2>
             <p className="section-intro">Based on current blended model ({((1 - modelMix) * 100).toFixed(0)}% Co-Mining / {(modelMix * 100).toFixed(0)}% Self-Mining)</p>
             <div className="sensitivity-table">
               <table>
@@ -843,6 +843,9 @@ function App() {
                         const totalHashratePH = (miners * hashratePerUnit) / 1000
                         const effectiveHashratePH = totalHashratePH * uptime
                         const minerCost = miners * hashratePerUnit * pricePerTh
+                        const coMiningCapex = siteBuildCost
+                        const selfMiningCapex = siteBuildCost + minerCost
+                        const mixCapex = coMiningCapex * (1 - modelMix) + selfMiningCapex * modelMix
 
                         // Co-Mining
                         const coHashratePH = effectiveHashratePH * coMiningShare
@@ -859,11 +862,12 @@ function App() {
 
                         // Blended
                         const mixInvestor = coInvestor * (1 - modelMix) + selfInvestor * modelMix
+                        const mixPayback = mixInvestor > 0 ? (mixCapex / mixInvestor) : null
                         const isCurrentScenario = ep === energyPrice && hp === hashprice
 
                         return (
-                          <td key={hp} className={`${mixInvestor < 0 ? 'negative' : ''} ${isCurrentScenario ? 'current' : ''}`}>
-                            ${formatNumber(Math.round(mixInvestor))}
+                          <td key={hp} className={`${mixInvestor <= 0 ? 'negative' : ''} ${isCurrentScenario ? 'current' : ''}`}>
+                            {mixPayback ? `${mixPayback.toFixed(1)} mo` : 'N/A'}
                           </td>
                         )
                       })}
