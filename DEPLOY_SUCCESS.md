@@ -1,84 +1,60 @@
 # 🎉 Mining Calculator - Ready to Deploy!
 
-Your Pecos Mining Calculator is configured for Cloudflare Pages deployment.
+Your Pecos Mining Calculator is configured for GitHub Pages deployment in the FenixCompute org.
 
 ## 📱 What You Can Share
 
 Once deployed, people can access your calculator at:
-**`https://<project>.pages.dev`**
+**`https://fenixcompute.github.io/mining-calculator/`**
 
-The calculator is a fully interactive web app that allows users to:
+The calculator lets users:
 - Compare Co-Mining vs Self-Mining business models
 - Adjust market assumptions (hashprice, energy costs, curtailment)
 - Configure ASIC specifications
-- Model different investor/operator deal structures
+- Model investor/operator deal structures
 - Analyze ROI, payback periods, and sensitivity
 
 ## 🚀 Quick Deploy (2 Minutes)
 
-### Step 1: Create the Cloudflare Pages Project
-1. Go to https://pages.cloudflare.com
-2. Click **Create a project** → **Connect to Git**
-3. Select `CMS87/mining-calculator`
+### Step 1: Enable GitHub Pages
+1. Go to https://github.com/FenixCompute/mining-calculator/settings/pages
+2. Under "Build and deployment" → **Source**: Select **GitHub Actions**
 
-### Step 2: Configure Build Settings
-- **Framework**: Vite
-- **Build command**: `npm run build`
-- **Output directory**: `dist`
-- (Optional) `NODE_VERSION=20`
+### Step 2: Deploy
+- Merge/push to `main`, or
+- Go to **Actions** → **Deploy to GitHub Pages** → **Run workflow**
 
 ### Step 3: Share
-After the deploy finishes, share the `https://<project>.pages.dev` URL.
+After 2-3 minutes, share:
+**`https://fenixcompute.github.io/mining-calculator/`**
 
 ## 📸 Preview
 
-The calculator has two main views:
-
 ### Business Models View
 ![Business Models](https://github.com/user-attachments/assets/809b8da5-8c09-43a8-b68e-9464775950f8)
-- Compare Co-Mining ($3M CAPEX) vs Self-Mining ($13.29M CAPEX)
-- Interactive market assumptions and ASIC specs
-- Real-time P&L calculations
-- Model mixer for hybrid approaches
 
 ### Deal Structure View
 ![Deal Structure](https://github.com/user-attachments/assets/cf0f19b4-4979-4e0c-aea2-027be1322060)
-- Configure investor/operator splits for each model
-- Phase 1 (until ROI) and Phase 2 (after ROI) splits
-- Blended scenario calculator
-- Comprehensive deal breakdown tables
-- Sensitivity analysis showing returns under different market conditions
 
 ## 📋 What Was Updated
 
-1. ✅ Configured docs for Cloudflare Pages
-2. ✅ Reset Vite base path for root hosting
-3. ✅ Removed GitHub Pages workflow (not supported for private repos on free plan)
-4. ✅ Cleaned deployment guidance
+1. ✅ Added GitHub Actions workflow for Pages
+2. ✅ Set Vite base path for `/mining-calculator/`
+3. ✅ Updated deployment documentation
 
 ## 🔄 Keeping It Updated
 
-After the initial setup, any changes you push to the `main` branch will:
-- Trigger a new Cloudflare build
-- Redeploy automatically
-- Be live in minutes
+Every push to `main` redeploys automatically.
 
 ## 🆘 Troubleshooting
 
-### If the build fails:
-1. Check Cloudflare Pages build logs
-2. Ensure `NODE_VERSION=20` is set
-3. Verify build command is `npm run build`
+### If the workflow fails:
+- Check **Actions** for errors
+- Ensure **Settings → Actions → General → Workflow permissions** is set to **Read and write**
 
-### If the page shows blank or assets fail:
-1. Confirm `vite.config.js` has no `/mining-calculator/` base path
-2. Redeploy after changes
+### If assets fail to load:
+- Confirm `vite.config.js` includes `base: '/mining-calculator/'`
 
-## 📞 Questions?
+## ℹ️ Cloudflare Alternative
 
-- Check `DEPLOYMENT.md` for the quick start guide
-- Check `README.md` for detailed documentation
-
-## ✨ That's It!
-
-Your mining calculator is ready to share with investors, partners, or anyone interested in evaluating the Pecos 15 MW facility business models.
+If you prefer Cloudflare Pages, remove the Vite base path and deploy with `npm run build` and `dist` output.

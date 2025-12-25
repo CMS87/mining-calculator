@@ -6,7 +6,7 @@ A Bitcoin mining profitability calculator for the Pecos 15 MW facility. Compare 
 
 ## 🚀 Live Demo
 
-Once deployed, the calculator will be available at your hosting URL (for Cloudflare Pages: `https://<project>.pages.dev`).
+GitHub Pages (FenixCompute): `https://fenixcompute.github.io/mining-calculator/`
 
 ## 📋 Features
 
@@ -18,46 +18,37 @@ Once deployed, the calculator will be available at your hosting URL (for Cloudfl
 
 ## 🛠️ Deployment Options
 
-### Option 1: Cloudflare Pages (Recommended for private repos)
+### Option 1: GitHub Pages (Recommended for FenixCompute)
 
-1. Sign up for a free [Cloudflare Pages](https://pages.cloudflare.com/) account
-2. Click "Create a project" → "Connect to Git"
-3. Select the `CMS87/mining-calculator` repository
-4. Build settings:
+1. Go to **Settings → Pages**
+2. Under "Build and deployment": **Source = GitHub Actions**
+3. Push to `main` to deploy, or run the workflow manually in **Actions**
+
+The workflow is in `.github/workflows/deploy.yml` and deploys `dist/`.
+
+### Option 2: Cloudflare Pages (Private repo alternative)
+
+1. Go to https://pages.cloudflare.com → Create a project → Connect to Git
+2. Select the repository
+3. Build settings:
    - Build command: `npm run build`
    - Build output directory: `dist`
-5. (Optional) Set environment variable `NODE_VERSION=20`
-6. Click "Save and Deploy"
+   - Optional env: `NODE_VERSION=20`
+4. Deploy and share the `https://<project>.pages.dev` URL
 
-Note: This repo is configured for root hosting, so no Vite base path is required.
-
-### Option 2: GitHub Pages (Public repo or paid plan)
-
-GitHub Pages only supports **private** repos on paid plans. If you make the repo public or have a paid plan:
-
-1. Enable **Settings → Pages → Source: GitHub Actions**
-2. Add a Pages workflow (we can re-add it if you want)
-3. Set `base: '/mining-calculator/'` in `vite.config.js` for a repo subpath
+Note: Cloudflare Pages expects root hosting. If you use Cloudflare, remove the
+`base: '/mining-calculator/'` entry in `vite.config.js`.
 
 ### Option 3: Netlify
 
-1. Sign up for a free [Netlify](https://www.netlify.com/) account
-2. Click "Add new site" → "Import an existing project"
-3. Connect your GitHub repository
-4. Build settings:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-5. Click "Deploy site"
-6. Your site will be available at `https://[your-site-name].netlify.app`
+1. Connect the repo in Netlify
+2. Build command: `npm run build`
+3. Publish directory: `dist`
 
 ### Option 4: Vercel
 
-1. Sign up for a free [Vercel](https://vercel.com/) account
-2. Click "Add New Project"
-3. Import your GitHub repository
-4. Vercel will auto-detect Vite settings
-5. Click "Deploy"
-6. Your site will be available at `https://[your-project].vercel.app`
+1. Import the repo in Vercel
+2. Vercel auto-detects Vite settings
 
 ## 💻 Local Development
 
@@ -69,7 +60,7 @@ GitHub Pages only supports **private** repos on paid plans. If you make the repo
 
 ```bash
 # Clone the repository
-git clone https://github.com/CMS87/mining-calculator.git
+git clone https://github.com/FenixCompute/mining-calculator.git
 cd mining-calculator
 
 # Install dependencies
@@ -79,15 +70,12 @@ npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+The app will be available at `http://localhost:5173`.
 
 ### Build for Production
 
 ```bash
-# Create production build
 npm run build
-
-# Preview production build locally
 npm run preview
 ```
 
@@ -99,6 +87,9 @@ mining-calculator/
 │   ├── App.jsx          # Main calculator component
 │   ├── App.css          # Styles
 │   └── main.jsx         # Application entry point
+├── .github/
+│   └── workflows/
+│       └── deploy.yml   # GitHub Actions deployment workflow
 ├── index.html           # HTML template
 ├── vite.config.js       # Vite configuration
 └── package.json         # Dependencies and scripts
@@ -108,14 +99,16 @@ mining-calculator/
 
 ### Changing the Base URL
 
-If you're deploying to a subpath (like GitHub Pages), set the `base` in `vite.config.js`:
+If you're deploying to a subpath (like GitHub Pages), keep:
 
 ```javascript
 export default defineConfig({
   plugins: [react()],
-  base: '/your-custom-path/', // Change this
+  base: '/mining-calculator/',
 })
 ```
+
+For root hosting (Cloudflare/Netlify/Vercel), remove the `base` entry.
 
 ## 📊 How to Use the Calculator
 

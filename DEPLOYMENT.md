@@ -1,43 +1,42 @@
-# Quick Deployment Guide (Cloudflare Pages)
+# Quick Deployment Guide (GitHub Pages)
 
-This guide deploys the mining calculator in a few minutes using Cloudflare Pages.
+This guide deploys the mining calculator using GitHub Pages in the FenixCompute org.
 
-## ✅ Step 1: Create the Cloudflare Pages Project
+## ✅ Step 1: Enable GitHub Pages
 
-1. Go to https://pages.cloudflare.com
-2. Click **Create a project** → **Connect to Git**
-3. Select the `CMS87/mining-calculator` repository
+1. Go to https://github.com/FenixCompute/mining-calculator/settings/pages
+2. Under "Build and deployment" → **Source**: select **GitHub Actions**
 
-## ✅ Step 2: Build Settings
+## ✅ Step 2: Deploy
 
-- **Framework preset**: Vite
-- **Build command**: `npm run build`
-- **Build output directory**: `dist`
-- **Environment variable (optional)**: `NODE_VERSION=20`
+The workflow deploys automatically on push to `main`, or run it manually:
 
-Click **Save and Deploy**.
+1. Go to the **Actions** tab
+2. Select **Deploy to GitHub Pages**
+3. Click **Run workflow**
 
 ## ✅ Step 3: Share the URL
 
-Once the deploy finishes, Cloudflare will give you a URL like:
+Once the workflow completes, your site is live at:
 
-`https://<project>.pages.dev`
-
-Share that link with anyone.
+`https://fenixcompute.github.io/mining-calculator/`
 
 ## 🔄 Future Updates
 
-Every push to `main` will trigger a rebuild and redeploy automatically.
+Every push to `main` triggers a rebuild and redeploy.
 
 ## 🆘 Troubleshooting
 
-### Build fails with Node errors
-- Set `NODE_VERSION=20` in Cloudflare Pages → Settings → Environment variables.
+### Workflow fails with permissions error
+- Go to **Settings → Actions → General**
+- Under "Workflow permissions": select **Read and write permissions**
+- Click **Save**
 
 ### Assets not loading
-- Make sure `vite.config.js` does **not** set a `/mining-calculator/` base path.
-- The app is configured for root hosting on Cloudflare Pages.
+- Confirm `vite.config.js` includes `base: '/mining-calculator/'`
 
-## ℹ️ GitHub Pages Note
+## ℹ️ Cloudflare Pages Alternative
 
-GitHub Pages only supports private repos on paid plans. For free hosting with a private repo, Cloudflare Pages is the correct option.
+If you need private-only sharing or prefer Cloudflare Pages:
+- Remove the `base` entry in `vite.config.js`
+- Use build command `npm run build` and output directory `dist`
