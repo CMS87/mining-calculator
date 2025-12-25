@@ -24,12 +24,12 @@ function App() {
   const [coMiningShare, setCoMiningShare] = useState(0.30)  // 30% of hashrate
 
   // Model Mix: 0 = 100% Co-Mining, 1 = 100% Self-Mining
-  const [modelMix, setModelMix] = useState(0)  // Start with Co-Mining
+  const [modelMix, setModelMix] = useState(0.5)  // 50/50 Co-Mining + Self-Mining
 
   // Deal Structure - Separate splits for each model
   // Co-Mining splits (lower capital, lower investor share)
   const [coPhase1Pct, setCoPhase1Pct] = useState(0.70)   // 70% until ROI
-  const [coPhase2Pct, setCoPhase2Pct] = useState(0.40)   // 40% after ROI
+  const [coPhase2Pct, setCoPhase2Pct] = useState(0.50)   // 50% after ROI
 
   // Self-Mining splits (higher capital, higher investor share)
   const [selfPhase1Pct, setSelfPhase1Pct] = useState(0.85)  // 85% until ROI
