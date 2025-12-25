@@ -18,7 +18,7 @@ function App() {
   // Miner Specs (based on S21 Pro)
   const [minerPowerKW, setMinerPowerKW] = useState(3.40)        // kW per unit
   const [hashratePerUnit, setHashratePerUnit] = useState(220)   // TH/s per unit
-  const [pricePerTh, setPricePerTh] = useState(10.6)            // $/TH
+  const [pricePerTh, setPricePerTh] = useState(11)              // $/TH
 
   // Co-Mining hashrate share
   const [coMiningShare, setCoMiningShare] = useState(0.30)  // 30% of hashrate
