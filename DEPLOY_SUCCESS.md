@@ -1,11 +1,11 @@
 # 🎉 Mining Calculator - Ready to Deploy!
 
-Your Pecos Mining Calculator is now configured for easy deployment and sharing.
+Your Pecos Mining Calculator is configured for Cloudflare Pages deployment.
 
 ## 📱 What You Can Share
 
 Once deployed, people can access your calculator at:
-**`https://cms87.github.io/mining-calculator/`**
+**`https://<project>.pages.dev`**
 
 The calculator is a fully interactive web app that allows users to:
 - Compare Co-Mining vs Self-Mining business models
@@ -16,20 +16,19 @@ The calculator is a fully interactive web app that allows users to:
 
 ## 🚀 Quick Deploy (2 Minutes)
 
-### Step 1: Enable GitHub Pages
-1. Go to https://github.com/CMS87/mining-calculator/settings/pages
-2. Under "Build and deployment" → **Source**: Select **"GitHub Actions"**
-3. That's it! (No save button needed)
+### Step 1: Create the Cloudflare Pages Project
+1. Go to https://pages.cloudflare.com
+2. Click **Create a project** → **Connect to Git**
+3. Select `CMS87/mining-calculator`
 
-### Step 2: Deploy
-Merge this pull request to the `main` branch, and deployment happens automatically!
-
-**Alternative**: Manually trigger deployment:
-- Go to **Actions** tab → **Deploy to GitHub Pages** → **Run workflow**
+### Step 2: Configure Build Settings
+- **Framework**: Vite
+- **Build command**: `npm run build`
+- **Output directory**: `dist`
+- (Optional) `NODE_VERSION=20`
 
 ### Step 3: Share
-After 2-3 minutes, your calculator will be live at:
-**`https://cms87.github.io/mining-calculator/`**
+After the deploy finishes, share the `https://<project>.pages.dev` URL.
 
 ## 📸 Preview
 
@@ -50,50 +49,36 @@ The calculator has two main views:
 - Comprehensive deal breakdown tables
 - Sensitivity analysis showing returns under different market conditions
 
-## 📋 What Was Changed
+## 📋 What Was Updated
 
-1. ✅ Added GitHub Actions workflow for automatic deployment
-2. ✅ Updated Vite config with correct base path
-3. ✅ Created comprehensive documentation (README.md, DEPLOYMENT.md)
-4. ✅ Configured `.gitignore` to exclude build artifacts
-5. ✅ Tested build and preview locally
+1. ✅ Configured docs for Cloudflare Pages
+2. ✅ Reset Vite base path for root hosting
+3. ✅ Removed GitHub Pages workflow (not supported for private repos on free plan)
+4. ✅ Cleaned deployment guidance
 
 ## 🔄 Keeping It Updated
 
 After the initial setup, any changes you push to the `main` branch will:
-- Automatically trigger a rebuild
-- Redeploy to GitHub Pages
-- Be live in 2-3 minutes
-
-No manual steps needed!
-
-## 🌐 Alternative Deployment Options
-
-If you prefer not to use GitHub Pages, the documentation includes setup guides for:
-- **Netlify** - Free, great for sharing with custom domains
-- **Vercel** - Free, optimized for React apps
-- **Cloudflare Pages** - Free, global CDN included
-
-All options are documented in the README.md file.
+- Trigger a new Cloudflare build
+- Redeploy automatically
+- Be live in minutes
 
 ## 🆘 Troubleshooting
 
-### If the workflow fails:
-1. Check **Actions** tab for error messages
-2. Ensure GitHub Pages is set to "GitHub Actions" (not "Deploy from branch")
-3. Verify workflow permissions: **Settings → Actions → General → Workflow permissions** should be "Read and write"
+### If the build fails:
+1. Check Cloudflare Pages build logs
+2. Ensure `NODE_VERSION=20` is set
+3. Verify build command is `npm run build`
 
-### If the page shows 404:
-1. Wait 2-3 minutes after deployment completes
-2. Check that the URL is correct: `https://cms87.github.io/mining-calculator/`
-3. Clear browser cache
+### If the page shows blank or assets fail:
+1. Confirm `vite.config.js` has no `/mining-calculator/` base path
+2. Redeploy after changes
 
 ## 📞 Questions?
 
 - Check `DEPLOYMENT.md` for the quick start guide
 - Check `README.md` for detailed documentation
-- Review the GitHub Actions workflow in `.github/workflows/deploy.yml`
 
 ## ✨ That's It!
 
-Your mining calculator is ready to share with investors, partners, or anyone interested in evaluating the Pecos 15 MW facility business models!
+Your mining calculator is ready to share with investors, partners, or anyone interested in evaluating the Pecos 15 MW facility business models.

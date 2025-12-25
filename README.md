@@ -6,7 +6,7 @@ A Bitcoin mining profitability calculator for the Pecos 15 MW facility. Compare 
 
 ## 🚀 Live Demo
 
-Once deployed, the calculator will be available at: `https://cms87.github.io/mining-calculator/`
+Once deployed, the calculator will be available at your hosting URL (for Cloudflare Pages: `https://<project>.pages.dev`).
 
 ## 📋 Features
 
@@ -18,32 +18,28 @@ Once deployed, the calculator will be available at: `https://cms87.github.io/min
 
 ## 🛠️ Deployment Options
 
-### Option 1: GitHub Pages (Recommended)
+### Option 1: Cloudflare Pages (Recommended for private repos)
 
-The easiest way to deploy and share this calculator is through GitHub Pages:
+1. Sign up for a free [Cloudflare Pages](https://pages.cloudflare.com/) account
+2. Click "Create a project" → "Connect to Git"
+3. Select the `CMS87/mining-calculator` repository
+4. Build settings:
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+5. (Optional) Set environment variable `NODE_VERSION=20`
+6. Click "Save and Deploy"
 
-#### Setup Steps:
+Note: This repo is configured for root hosting, so no Vite base path is required.
 
-1. **Enable GitHub Pages** (one-time setup):
-   - Go to your repository on GitHub
-   - Click on **Settings** → **Pages** (in the left sidebar)
-   - Under "Build and deployment":
-     - Source: Select **GitHub Actions**
-   - Save the settings
+### Option 2: GitHub Pages (Public repo or paid plan)
 
-2. **Deploy**:
-   - The workflow will automatically deploy when you push to the `main` branch
-   - Or manually trigger deployment:
-     - Go to **Actions** tab → **Deploy to GitHub Pages** → **Run workflow**
+GitHub Pages only supports **private** repos on paid plans. If you make the repo public or have a paid plan:
 
-3. **Access**:
-   - Once deployed, your calculator will be available at:
-   - `https://cms87.github.io/mining-calculator/`
-   - The URL will be shown in the Actions workflow output
+1. Enable **Settings → Pages → Source: GitHub Actions**
+2. Add a Pages workflow (we can re-add it if you want)
+3. Set `base: '/mining-calculator/'` in `vite.config.js` for a repo subpath
 
-### Option 2: Netlify
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start)
+### Option 3: Netlify
 
 1. Sign up for a free [Netlify](https://www.netlify.com/) account
 2. Click "Add new site" → "Import an existing project"
@@ -54,9 +50,7 @@ The easiest way to deploy and share this calculator is through GitHub Pages:
 5. Click "Deploy site"
 6. Your site will be available at `https://[your-site-name].netlify.app`
 
-### Option 3: Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+### Option 4: Vercel
 
 1. Sign up for a free [Vercel](https://vercel.com/) account
 2. Click "Add New Project"
@@ -64,17 +58,6 @@ The easiest way to deploy and share this calculator is through GitHub Pages:
 4. Vercel will auto-detect Vite settings
 5. Click "Deploy"
 6. Your site will be available at `https://[your-project].vercel.app`
-
-### Option 4: Cloudflare Pages
-
-1. Sign up for a free [Cloudflare](https://pages.cloudflare.com/) account
-2. Click "Create a project" → "Connect to Git"
-3. Select your repository
-4. Build settings:
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-5. Click "Save and Deploy"
-6. Your site will be available at `https://[your-project].pages.dev`
 
 ## 💻 Local Development
 
@@ -116,9 +99,6 @@ mining-calculator/
 │   ├── App.jsx          # Main calculator component
 │   ├── App.css          # Styles
 │   └── main.jsx         # Application entry point
-├── .github/
-│   └── workflows/
-│       └── deploy.yml   # GitHub Actions deployment workflow
 ├── index.html           # HTML template
 ├── vite.config.js       # Vite configuration
 └── package.json         # Dependencies and scripts
@@ -128,7 +108,7 @@ mining-calculator/
 
 ### Changing the Base URL
 
-If you're deploying to a custom domain or different path, update the `base` in `vite.config.js`:
+If you're deploying to a subpath (like GitHub Pages), set the `base` in `vite.config.js`:
 
 ```javascript
 export default defineConfig({
