@@ -354,6 +354,18 @@ function App() {
       {/* Mode Toggle */}
       <section className="scenario-toggle">
         <button
+          className={mode === 'power' ? 'active' : ''}
+          onClick={() => setMode('power')}
+        >
+          Power Generation
+        </button>
+        <button
+          className={mode === 'gas' ? 'active' : ''}
+          onClick={() => setMode('gas')}
+        >
+          Gas-to-Power Mining
+        </button>
+        <button
           className={mode === 'models' ? 'active' : ''}
           onClick={() => setMode('models')}
         >
@@ -365,15 +377,371 @@ function App() {
         >
           Deal Structure
         </button>
-        <button
-          className={mode === 'gas' ? 'active' : ''}
-          onClick={() => setMode('gas')}
-        >
-          Gas-to-Power
-        </button>
       </section>
 
-      {/* ============ GAS-TO-POWER CALCULATOR ============ */}
+      {/* ============ POWER GENERATION CALCULATOR ============ */}
+      {mode === 'power' && (
+        <>
+          <section className="gas-hero">
+            <div>
+              <h2>Power Generation Economics</h2>
+              <p className="section-intro">Calculate gas-to-power costs, generator fleet economics, and effective $/kWh.</p>
+            </div>
+          </section>
+
+          <section className="gas-grid">
+            {/* Generator Fleet */}
+            <div className="card">
+              <div className="card-header">
+                <h3>Generator Fleet</h3>
+              </div>
+              <div className="card-body">
+                <div className="input-row">
+                  <label>Generator Model</label>
+                  <select
+                    className="preset-select"
+                    defaultValue="ngen400"
+                    onChange={e => {
+                      if (e.target.value === 'ngen400') {
+                        setGeneratorSizeKw(400)
+                        setHeatRate(11500)
+                        setGeneratorBuyPrice(171205)
+                        setGeneratorRtoMonthly(12500)
+                        setGeneratorRentMonthly(9500)
+                      } else if (e.target.value === 'cat3516') {
+                        setGeneratorSizeKw(1600)
+                        setHeatRate(9800)
+                        setGeneratorBuyPrice(450000)
+                        setGeneratorRtoMonthly(25000)
+                        setGeneratorRentMonthly(18000)
+                      }
+                    }}
+                  >
+                    <option value="ngen400">NGEN-400 / TGR400 (400kW, 11,500 BTU/kWh)</option>
+                    <option value="cat3516">CAT G3516 (1.6MW, 9,800 BTU/kWh)</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+
+                <div className="input-row two-col">
+                  <div>
+                    <label>Generator Count</label>
+                    <input
+                      type="number"
+                      value={generatorCount}
+                      onChange={e => setGeneratorCount(+e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Size per Generator (kW)</label>
+                    <input
+                      type="number"
+                      value={generatorSizeKw}
+                      onChange={e => setGeneratorSizeKw(+e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="result-row compact total">
+                  <span>Fleet Capacity</span>
+                  <span className="highlight">{gasResults.fleetCapacityMw.toFixed(2)} MW</span>
+                </div>
+
+                <div className="pill-toggle small" style={{marginTop: '12px'}}>
+                  <button className={generatorMode === 'rent' ? 'active' : ''} onClick={() => setGeneratorMode('rent')}>Rent</button>
+                  <button className={generatorMode === 'buy' ? 'active' : ''} onClick={() => setGeneratorMode('buy')}>Buy</button>
+                  <button className={generatorMode === 'rto' ? 'active' : ''} onClick={() => setGeneratorMode('rto')}>RTO</button>
+                </div>
+
+                {generatorMode === 'rent' && (
+                  <div className="input-row">
+                    <label>Rent ($/generator/month)</label>
+                    <input type="number" value={generatorRentMonthly} onChange={e => setGeneratorRentMonthly(+e.target.value)} />
+                  </div>
+                )}
+
+                {generatorMode === 'buy' && (
+                  <>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Purchase Price ($/unit)</label>
+                        <input type="number" value={generatorBuyPrice} onChange={e => setGeneratorBuyPrice(+e.target.value)} />
+                      </div>
+                      <div>
+                        <label>Maintenance ($/unit/mo)</label>
+                        <input type="number" value={generatorBuyMaintenance} onChange={e => setGeneratorBuyMaintenance(+e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Generator CAPEX</span>
+                      <span className="highlight">{formatCurrencyFull(gasResults.generatorCapex)}</span>
+                    </div>
+                  </>
+                )}
+
+                {generatorMode === 'rto' && (
+                  <>
+                    <div className="input-row">
+                      <label>RTO Payment ($/generator/month)</label>
+                      <input type="number" value={generatorRtoMonthly} onChange={e => setGeneratorRtoMonthly(+e.target.value)} />
+                    </div>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Term (months)</label>
+                        <input type="number" value={generatorRtoTerm} onChange={e => setGeneratorRtoTerm(+e.target.value)} />
+                      </div>
+                      <div>
+                        <label>Equity Portion (%)</label>
+                        <input type="number" value={(generatorRtoEquityPct * 100).toFixed(0)} onChange={e => setGeneratorRtoEquityPct(+e.target.value / 100)} />
+                      </div>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Equity Built Over Term</span>
+                      <span className="highlight">{formatCurrencyFull(gasResults.generatorEquityBuilt)}</span>
+                    </div>
+                  </>
+                )}
+
+                <div className="result-row compact total">
+                  <span>Monthly Generator Cost</span>
+                  <span className="highlight">{formatCurrencyFull(gasResults.generatorMonthly)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Gas & Efficiency */}
+            <div className="card">
+              <div className="card-header">
+                <h3>Gas & Efficiency</h3>
+              </div>
+              <div className="card-body">
+                <div className="input-row two-col">
+                  <div>
+                    <label>Heat Rate (BTU/kWh)</label>
+                    <input type="number" value={heatRate} onChange={e => setHeatRate(+e.target.value)} />
+                  </div>
+                  <div>
+                    <label>HHV (BTU/scf)</label>
+                    <input type="number" value={hhv} onChange={e => setHhv(+e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="input-row two-col">
+                  <div>
+                    <label>Waha Index ($/MCF)</label>
+                    <input type="number" step="0.01" value={wahaPrice} onChange={e => setWahaPrice(+e.target.value)} />
+                  </div>
+                  <div>
+                    <label>Adder ($/MCF)</label>
+                    <input type="number" step="0.01" value={wahaAdder} onChange={e => setWahaAdder(+e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="result-row compact">
+                  <span>Gas Price (all-in)</span>
+                  <span className="highlight">${gasResults.gasPrice.toFixed(2)}/MCF</span>
+                </div>
+
+                <div className="input-row two-col" style={{marginTop: '12px'}}>
+                  <div>
+                    <label>Availability ({Math.round(availability * 100)}%)</label>
+                    <input type="range" min="0.8" max="1" step="0.01" value={availability} onChange={e => setAvailability(+e.target.value)} />
+                  </div>
+                  <div>
+                    <label>Parasitic Load ({Math.round(parasiticLoad * 100)}%)</label>
+                    <input type="range" min="0" max="0.2" step="0.01" value={parasiticLoad} onChange={e => setParasiticLoad(+e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="result-row compact" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                  <span>Gas Required</span>
+                  <span className="highlight">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
+                </div>
+                <div className="result-row compact">
+                  <span>Net Power Output</span>
+                  <span className="highlight">{gasResults.availableMw.toFixed(2)} MW</span>
+                </div>
+                <div className="result-row compact">
+                  <span>Monthly Gas Cost</span>
+                  <span className="highlight">{formatCurrencyFull(gasResults.gasMonthly)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Lifecycle (Buy mode only) */}
+            {generatorMode === 'buy' && (
+              <div className="card">
+                <div className="card-header">
+                  <h3>Generator Lifecycle</h3>
+                </div>
+                <div className="card-body">
+                  <div className="input-row two-col">
+                    <div>
+                      <label>Lifetime (hours)</label>
+                      <input type="number" value={generatorLifetimeHours} onChange={e => setGeneratorLifetimeHours(+e.target.value)} />
+                    </div>
+                    <div>
+                      <label>Hours/Year</label>
+                      <div className="computed-value">{gasResults.hoursPerYear.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                    </div>
+                  </div>
+                  <div className="input-row two-col">
+                    <div>
+                      <label>Top Overhaul @ (hours)</label>
+                      <input type="number" value={topOverhaulHours} onChange={e => setTopOverhaulHours(+e.target.value)} />
+                    </div>
+                    <div>
+                      <label>Cost ($)</label>
+                      <input type="number" value={topOverhaulCost} onChange={e => setTopOverhaulCost(+e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="input-row two-col">
+                    <div>
+                      <label>Major Overhaul @ (hours)</label>
+                      <input type="number" value={majorOverhaulHours} onChange={e => setMajorOverhaulHours(+e.target.value)} />
+                    </div>
+                    <div>
+                      <label>Cost ($)</label>
+                      <input type="number" value={majorOverhaulCost} onChange={e => setMajorOverhaulCost(+e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div className="result-row compact" style={{marginTop: '8px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                    <span>Lifetime</span>
+                    <span>{gasResults.lifetimeYears.toFixed(1)} years</span>
+                  </div>
+                  <div className="result-row compact">
+                    <span>Top Overhauls</span>
+                    <span>{gasResults.topOverhaulCount}× @ {formatCurrencyFull(topOverhaulCost)} (every {gasResults.topOverhaulYears.toFixed(1)} yrs)</span>
+                  </div>
+                  <div className="result-row compact">
+                    <span>Major Overhauls</span>
+                    <span>{gasResults.majorOverhaulCount}× @ {formatCurrencyFull(majorOverhaulCost)} (every {gasResults.majorOverhaulYears.toFixed(1)} yrs)</span>
+                  </div>
+                  <div className="result-row compact total">
+                    <span>Total Overhaul Cost (lifetime)</span>
+                    <span className="highlight">{formatCurrencyFull(gasResults.totalOverhaulCost)}</span>
+                  </div>
+                  <div className="result-row compact">
+                    <span>Annualized</span>
+                    <span>{formatCurrencyFull(gasResults.annualOverhaulCost)}/yr</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Power Generation Results */}
+          <section className="results-section">
+            <h2>Power Generation Summary</h2>
+            <div className="stat-grid">
+              <div className="stat-card">
+                <span className="stat-label">Fleet Capacity</span>
+                <span className="stat-value">{gasResults.fleetCapacityMw.toFixed(2)} MW</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-label">Net Output</span>
+                <span className="stat-value">{gasResults.availableMw.toFixed(2)} MW</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-label">Gas Required</span>
+                <span className="stat-value">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
+              </div>
+              <div className="stat-card highlight-card">
+                <span className="stat-label">Effective $/kWh</span>
+                <span className="stat-value">{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-label">Monthly Gas Cost</span>
+                <span className="stat-value red">{formatCurrency(gasResults.gasMonthly)}</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-label">Monthly Generator Cost</span>
+                <span className="stat-value red">{formatCurrency(gasResults.generatorMonthly)}</span>
+              </div>
+              <div className="stat-card highlight-card">
+                <span className="stat-label">Total Monthly Cost</span>
+                <span className="stat-value">{formatCurrency(gasResults.gasMonthly + gasResults.generatorMonthly)}</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-label">Annual Power Cost</span>
+                <span className="stat-value">{formatCurrency((gasResults.gasMonthly + gasResults.generatorMonthly) * 12)}</span>
+              </div>
+            </div>
+
+            <div className="simple-table" style={{marginTop: '20px'}}>
+              <div className="table-row">
+                <span>Power Output</span>
+                <span>{gasResults.availableMw.toFixed(2)} MW × 24h × 30d = {(gasResults.availableMw * 24 * 30).toFixed(0).toLocaleString()} MWh/month</span>
+              </div>
+              <div className="table-row">
+                <span>Gas Consumption</span>
+                <span>{gasResults.mcfPerDay.toFixed(0)} MCF/day × 30d = {(gasResults.mcfPerDay * 30).toFixed(0).toLocaleString()} MCF/month</span>
+              </div>
+              <div className="table-row">
+                <span>Gas Cost</span>
+                <span>{(gasResults.mcfPerDay * 30).toFixed(0).toLocaleString()} MCF × ${gasResults.gasPrice.toFixed(2)} = {formatCurrencyFull(gasResults.gasMonthly)}</span>
+              </div>
+              <div className="table-row">
+                <span>Generator Cost ({generatorMode.toUpperCase()})</span>
+                <span>{generatorCount} units × ${generatorMode === 'rent' ? generatorRentMonthly.toLocaleString() : generatorMode === 'rto' ? generatorRtoMonthly.toLocaleString() : generatorBuyMaintenance.toLocaleString()}/mo = {formatCurrencyFull(gasResults.generatorMonthly)}</span>
+              </div>
+              <div className="table-row total">
+                <span>Effective Power Cost</span>
+                <span className="highlight">{formatCurrencyFull(gasResults.gasMonthly + gasResults.generatorMonthly)} ÷ {(gasResults.availableMw * 24 * 30 * 1000).toLocaleString()} kWh = <strong>{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢/kWh</strong></span>
+              </div>
+            </div>
+
+            {/* Grid Comparison */}
+            <div className="simple-table" style={{marginTop: '20px'}}>
+              <div className="table-row">
+                <span>vs Grid @ 4¢/kWh</span>
+                <span style={{color: gasResults.powerCostPerKwh < 0.04 ? '#22c55e' : '#ef4444'}}>
+                  {gasResults.powerCostPerKwh < 0.04
+                    ? `Saving ${formatCurrency((0.04 - gasResults.powerCostPerKwh) * gasResults.availableMw * 24 * 30 * 1000)}/mo`
+                    : `Costing ${formatCurrency((gasResults.powerCostPerKwh - 0.04) * gasResults.availableMw * 24 * 30 * 1000)}/mo more`}
+                </span>
+              </div>
+              <div className="table-row">
+                <span>vs Grid @ 5¢/kWh</span>
+                <span style={{color: gasResults.powerCostPerKwh < 0.05 ? '#22c55e' : '#ef4444'}}>
+                  {gasResults.powerCostPerKwh < 0.05
+                    ? `Saving ${formatCurrency((0.05 - gasResults.powerCostPerKwh) * gasResults.availableMw * 24 * 30 * 1000)}/mo`
+                    : `Costing ${formatCurrency((gasResults.powerCostPerKwh - 0.05) * gasResults.availableMw * 24 * 30 * 1000)}/mo more`}
+                </span>
+              </div>
+              <div className="table-row">
+                <span>vs Grid @ 6¢/kWh</span>
+                <span style={{color: gasResults.powerCostPerKwh < 0.06 ? '#22c55e' : '#ef4444'}}>
+                  {gasResults.powerCostPerKwh < 0.06
+                    ? `Saving ${formatCurrency((0.06 - gasResults.powerCostPerKwh) * gasResults.availableMw * 24 * 30 * 1000)}/mo`
+                    : `Costing ${formatCurrency((gasResults.powerCostPerKwh - 0.06) * gasResults.availableMw * 24 * 30 * 1000)}/mo more`}
+                </span>
+              </div>
+            </div>
+
+            {/* CAPEX Summary (Buy mode) */}
+            {generatorMode === 'buy' && (
+              <div className="simple-table" style={{marginTop: '20px'}}>
+                <div className="table-row">
+                  <span>Generator CAPEX</span>
+                  <span>{formatCurrencyFull(gasResults.generatorCapex)}</span>
+                </div>
+                <div className="table-row">
+                  <span>Lifetime Overhaul Cost</span>
+                  <span>{formatCurrencyFull(gasResults.totalOverhaulCost)}</span>
+                </div>
+                <div className="table-row total">
+                  <span>Total Ownership Cost ({gasResults.lifetimeYears.toFixed(1)} yrs)</span>
+                  <span className="highlight">{formatCurrencyFull(gasResults.generatorCapex + gasResults.totalOverhaulCost)}</span>
+                </div>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      {/* ============ GAS-TO-POWER MINING CALCULATOR ============ */}
       {mode === 'gas' && (
         <>
           <section className="gas-hero">
