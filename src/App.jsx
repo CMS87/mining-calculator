@@ -633,29 +633,44 @@ function App() {
                     className="preset-select"
                     defaultValue="s21pro"
                     onChange={e => {
-                      if (e.target.value === 's21pro') {
-                        setMinerPowerKW(3.4)
-                        setHashratePerUnit(220)
-                        setPricePerTh(11)
-                      } else if (e.target.value === 's21xp') {
-                        setMinerPowerKW(3.15)
-                        setHashratePerUnit(270)
-                        setPricePerTh(16)
-                      } else if (e.target.value === 's19xp') {
-                        setMinerPowerKW(3.01)
-                        setHashratePerUnit(141)
-                        setPricePerTh(8)
-                      } else if (e.target.value === 't21') {
-                        setMinerPowerKW(3.0)
-                        setHashratePerUnit(190)
-                        setPricePerTh(9)
+                      const presets = {
+                        // Bitmain Antminer
+                        s21pro:   { kw: 3.4,  th: 220, pth: 11 },
+                        s21xp:    { kw: 3.15, th: 270, pth: 16 },
+                        s21:      { kw: 3.5,  th: 200, pth: 10 },
+                        s19xp:    { kw: 3.01, th: 141, pth: 8 },
+                        t21:      { kw: 3.0,  th: 190, pth: 9 },
+                        // MicroBT Whatsminer
+                        m66s:     { kw: 5.5,  th: 298, pth: 14 },
+                        m63s:     { kw: 7.2,  th: 390, pth: 15 },
+                        m60s:     { kw: 3.42, th: 186, pth: 11 },
+                        m60:      { kw: 3.22, th: 172, pth: 10 },
+                        m50spp:   { kw: 3.13, th: 146, pth: 8 },
+                        m50sp:    { kw: 3.1,  th: 138, pth: 7 },
+                      }
+                      const p = presets[e.target.value]
+                      if (p) {
+                        setMinerPowerKW(p.kw)
+                        setHashratePerUnit(p.th)
+                        setPricePerTh(p.pth)
                       }
                     }}
                   >
-                    <option value="s21pro">Antminer S21 Pro (220 TH/s, 3.4kW)</option>
-                    <option value="s21xp">Antminer S21 XP (270 TH/s, 3.15kW)</option>
-                    <option value="s19xp">Antminer S19 XP (141 TH/s, 3.01kW)</option>
-                    <option value="t21">Antminer T21 (190 TH/s, 3.0kW)</option>
+                    <optgroup label="Bitmain Antminer">
+                      <option value="s21pro">S21 Pro (220 TH/s, 3.4kW, 15.5 J/TH)</option>
+                      <option value="s21xp">S21 XP Hyd (270 TH/s, 3.15kW, 11.7 J/TH)</option>
+                      <option value="s21">S21 (200 TH/s, 3.5kW, 17.5 J/TH)</option>
+                      <option value="t21">T21 (190 TH/s, 3.0kW, 15.8 J/TH)</option>
+                      <option value="s19xp">S19 XP (141 TH/s, 3.01kW, 21.4 J/TH)</option>
+                    </optgroup>
+                    <optgroup label="MicroBT Whatsminer">
+                      <option value="m63s">M63S Hyd (390 TH/s, 7.2kW, 18.5 J/TH)</option>
+                      <option value="m66s">M66S Hyd (298 TH/s, 5.5kW, 18.5 J/TH)</option>
+                      <option value="m60s">M60S (186 TH/s, 3.42kW, 18.4 J/TH)</option>
+                      <option value="m60">M60 (172 TH/s, 3.22kW, 18.7 J/TH)</option>
+                      <option value="m50spp">M50S++ (146 TH/s, 3.13kW, 21.4 J/TH)</option>
+                      <option value="m50sp">M50S+ (138 TH/s, 3.1kW, 22.5 J/TH)</option>
+                    </optgroup>
                     <option value="custom">Custom</option>
                   </select>
                 </div>
