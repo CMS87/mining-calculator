@@ -185,6 +185,9 @@ function App() {
     return `$${val.toFixed(0)}`
   }
 
+  // Full precision currency (no abbreviation)
+  const formatCurrencyFull = (val) => `$${val.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`
+
   const formatNumber = (val) => val.toLocaleString()
 
   const gasResults = useMemo(() => {
@@ -623,7 +626,95 @@ function App() {
                 <h3>Mining Assumptions</h3>
               </div>
               <div className="card-body">
+                {/* Miner Preset */}
+                <div className="input-row">
+                  <label>Miner Model</label>
+                  <select
+                    className="preset-select"
+                    defaultValue="s21pro"
+                    onChange={e => {
+                      if (e.target.value === 's21pro') {
+                        setMinerPowerKW(3.4)
+                        setHashratePerUnit(220)
+                        setPricePerTh(11)
+                      } else if (e.target.value === 's21xp') {
+                        setMinerPowerKW(3.15)
+                        setHashratePerUnit(270)
+                        setPricePerTh(16)
+                      } else if (e.target.value === 's19xp') {
+                        setMinerPowerKW(3.01)
+                        setHashratePerUnit(141)
+                        setPricePerTh(8)
+                      } else if (e.target.value === 't21') {
+                        setMinerPowerKW(3.0)
+                        setHashratePerUnit(190)
+                        setPricePerTh(9)
+                      }
+                    }}
+                  >
+                    <option value="s21pro">Antminer S21 Pro (220 TH/s, 3.4kW)</option>
+                    <option value="s21xp">Antminer S21 XP (270 TH/s, 3.15kW)</option>
+                    <option value="s19xp">Antminer S19 XP (141 TH/s, 3.01kW)</option>
+                    <option value="t21">Antminer T21 (190 TH/s, 3.0kW)</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+
                 <div className="input-row two-col">
+                  <div>
+                    <label>Hashrate (TH/s)</label>
+                    <input
+                      type="number"
+                      value={hashratePerUnit}
+                      onChange={e => setHashratePerUnit(+e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Power (kW)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={minerPowerKW}
+                      onChange={e => setMinerPowerKW(+e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="result-row compact">
+                  <span>Efficiency</span>
+                  <span>{((minerPowerKW * 1000) / hashratePerUnit).toFixed(1)} J/TH ({((minerPowerKW * 1000) / hashratePerUnit).toFixed(1)} W/TH)</span>
+                </div>
+
+                {/* ASIC Pricing */}
+                <div className="input-row" style={{marginTop: '12px'}}>
+                  <label>ASIC Price ($/TH)</label>
+                  <input
+                    type="number"
+                    value={pricePerTh}
+                    onChange={e => setPricePerTh(+e.target.value)}
+                  />
+                </div>
+
+                <div className="result-row compact">
+                  <span>Price per Unit</span>
+                  <span>${pricePerTh}/TH × {hashratePerUnit} TH/s = <strong>{formatCurrencyFull(gasResults.asicPricePerUnit)}</strong></span>
+                </div>
+
+                <div className="result-row compact" style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '8px', paddingTop: '8px'}}>
+                  <span>Miners Supported</span>
+                  <span className="highlight">{gasResults.miners.toLocaleString()} units</span>
+                </div>
+                <div className="result-row compact">
+                  <span>Total Hashrate</span>
+                  <span className="highlight">{gasResults.phs.toFixed(2)} PH/s</span>
+                </div>
+                <div className="result-row compact total">
+                  <span>ASIC CAPEX</span>
+                  <span className="highlight">{formatCurrencyFull(gasResults.asicCapex)}</span>
+                </div>
+
+                {/* Revenue inputs */}
+                <div className="input-row two-col" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '12px'}}>
                   <div>
                     <label>Hashprice ($/PH/day)</label>
                     <input
@@ -636,41 +727,14 @@ function App() {
                     <label>Pool Fee (%)</label>
                     <input
                       type="number"
+                      step="0.1"
                       value={(poolFee * 100).toFixed(1)}
                       onChange={e => setPoolFee(+e.target.value / 100)}
                     />
                   </div>
                 </div>
-                <div className="input-row two-col">
-                  <div>
-                    <label>Miner Power (kW/unit)</label>
-                    <input
-                      type="number"
-                      value={minerPowerKW}
-                      onChange={e => setMinerPowerKW(+e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>Hashrate per Miner (TH/s)</label>
-                    <input
-                      type="number"
-                      value={hashratePerUnit}
-                      onChange={e => setHashratePerUnit(+e.target.value)}
-                    />
-                  </div>
-                </div>
 
-                {/* ASIC CAPEX - computed from $/TH × TH/s */}
-                <div className="result-row compact" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '12px'}}>
-                  <span>ASIC Price</span>
-                  <span>${pricePerTh}/TH × {hashratePerUnit} TH/s = {formatCurrency(gasResults.asicPricePerUnit)}/unit</span>
-                </div>
-                <div className="result-row compact">
-                  <span>ASIC CAPEX ({gasResults.miners} miners)</span>
-                  <span className="highlight">{formatCurrency(gasResults.asicCapex)}</span>
-                </div>
-
-                <div className="input-row" style={{marginTop: '12px'}}>
+                <div className="input-row">
                   <label>Other Opex ($/month)</label>
                   <input
                     type="number"
@@ -744,8 +808,8 @@ function App() {
                 <span>{formatCurrency(gasResults.generatorCapex)}</span>
               </div>
               <div className="table-row">
-                <span>ASIC CAPEX ({gasResults.miners} miners × {formatCurrency(gasResults.asicPricePerUnit)})</span>
-                <span>{formatCurrency(gasResults.asicCapex)}</span>
+                <span>ASIC CAPEX ({gasResults.miners.toLocaleString()} × {formatCurrencyFull(gasResults.asicPricePerUnit)})</span>
+                <span>{formatCurrencyFull(gasResults.asicCapex)}</span>
               </div>
               <div className="table-row total">
                 <span>Total CAPEX</span>
