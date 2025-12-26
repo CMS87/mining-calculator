@@ -1347,3 +1347,108 @@ footer .company {
     font-size: 0.85rem;
   }
 }
+
+/* ========== NEW GAS-TO-POWER ENHANCEMENTS ========== */
+
+/* Generator preset dropdown */
+.preset-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.preset-select:focus {
+  outline: none;
+  border-color: rgba(226, 232, 240, 0.5);
+}
+
+/* Warning row for capacity mismatch */
+.warning-row {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: #fbbf24;
+  text-align: center;
+}
+
+/* Info row for notes */
+.info-row {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* Computed value display (non-editable) */
+.computed-value {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.4);
+  color: #94a3b8;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Result row total styling */
+.result-row.compact.total {
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+/* Checkbox styling */
+.input-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+/* Sensitivity table negative values */
+.sensitivity-table td.negative {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Update stat-grid for 12 items (4 columns) */
+@media (min-width: 800px) {
+  .stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Larger stat grid for gas results */
+.results-section .stat-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (min-width: 800px) {
+  .results-section .stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Green/red text colors */
+.stat-value.green, .green {
+  color: #22c55e !important;
+}
+
+.stat-value.red, .red {
+  color: #ef4444 !important;
+}
+
+/* Section intro text */
+.section-intro {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  margin-top: -12px;
+}
