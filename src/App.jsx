@@ -49,6 +49,13 @@ function App() {
   const [generatorRtoTerm, setGeneratorRtoTerm] = useState(28)                // months to ownership
   const [generatorRtoEquityPct, setGeneratorRtoEquityPct] = useState(0.50)    // 50% toward purchase
 
+  // Generator lifecycle (for Buy mode cost projections)
+  const [generatorLifetimeHours, setGeneratorLifetimeHours] = useState(60000) // total hours
+  const [topOverhaulHours, setTopOverhaulHours] = useState(20000)             // hours between top overhauls
+  const [topOverhaulCost, setTopOverhaulCost] = useState(20000)               // $ per top overhaul
+  const [majorOverhaulHours, setMajorOverhaulHours] = useState(40000)         // hours between major overhauls
+  const [majorOverhaulCost, setMajorOverhaulCost] = useState(40000)           // $ per major overhaul
+
   // ASIC CAPEX - uses pricePerTh and hashratePerUnit from Business Models (no separate state)
 
   // Mining extras
@@ -256,6 +263,21 @@ function App() {
     // Grid power comparison: what grid $/kWh would match this cost?
     const gridEquivalentPerKwh = kwhPerMonth > 0 ? totalOpex / kwhPerMonth : 0
 
+    // Generator lifecycle calculations
+    const hoursPerYear = 24 * 365 * cleanAvailability // ~8,322 hrs/yr at 95%
+    const lifetimeYears = generatorLifetimeHours / hoursPerYear
+    const topOverhaulYears = topOverhaulHours / hoursPerYear
+    const majorOverhaulYears = majorOverhaulHours / hoursPerYear
+    // Number of overhauls over lifetime (per generator)
+    const topOverhaulCount = Math.floor(generatorLifetimeHours / topOverhaulHours)
+    const majorOverhaulCount = Math.floor(generatorLifetimeHours / majorOverhaulHours)
+    // Total overhaul costs over lifetime (all generators)
+    const totalTopOverhaulCost = topOverhaulCount * topOverhaulCost * generatorCount
+    const totalMajorOverhaulCost = majorOverhaulCount * majorOverhaulCost * generatorCount
+    const totalOverhaulCost = totalTopOverhaulCost + totalMajorOverhaulCost
+    // Annualized overhaul cost
+    const annualOverhaulCost = lifetimeYears > 0 ? totalOverhaulCost / lifetimeYears : 0
+
     return {
       mcfPerDay,
       mwGross,
@@ -282,12 +304,22 @@ function App() {
       annualNet,
       paybackMonths,
       gridEquivalentPerKwh,
+      // Lifecycle
+      hoursPerYear,
+      lifetimeYears,
+      topOverhaulYears,
+      majorOverhaulYears,
+      topOverhaulCount,
+      majorOverhaulCount,
+      totalOverhaulCost,
+      annualOverhaulCost,
     }
   }, [
     availability,
     generatorBuyMaintenance,
     generatorBuyPrice,
     generatorCount,
+    generatorLifetimeHours,
     generatorMode,
     generatorRentMonthly,
     generatorRtoEquityPct,
@@ -299,11 +331,15 @@ function App() {
     heatRate,
     hhv,
     loadFactor,
+    majorOverhaulCost,
+    majorOverhaulHours,
     minerPowerKW,
     otherOpex,
     parasiticLoad,
     poolFee,
     pricePerTh,
+    topOverhaulCost,
+    topOverhaulHours,
     wahaAdder,
     wahaPrice,
   ])
@@ -464,6 +500,81 @@ function App() {
                     <div className="result-row compact">
                       <span>Generator CAPEX</span>
                       <span className="highlight">{formatCurrency(gasResults.generatorCapex)}</span>
+                    </div>
+
+                    {/* Lifecycle & Overhauls */}
+                    <div className="info-row" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                      Generator Lifecycle & Overhauls
+                    </div>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Lifetime (hours)</label>
+                        <input
+                          type="number"
+                          value={generatorLifetimeHours}
+                          onChange={e => setGeneratorLifetimeHours(+e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label>Hours/Year (computed)</label>
+                        <div className="computed-value">{gasResults.hoursPerYear.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                      </div>
+                    </div>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Top Overhaul (hours)</label>
+                        <input
+                          type="number"
+                          value={topOverhaulHours}
+                          onChange={e => setTopOverhaulHours(+e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label>Top Overhaul Cost ($)</label>
+                        <input
+                          type="number"
+                          value={topOverhaulCost}
+                          onChange={e => setTopOverhaulCost(+e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Major Overhaul (hours)</label>
+                        <input
+                          type="number"
+                          value={majorOverhaulHours}
+                          onChange={e => setMajorOverhaulHours(+e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label>Major Overhaul Cost ($)</label>
+                        <input
+                          type="number"
+                          value={majorOverhaulCost}
+                          onChange={e => setMajorOverhaulCost(+e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Lifetime</span>
+                      <span>{gasResults.lifetimeYears.toFixed(1)} years ({generatorLifetimeHours.toLocaleString()} hrs)</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Top Overhauls</span>
+                      <span>{gasResults.topOverhaulCount}× per unit @ {formatCurrencyFull(topOverhaulCost)} (every {gasResults.topOverhaulYears.toFixed(1)} yrs)</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Major Overhauls</span>
+                      <span>{gasResults.majorOverhaulCount}× per unit @ {formatCurrencyFull(majorOverhaulCost)} (every {gasResults.majorOverhaulYears.toFixed(1)} yrs)</span>
+                    </div>
+                    <div className="result-row compact total">
+                      <span>Total Overhaul Cost (fleet lifetime)</span>
+                      <span className="highlight">{formatCurrencyFull(gasResults.totalOverhaulCost)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Annualized Overhaul Cost</span>
+                      <span>{formatCurrencyFull(gasResults.annualOverhaulCost)}/yr</span>
                     </div>
                   </>
                 )}
