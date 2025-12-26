@@ -49,9 +49,7 @@ function App() {
   const [generatorRtoTerm, setGeneratorRtoTerm] = useState(28)                // months to ownership
   const [generatorRtoEquityPct, setGeneratorRtoEquityPct] = useState(0.50)    // 50% toward purchase
 
-  // ASIC CAPEX
-  const [includeAsicCapex, setIncludeAsicCapex] = useState(true)
-  const [asicPricePerUnit, setAsicPricePerUnit] = useState(2420)              // S21 Pro ~$11/TH × 220TH
+  // ASIC CAPEX - uses pricePerTh and hashratePerUnit from Business Models (no separate state)
 
   // Mining extras
   const [poolFee, setPoolFee] = useState(0)
@@ -193,12 +191,18 @@ function App() {
     const cleanAvailability = Math.min(Math.max(availability, 0), 1)
     const cleanParasitic = Math.min(Math.max(parasiticLoad, 0), 0.5)
     const cleanLoadFactor = Math.min(Math.max(loadFactor, 0), 1.2)
-    const mcfPerDay = gasInputMode === 'gas'
-      ? Math.max(gasFlowMcf, 0)
-      : Math.max((powerMw * 1000 * 24 * heatRate) / (hhv * 1000), 0)
-    const mwGross = gasInputMode === 'gas'
-      ? Math.max((mcfPerDay * 1000 * hhv / heatRate) / 24 / 1000, 0)
-      : Math.max(powerMw, 0)
+
+    // Fleet capacity is the source of truth
+    const fleetCapacityMw = (generatorCount * generatorSizeKw) / 1000
+    const mwGross = fleetCapacityMw
+
+    // Calculate gas required for this fleet
+    // MW → kWh/day → BTU/day → scf/day → MCF/day
+    const kwhPerDay = mwGross * 1000 * 24
+    const btuPerDay = kwhPerDay * heatRate
+    const mcfPerDay = btuPerDay / (hhv * 1000)
+
+    // Net available power after losses
     const availableMw = mwGross * cleanAvailability * (1 - cleanParasitic) * cleanLoadFactor
     const totalKw = availableMw * 1000
     const miners = Math.max(Math.floor(totalKw / minerPowerKW), 0)
@@ -207,31 +211,24 @@ function App() {
     const gasPrice = wahaPrice + wahaAdder
     const gasMonthly = mcfPerDay * gasPrice * 30
 
-    // Fleet capacity validation
-    const fleetCapacityMw = (generatorCount * generatorSizeKw) / 1000
-    const capacityMismatch = Math.abs(fleetCapacityMw - mwGross) > 0.1
-
     let generatorMonthly = 0
     let generatorCapex = 0
     let generatorEquityBuilt = 0
-    let maintenanceMonthly = 0
 
     if (generatorMode === 'rent') {
       generatorMonthly = generatorRentMonthly * generatorCount
-      maintenanceMonthly = 0 // user should add maintenance separately
     } else if (generatorMode === 'buy') {
       generatorMonthly = generatorBuyMaintenance * generatorCount
-      maintenanceMonthly = generatorBuyMaintenance * generatorCount
       generatorCapex = generatorBuyPrice * generatorCount
     } else {
       // RTO: maintenance included in payment
       generatorMonthly = generatorRtoMonthly * generatorCount
       generatorEquityBuilt = generatorRtoMonthly * generatorRtoEquityPct * generatorCount * generatorRtoTerm
-      maintenanceMonthly = 0 // included
     }
 
-    // ASIC CAPEX
-    const asicCapex = includeAsicCapex ? miners * asicPricePerUnit : 0
+    // ASIC CAPEX - calculated from $/TH × TH/s (same as Business Models)
+    const asicPricePerUnit = pricePerTh * hashratePerUnit
+    const asicCapex = miners * asicPricePerUnit
     const totalCapex = generatorCapex + asicCapex
 
     const monthlyRevenue = effectivePhs * hashprice * 30
@@ -261,16 +258,15 @@ function App() {
       mwGross,
       availableMw,
       fleetCapacityMw,
-      capacityMismatch,
       miners,
       phs,
       effectivePhs,
       gasPrice,
       gasMonthly,
       generatorMonthly,
-      maintenanceMonthly,
       generatorCapex,
       asicCapex,
+      asicPricePerUnit,
       totalCapex,
       generatorEquityBuilt,
       monthlyRevenue,
@@ -286,9 +282,6 @@ function App() {
     }
   }, [
     availability,
-    asicPricePerUnit,
-    gasFlowMcf,
-    gasInputMode,
     generatorBuyMaintenance,
     generatorBuyPrice,
     generatorCount,
@@ -302,13 +295,12 @@ function App() {
     hashprice,
     heatRate,
     hhv,
-    includeAsicCapex,
     loadFactor,
     minerPowerKW,
     otherOpex,
     parasiticLoad,
     poolFee,
-    powerMw,
+    pricePerTh,
     wahaAdder,
     wahaPrice,
   ])
@@ -348,50 +340,30 @@ function App() {
           <section className="gas-hero">
             <div>
               <h2>Gas-to-Power Bitcoin Mining</h2>
-              <p className="section-intro">Convert field gas to MW, size the generator fleet, and project mining output.</p>
-            </div>
-            <div className="pill-toggle">
-              <button
-                className={gasInputMode === 'gas' ? 'active' : ''}
-                onClick={() => setGasInputMode('gas')}
-              >
-                Input MCF/day
-              </button>
-              <button
-                className={gasInputMode === 'power' ? 'active' : ''}
-                onClick={() => setGasInputMode('power')}
-              >
-                Input MW
-              </button>
+              <p className="section-intro">Size your generator fleet — gas requirements and mining output calculate automatically.</p>
             </div>
           </section>
 
           <section className="gas-grid">
             <div className="card">
               <div className="card-header">
-                <h3>Gas & Power Inputs</h3>
+                <h3>Power & Gas (Computed from Fleet)</h3>
               </div>
               <div className="card-body">
-                {gasInputMode === 'gas' ? (
-                  <div className="input-row">
-                    <label>Gas Flow (MCF/day)</label>
-                    <input
-                      type="number"
-                      value={gasFlowMcf}
-                      onChange={e => setGasFlowMcf(+e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <div className="input-row">
-                    <label>Power Capacity (MW)</label>
-                    <input
-                      type="number"
-                      value={powerMw}
-                      onChange={e => setPowerMw(+e.target.value)}
-                    />
-                  </div>
-                )}
-                <div className="input-row two-col">
+                <div className="result-row compact">
+                  <span>Fleet Capacity</span>
+                  <span className="highlight">{gasResults.fleetCapacityMw.toFixed(2)} MW</span>
+                </div>
+                <div className="result-row compact">
+                  <span>Gas Required</span>
+                  <span className="highlight">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
+                </div>
+                <div className="result-row compact">
+                  <span>Net Available (after losses)</span>
+                  <span className="highlight">{gasResults.availableMw.toFixed(2)} MW</span>
+                </div>
+
+                <div className="input-row two-col" style={{marginTop: '12px'}}>
                   <div>
                     <label>Heat Rate (BTU/kWh)</label>
                     <input
@@ -411,7 +383,7 @@ function App() {
                 </div>
                 <div className="input-row two-col">
                   <div>
-                    <label>Availability / Uptime ({Math.round(availability * 100)}%)</label>
+                    <label>Availability ({Math.round(availability * 100)}%)</label>
                     <input
                       type="range"
                       min="0.8"
@@ -531,17 +503,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* Fleet capacity warning */}
-                {gasResults.capacityMismatch && (
-                  <div className="warning-row">
-                    Fleet: {gasResults.fleetCapacityMw.toFixed(2)} MW vs Computed: {gasResults.mwGross.toFixed(2)} MW
-                  </div>
-                )}
-
-                <div className="result-row compact">
-                  <span>Fleet Capacity</span>
-                  <span>{gasResults.fleetCapacityMw.toFixed(2)} MW ({generatorCount} × {generatorSizeKw} kW)</span>
-                </div>
 
                 <div className="pill-toggle small">
                   <button
@@ -695,33 +656,15 @@ function App() {
                   </div>
                 </div>
 
-                {/* ASIC CAPEX */}
-                <div className="input-row" style={{marginTop: '12px'}}>
-                  <label style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                    <input
-                      type="checkbox"
-                      checked={includeAsicCapex}
-                      onChange={e => setIncludeAsicCapex(e.target.checked)}
-                    />
-                    Include ASIC CAPEX in economics
-                  </label>
+                {/* ASIC CAPEX - computed from $/TH × TH/s */}
+                <div className="result-row compact" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '12px'}}>
+                  <span>ASIC Price</span>
+                  <span>${pricePerTh}/TH × {hashratePerUnit} TH/s = {formatCurrency(gasResults.asicPricePerUnit)}/unit</span>
                 </div>
-                {includeAsicCapex && (
-                  <div className="input-row two-col">
-                    <div>
-                      <label>ASIC Price ($/unit)</label>
-                      <input
-                        type="number"
-                        value={asicPricePerUnit}
-                        onChange={e => setAsicPricePerUnit(+e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label>ASIC CAPEX Total</label>
-                      <div className="computed-value">{formatCurrency(gasResults.asicCapex)}</div>
-                    </div>
-                  </div>
-                )}
+                <div className="result-row compact">
+                  <span>ASIC CAPEX ({gasResults.miners} miners)</span>
+                  <span className="highlight">{formatCurrency(gasResults.asicCapex)}</span>
+                </div>
 
                 <div className="input-row" style={{marginTop: '12px'}}>
                   <label>Other Opex ($/month)</label>
@@ -791,30 +734,26 @@ function App() {
             </div>
 
             {/* CAPEX & Payback */}
-            {gasResults.totalCapex > 0 && (
-              <div className="simple-table" style={{marginTop: '20px'}}>
-                <div className="table-row">
-                  <span>Generator CAPEX</span>
-                  <span>{formatCurrency(gasResults.generatorCapex)}</span>
-                </div>
-                {includeAsicCapex && (
-                  <div className="table-row">
-                    <span>ASIC CAPEX ({gasResults.miners} units)</span>
-                    <span>{formatCurrency(gasResults.asicCapex)}</span>
-                  </div>
-                )}
-                <div className="table-row total">
-                  <span>Total CAPEX</span>
-                  <span className="highlight">{formatCurrency(gasResults.totalCapex)}</span>
-                </div>
-                <div className="table-row">
-                  <span>Payback Period</span>
-                  <span className="highlight">
-                    {gasResults.paybackMonths === Infinity ? 'N/A' : `${gasResults.paybackMonths.toFixed(1)} months`}
-                  </span>
-                </div>
+            <div className="simple-table" style={{marginTop: '20px'}}>
+              <div className="table-row">
+                <span>Generator CAPEX ({generatorMode === 'buy' ? 'Purchase' : 'N/A - RTO/Rent'})</span>
+                <span>{formatCurrency(gasResults.generatorCapex)}</span>
               </div>
-            )}
+              <div className="table-row">
+                <span>ASIC CAPEX ({gasResults.miners} miners × {formatCurrency(gasResults.asicPricePerUnit)})</span>
+                <span>{formatCurrency(gasResults.asicCapex)}</span>
+              </div>
+              <div className="table-row total">
+                <span>Total CAPEX</span>
+                <span className="highlight">{formatCurrency(gasResults.totalCapex)}</span>
+              </div>
+              <div className="table-row">
+                <span>Payback Period</span>
+                <span className="highlight">
+                  {gasResults.paybackMonths === Infinity ? 'N/A' : `${gasResults.paybackMonths.toFixed(1)} months`}
+                </span>
+              </div>
+            </div>
 
             {/* Operations Summary */}
             <div className="simple-table" style={{marginTop: '20px'}}>
