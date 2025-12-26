@@ -345,110 +345,7 @@ function App() {
           </section>
 
           <section className="gas-grid">
-            <div className="card">
-              <div className="card-header">
-                <h3>Power & Gas (Computed from Fleet)</h3>
-              </div>
-              <div className="card-body">
-                <div className="result-row compact">
-                  <span>Fleet Capacity</span>
-                  <span className="highlight">{gasResults.fleetCapacityMw.toFixed(2)} MW</span>
-                </div>
-                <div className="result-row compact">
-                  <span>Gas Required</span>
-                  <span className="highlight">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
-                </div>
-                <div className="result-row compact">
-                  <span>Net Available (after losses)</span>
-                  <span className="highlight">{gasResults.availableMw.toFixed(2)} MW</span>
-                </div>
-
-                <div className="input-row two-col" style={{marginTop: '12px'}}>
-                  <div>
-                    <label>Heat Rate (BTU/kWh)</label>
-                    <input
-                      type="number"
-                      value={heatRate}
-                      onChange={e => setHeatRate(+e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>HHV (BTU/scf)</label>
-                    <input
-                      type="number"
-                      value={hhv}
-                      onChange={e => setHhv(+e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="input-row two-col">
-                  <div>
-                    <label>Availability ({Math.round(availability * 100)}%)</label>
-                    <input
-                      type="range"
-                      min="0.8"
-                      max="1"
-                      step="0.01"
-                      value={availability}
-                      onChange={e => setAvailability(+e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>Parasitic Load ({Math.round(parasiticLoad * 100)}%)</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="0.2"
-                      step="0.01"
-                      value={parasiticLoad}
-                      onChange={e => setParasiticLoad(+e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="input-row">
-                  <label>Load Factor ({Math.round(loadFactor * 100)}%)</label>
-                  <input
-                    type="range"
-                    min="0.7"
-                    max="1.1"
-                    step="0.01"
-                    value={loadFactor}
-                    onChange={e => setLoadFactor(+e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="card-header">
-                <h3>Gas Pricing</h3>
-              </div>
-              <div className="card-body">
-                <div className="input-row two-col">
-                  <div>
-                    <label>Waha Index ($/MCF)</label>
-                    <input
-                      type="number"
-                      value={wahaPrice}
-                      onChange={e => setWahaPrice(+e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>Adder ($/MCF)</label>
-                    <input
-                      type="number"
-                      value={wahaAdder}
-                      onChange={e => setWahaAdder(+e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="result-row compact">
-                  <span>Gas Price (all-in)</span>
-                  <span className="highlight">${gasResults.gasPrice.toFixed(2)}/MCF</span>
-                </div>
-              </div>
-            </div>
-
+            {/* Generator Fleet - Primary Input */}
             <div className="card">
               <div className="card-header">
                 <h3>Generator Fleet</h3>
@@ -614,6 +511,113 @@ function App() {
               </div>
             </div>
 
+            {/* Power & Gas - Computed from Fleet */}
+            <div className="card">
+              <div className="card-header">
+                <h3>Power & Gas (Computed)</h3>
+              </div>
+              <div className="card-body">
+                <div className="result-row compact">
+                  <span>Fleet Capacity</span>
+                  <span className="highlight">{gasResults.fleetCapacityMw.toFixed(2)} MW</span>
+                </div>
+                <div className="result-row compact">
+                  <span>Gas Required</span>
+                  <span className="highlight">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
+                </div>
+                <div className="result-row compact">
+                  <span>Net Available (after losses)</span>
+                  <span className="highlight">{gasResults.availableMw.toFixed(2)} MW</span>
+                </div>
+
+                <div className="input-row two-col" style={{marginTop: '12px'}}>
+                  <div>
+                    <label>Heat Rate (BTU/kWh)</label>
+                    <input
+                      type="number"
+                      value={heatRate}
+                      onChange={e => setHeatRate(+e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>HHV (BTU/scf)</label>
+                    <input
+                      type="number"
+                      value={hhv}
+                      onChange={e => setHhv(+e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="input-row two-col">
+                  <div>
+                    <label>Availability ({Math.round(availability * 100)}%)</label>
+                    <input
+                      type="range"
+                      min="0.8"
+                      max="1"
+                      step="0.01"
+                      value={availability}
+                      onChange={e => setAvailability(+e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Parasitic Load ({Math.round(parasiticLoad * 100)}%)</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="0.2"
+                      step="0.01"
+                      value={parasiticLoad}
+                      onChange={e => setParasiticLoad(+e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="input-row">
+                  <label>Load Factor ({Math.round(loadFactor * 100)}%)</label>
+                  <input
+                    type="range"
+                    min="0.7"
+                    max="1.1"
+                    step="0.01"
+                    value={loadFactor}
+                    onChange={e => setLoadFactor(+e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Gas Pricing */}
+            <div className="card">
+              <div className="card-header">
+                <h3>Gas Pricing</h3>
+              </div>
+              <div className="card-body">
+                <div className="input-row two-col">
+                  <div>
+                    <label>Waha Index ($/MCF)</label>
+                    <input
+                      type="number"
+                      value={wahaPrice}
+                      onChange={e => setWahaPrice(+e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Adder ($/MCF)</label>
+                    <input
+                      type="number"
+                      value={wahaAdder}
+                      onChange={e => setWahaAdder(+e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="result-row compact">
+                  <span>Gas Price (all-in)</span>
+                  <span className="highlight">${gasResults.gasPrice.toFixed(2)}/MCF</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Mining Assumptions */}
             <div className="card">
               <div className="card-header">
                 <h3>Mining Assumptions</h3>
