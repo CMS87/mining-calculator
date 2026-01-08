@@ -2121,6 +2121,9 @@ function App() {
                   <p className="phase-detail" style={{color: '#22c55e'}}>
                     You receive {(results.mixPhase1Pct * 100).toFixed(0)}% of profits
                   </p>
+                  <p style={{color: '#64748b', fontSize: '0.8rem', marginTop: '2px'}}>
+                    (Blended: {(coPhase1Pct * 100).toFixed(0)}% Co-Mining + {(selfPhase1Pct * 100).toFixed(0)}% Self-Mining)
+                  </p>
                   <p style={{color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px'}}>
                     → ${formatNumber(Math.round(results.mixPhase1Investor))}/month until payback (~{results.mixPayback.toFixed(0)} mo)
                   </p>
