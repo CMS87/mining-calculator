@@ -2110,10 +2110,9 @@ function App() {
           {/* Hero Investment Section */}
           <section style={{marginBottom: '32px'}}>
             <div style={{textAlign: 'center', marginBottom: '24px'}}>
-              <h2 style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff', marginBottom: '8px'}}>Your Investment</h2>
-              <p style={{color: '#94a3b8', fontSize: '1rem'}}>
-                {modelMix === 0 ? '100% Co-Mining Model' : modelMix === 1 ? '100% Self-Mining Model' : `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining Blend`}
-              </p>
+              <h2 style={{fontSize: '1.4rem', fontWeight: '700', color: '#fff', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px'}}>
+                Proposed Investment: {modelMix === 0 ? 'Co-Mining Model' : modelMix === 1 ? 'Self-Mining Model' : `${((1 - modelMix) * 100).toFixed(0)}/${(modelMix * 100).toFixed(0)} Blended Model`}
+              </h2>
             </div>
 
             {/* Main KPIs */}
