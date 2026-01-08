@@ -1769,42 +1769,6 @@ function App() {
       {/* ============ PART 1: BUSINESS MODELS ============ */}
       {mode === 'models' && (
         <>
-          {/* Market Context - Address investor concerns about assumptions */}
-          <section className="market-context">
-            <div className="context-card">
-              <h3>Model Assumptions vs Market</h3>
-              <div className="context-grid">
-                <div className="context-item">
-                  <span className="context-label">Hashprice Used</span>
-                  <span className="context-value highlight">${hashprice}/PH/day</span>
-                  <span className="context-note">= ${(hashprice/1000).toFixed(4)}/TH/day</span>
-                </div>
-                <div className="context-item">
-                  <span className="context-label">Current Market</span>
-                  <span className="context-value">
-                    <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{color: '#60a5fa', textDecoration: 'none'}}>
-                      Check live →
-                    </a>
-                  </span>
-                  <span className="context-note">Updates daily with BTC price</span>
-                </div>
-                <div className="context-item">
-                  <span className="context-label">Model Assumption</span>
-                  <span className="context-value" style={{color: '#f59e0b'}}>
-                    Adjust below ↓
-                  </span>
-                  <span className="context-note">
-                    Compare with live data
-                  </span>
-                </div>
-              </div>
-              <p className="context-disclaimer">
-                Hashprice fluctuates with BTC price and network difficulty.
-                Use the slider below to test different scenarios.
-              </p>
-            </div>
-          </section>
-
           {/* Market Assumptions - TOP */}
           <section className="controls-section">
             <h2>Market Assumptions</h2>
