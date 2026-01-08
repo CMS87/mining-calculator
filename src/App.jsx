@@ -1781,23 +1781,20 @@ function App() {
                 </div>
                 <div className="context-item">
                   <span className="context-label">Current Market</span>
-                  <span className="context-value">~$45-50/PH/day</span>
-                  <span className="context-note">
-                    <a href="https://hashrateindex.com/hashprice/bitcoin" target="_blank" rel="noopener noreferrer">
+                  <span className="context-value">
+                    <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{color: '#60a5fa', textDecoration: 'none'}}>
                       Check live →
                     </a>
                   </span>
+                  <span className="context-note">Updates daily with BTC price</span>
                 </div>
                 <div className="context-item">
-                  <span className="context-label">Model vs Market</span>
-                  <span className="context-value" style={{color: hashprice <= 45 ? '#22c55e' : '#f59e0b'}}>
-                    {hashprice <= 45 ? 'Conservative' : 'Optimistic'}
+                  <span className="context-label">Model Assumption</span>
+                  <span className="context-value" style={{color: '#f59e0b'}}>
+                    Adjust below ↓
                   </span>
                   <span className="context-note">
-                    {hashprice <= 45
-                      ? `${((45 - hashprice) / 45 * 100).toFixed(0)}% below market`
-                      : `${((hashprice - 45) / 45 * 100).toFixed(0)}% above market`
-                    }
+                    Compare with live data
                   </span>
                 </div>
               </div>
