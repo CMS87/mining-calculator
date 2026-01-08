@@ -2229,141 +2229,73 @@ function App() {
             </div>
           </section>
 
-          {/* Deal Comparison */}
+          {/* Your Investment Summary - Based on selected model mix */}
           <section className="investor-section">
-            <h2>Investor Returns by Model</h2>
-            <div className="investor-comparison" style={{gridTemplateColumns: 'repeat(3, 1fr)'}}>
-              {/* Co-Mining Deal */}
-              <div className="investor-scenario">
-                <h3>Co-Mining Deal</h3>
-                <div className="investor-grid" style={{gridTemplateColumns: '1fr'}}>
-                  <div className="investor-card highlight-card">
-                    <span className="investor-label">Investment</span>
-                    <span className="investor-value big">{formatCurrency(results.coMiningCapex)}</span>
-                  </div>
-                  <div className="investor-card highlight-card">
-                    <span className="investor-label">Payback</span>
-                    <span className="investor-value big">{results.coPayback.toFixed(1)} mo</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Annual ROI</span>
-                    <span className="investor-value">{results.coROI.toFixed(0)}%</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Phase 1 Monthly</span>
-                    <span className="investor-value">${formatNumber(Math.round(results.coPhase1Investor))}</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Phase 2 Monthly</span>
-                    <span className="investor-value">${formatNumber(Math.round(results.coPhase2Investor))}</span>
-                  </div>
-                </div>
+            <h2>Your Investment Summary</h2>
+            <p className="section-intro" style={{marginBottom: '16px'}}>
+              Based on {modelMix === 0 ? '100% Co-Mining' : modelMix === 1 ? '100% Self-Mining' : `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining`} model
+            </p>
+            <div className="investor-comparison" style={{gridTemplateColumns: 'repeat(3, 1fr)', maxWidth: '600px', margin: '0 auto'}}>
+              <div className="investor-card highlight-card">
+                <span className="investor-label">Investment</span>
+                <span className="investor-value big">{formatCurrency(results.mixCapex)}</span>
               </div>
-
-              {/* Blended Deal */}
-              <div className="investor-scenario">
-                <h3>Blended Deal ({((1 - modelMix) * 100).toFixed(0)}/{(modelMix * 100).toFixed(0)})</h3>
-                <div className="investor-grid" style={{gridTemplateColumns: '1fr'}}>
-                  <div className="investor-card highlight-card">
-                    <span className="investor-label">Investment</span>
-                    <span className="investor-value big">{formatCurrency(results.mixCapex)}</span>
-                  </div>
-                  <div className="investor-card highlight-card">
-                    <span className="investor-label">Payback</span>
-                    <span className="investor-value big">{results.mixPayback.toFixed(1)} mo</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Annual ROI</span>
-                    <span className="investor-value">{results.mixROI.toFixed(0)}%</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Phase 1 Monthly</span>
-                    <span className="investor-value">${formatNumber(Math.round(results.mixPhase1Investor))}</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Phase 2 Monthly</span>
-                    <span className="investor-value">${formatNumber(Math.round(results.mixPhase2Investor))}</span>
-                  </div>
-                </div>
+              <div className="investor-card highlight-card">
+                <span className="investor-label">Payback</span>
+                <span className="investor-value big">{results.mixPayback.toFixed(1)} mo</span>
               </div>
-
-              {/* Self-Mining Deal */}
-              <div className="investor-scenario">
-                <h3>Self-Mining Deal</h3>
-                <div className="investor-grid" style={{gridTemplateColumns: '1fr'}}>
-                  <div className="investor-card highlight-card">
-                    <span className="investor-label">Investment</span>
-                    <span className="investor-value big">{formatCurrency(results.selfMiningCapex)}</span>
-                  </div>
-                  <div className="investor-card highlight-card">
-                    <span className="investor-label">Payback</span>
-                    <span className="investor-value big">{results.selfPayback.toFixed(1)} mo</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Annual ROI</span>
-                    <span className="investor-value">{results.selfROI.toFixed(0)}%</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Phase 1 Monthly</span>
-                    <span className="investor-value">${formatNumber(Math.round(results.selfPhase1Investor))}</span>
-                  </div>
-                  <div className="investor-card">
-                    <span className="investor-label">Phase 2 Monthly</span>
-                    <span className="investor-value">${formatNumber(Math.round(results.selfPhase2Investor))}</span>
-                  </div>
-                </div>
+              <div className="investor-card highlight-card">
+                <span className="investor-label">Annual ROI</span>
+                <span className="investor-value big">{results.mixROI.toFixed(0)}%</span>
+              </div>
+            </div>
+            <div className="investor-comparison" style={{gridTemplateColumns: 'repeat(2, 1fr)', maxWidth: '400px', margin: '16px auto 0'}}>
+              <div className="investor-card">
+                <span className="investor-label">Phase 1 Monthly</span>
+                <span className="investor-value">${formatNumber(Math.round(results.mixPhase1Investor))}</span>
+              </div>
+              <div className="investor-card">
+                <span className="investor-label">Phase 2 Monthly</span>
+                <span className="investor-value">${formatNumber(Math.round(results.mixPhase2Investor))}</span>
               </div>
             </div>
           </section>
 
-          {/* Full Breakdown Table */}
+          {/* Deal Details Table */}
           <section className="comparison-section">
-            <h2>Complete Deal Breakdown</h2>
-            <div className="comparison-table">
-              <div className="table-header">
-                <span></span>
-                <span className="col-co">Co-Mining</span>
-                <span className="col-self">Self-Mining</span>
+            <h2>Deal Details</h2>
+            <div className="simple-table" style={{maxWidth: '500px', margin: '0 auto'}}>
+              <div className="table-row">
+                <span>Total Investment</span>
+                <span className="highlight">{formatCurrency(results.mixCapex)}</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Total Investment</span>
-                <span className="col-co">{formatCurrency(results.coMiningCapex)}</span>
-                <span className="col-self">{formatCurrency(results.selfMiningCapex)}</span>
+                <span>Monthly Net Profit (Project)</span>
+                <span>${formatNumber(Math.round(results.mixNetMonthly))}</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Monthly Net Profit</span>
-                <span className="col-co">${formatNumber(Math.round(results.coNetMonthly))}</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfNetMonthly))}</span>
+                <span>Phase 1 - Your Share</span>
+                <span className="highlight">{(results.mixPhase1Pct * 100).toFixed(0)}%</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Phase 1 Split</span>
-                <span className="col-co">{Math.round(coPhase1Pct * 100)}% / {Math.round((1 - coPhase1Pct) * 100)}%</span>
-                <span className="col-self">{Math.round(selfPhase1Pct * 100)}% / {Math.round((1 - selfPhase1Pct) * 100)}%</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">Phase 1 - Your Monthly</span>
-                <span className="col-co highlight">${formatNumber(Math.round(results.coPhase1Investor))}/mo</span>
-                <span className="col-self highlight">${formatNumber(Math.round(results.selfPhase1Investor))}/mo</span>
+                <span>Phase 1 - Your Monthly</span>
+                <span className="highlight">${formatNumber(Math.round(results.mixPhase1Investor))}/mo</span>
               </div>
               <div className="table-row total">
-                <span className="col-label">Payback Period</span>
-                <span className="col-co highlight">{results.coPayback.toFixed(1)} months</span>
-                <span className="col-self highlight">{results.selfPayback.toFixed(1)} months</span>
+                <span>Payback Period</span>
+                <span className="highlight">{results.mixPayback.toFixed(1)} months</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Annual ROI (Phase 1)</span>
-                <span className="col-co">{results.coROI.toFixed(0)}%</span>
-                <span className="col-self">{results.selfROI.toFixed(0)}%</span>
+                <span>Annual ROI (Phase 1)</span>
+                <span className="highlight">{results.mixROI.toFixed(0)}%</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Phase 2 - Your Share</span>
-                <span className="col-co">{Math.round(coPhase2Pct * 100)}%</span>
-                <span className="col-self">{Math.round(selfPhase2Pct * 100)}%</span>
+                <span>Phase 2 - Your Share</span>
+                <span>{(results.mixPhase2Pct * 100).toFixed(0)}%</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Phase 2 - Your Monthly</span>
-                <span className="col-co">${formatNumber(Math.round(results.coPhase2Investor))}/mo</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfPhase2Investor))}/mo</span>
+                <span>Phase 2 - Your Monthly</span>
+                <span>${formatNumber(Math.round(results.mixPhase2Investor))}/mo</span>
               </div>
             </div>
           </section>
