@@ -1769,6 +1769,45 @@ function App() {
       {/* ============ PART 1: BUSINESS MODELS ============ */}
       {mode === 'models' && (
         <>
+          {/* Market Context - Address investor concerns about assumptions */}
+          <section className="market-context">
+            <div className="context-card">
+              <h3>Model Assumptions vs Market</h3>
+              <div className="context-grid">
+                <div className="context-item">
+                  <span className="context-label">Hashprice Used</span>
+                  <span className="context-value highlight">${hashprice}/PH/day</span>
+                  <span className="context-note">= ${(hashprice/1000).toFixed(4)}/TH/day</span>
+                </div>
+                <div className="context-item">
+                  <span className="context-label">Current Market</span>
+                  <span className="context-value">~$45-50/PH/day</span>
+                  <span className="context-note">
+                    <a href="https://hashrateindex.com/hashprice/bitcoin" target="_blank" rel="noopener noreferrer">
+                      Check live →
+                    </a>
+                  </span>
+                </div>
+                <div className="context-item">
+                  <span className="context-label">Model vs Market</span>
+                  <span className="context-value" style={{color: hashprice <= 45 ? '#22c55e' : '#f59e0b'}}>
+                    {hashprice <= 45 ? 'Conservative' : 'Optimistic'}
+                  </span>
+                  <span className="context-note">
+                    {hashprice <= 45
+                      ? `${((45 - hashprice) / 45 * 100).toFixed(0)}% below market`
+                      : `${((hashprice - 45) / 45 * 100).toFixed(0)}% above market`
+                    }
+                  </span>
+                </div>
+              </div>
+              <p className="context-disclaimer">
+                Hashprice fluctuates with BTC price and network difficulty.
+                Use the slider below to test different scenarios.
+              </p>
+            </div>
+          </section>
+
           {/* Market Assumptions - TOP */}
           <section className="controls-section">
             <h2>Market Assumptions</h2>
@@ -2102,6 +2141,37 @@ function App() {
       {/* ============ PART 2: DEAL STRUCTURE ============ */}
       {mode === 'deal' && (
         <>
+          {/* Investor Returns Callout - Clarifies this is investor-level, not project-level */}
+          <section className="investor-callout">
+            <h3>Investor-Level Returns (Not Project)</h3>
+            <p className="callout-note">
+              All returns shown below are <strong>after the operator's share</strong> — what you actually receive, not project totals.
+            </p>
+            <div className="waterfall-highlight">
+              <h4 style={{color: '#f59e0b', marginBottom: '12px', fontSize: '0.9rem'}}>Preferential Return Structure (Waterfall)</h4>
+              <div className="waterfall-phases">
+                <div className="waterfall-phase">
+                  <h4>Phase 1: Until Capital Recovery</h4>
+                  <p className="phase-detail" style={{color: '#22c55e'}}>
+                    Investor receives {(results.mixPhase1Pct * 100).toFixed(0)}% of profits
+                  </p>
+                  <p style={{color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px'}}>
+                    → ${formatNumber(Math.round(results.mixPhase1Investor))}/month until payback (~{results.mixPayback.toFixed(0)} mo)
+                  </p>
+                </div>
+                <div className="waterfall-phase">
+                  <h4>Phase 2: After Capital Recovery</h4>
+                  <p className="phase-detail">
+                    Split becomes {(results.mixPhase2Pct * 100).toFixed(0)}% / {((1 - results.mixPhase2Pct) * 100).toFixed(0)}%
+                  </p>
+                  <p style={{color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px'}}>
+                    → ${formatNumber(Math.round(results.mixPhase2Investor))}/month ongoing
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section className="comparison-section">
             <h2>Investment Structure</h2>
             <p className="section-intro">Different splits for different capital commitments</p>
@@ -2187,70 +2257,6 @@ function App() {
             <div className="split-legend">
               <span className="legend-investor">■ Investor</span>
               <span className="legend-operator">■ Operator</span>
-            </div>
-          </section>
-
-          {/* Blended Scenario */}
-          <section className="mixer-section">
-            <h2>Blended Scenario</h2>
-            <p className="section-intro">Mix Co-Mining and Self-Mining to customize the deal</p>
-
-            <div className="mixer-control">
-              <div className="mixer-labels">
-                <span className="co-label">100% Co-Mining</span>
-                <span className="mix-label">Hybrid</span>
-                <span className="self-label">100% Self-Mining</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={modelMix}
-                onChange={e => setModelMix(+e.target.value)}
-                className="mixer-slider"
-              />
-              <div className="mixer-value">
-                {modelMix === 0 ? '100% Co-Mining' :
-                 modelMix === 1 ? '100% Self-Mining' :
-                 `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining`}
-              </div>
-            </div>
-
-            <div className="mix-result">
-              <h3>Blended Investor Returns</h3>
-              <div className="mix-stats">
-                <div className="mix-stat highlight-stat">
-                  <span className="mix-stat-label">Investment</span>
-                  <span className="mix-stat-value">{formatCurrency(results.mixCapex)}</span>
-                </div>
-                <div className="mix-stat highlight-stat">
-                  <span className="mix-stat-label">Payback</span>
-                  <span className="mix-stat-value">{results.mixPayback.toFixed(1)} mo</span>
-                </div>
-                <div className="mix-stat highlight-stat">
-                  <span className="mix-stat-label">Annual ROI</span>
-                  <span className="mix-stat-value">{results.mixROI.toFixed(0)}%</span>
-                </div>
-              </div>
-              <div className="blended-returns" style={{marginTop: '16px'}}>
-                <div className="blended-return">
-                  <span>Phase 1 Split</span>
-                  <span>{(results.mixPhase1Pct * 100).toFixed(0)}% / {((1 - results.mixPhase1Pct) * 100).toFixed(0)}%</span>
-                </div>
-                <div className="blended-return">
-                  <span>Phase 1 Investor</span>
-                  <span className="highlight">${formatNumber(Math.round(results.mixPhase1Investor))}/mo</span>
-                </div>
-                <div className="blended-return">
-                  <span>Phase 2 Split</span>
-                  <span>{(results.mixPhase2Pct * 100).toFixed(0)}% / {((1 - results.mixPhase2Pct) * 100).toFixed(0)}%</span>
-                </div>
-                <div className="blended-return">
-                  <span>Phase 2 Investor</span>
-                  <span>${formatNumber(Math.round(results.mixPhase2Investor))}/mo</span>
-                </div>
-              </div>
             </div>
           </section>
 
@@ -2405,23 +2411,34 @@ function App() {
 
           {/* Sensitivity Table */}
           <section className="comparison-section">
-            <h2>Sensitivity Analysis - Payback Period (Months)</h2>
-            <p className="section-intro">Based on current blended model ({((1 - modelMix) * 100).toFixed(0)}% Co-Mining / {(modelMix * 100).toFixed(0)}% Self-Mining)</p>
+            <h2>Sensitivity Analysis - Investor Payback (Months)</h2>
+            <p className="section-intro">
+              Based on blended model ({((1 - modelMix) * 100).toFixed(0)}% Co-Mining / {(modelMix * 100).toFixed(0)}% Self-Mining)
+              with {(results.mixPhase1Pct * 100).toFixed(0)}% investor share
+            </p>
+            <div className="sensitivity-legend" style={{display: 'flex', gap: '16px', marginBottom: '12px', fontSize: '0.85rem'}}>
+              <span style={{color: '#22c55e'}}>■ Under 36 months</span>
+              <span style={{color: '#f59e0b'}}>■ 36-48 months</span>
+              <span style={{color: '#ef4444'}}>■ Over 48 months</span>
+            </div>
             <div className="sensitivity-table">
               <table>
                 <thead>
                   <tr>
                     <th>Energy \ Hashprice</th>
                     <th>$30/PH</th>
-                    <th>$38/PH</th>
+                    <th>$37/PH</th>
+                    <th>$45/PH</th>
+                    <th>$50/PH</th>
+                    <th>$55/PH</th>
                     <th>$60/PH</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[4, 4.5, 5.5].map(ep => (
+                  {[3.5, 4.0, 4.5, 5.0, 5.5].map(ep => (
                     <tr key={ep}>
                       <td className="row-label">{ep}¢/kWh</td>
-                      {[30, 38, 60].map(hp => {
+                      {[30, 37, 45, 50, 55, 60].map(hp => {
                         // Calculate for this scenario
                         const uptime = 1 - curtailment
                         const miners = Math.floor(facilityMW * 1000 / minerPowerKW)
@@ -2448,11 +2465,24 @@ function App() {
                         // Blended
                         const mixInvestor = coInvestor * (1 - modelMix) + selfInvestor * modelMix
                         const mixPayback = mixInvestor > 0 ? (mixCapex / mixInvestor) : null
-                        const isCurrentScenario = ep === energyPrice && hp === hashprice
+                        const isCurrentScenario = Math.abs(ep - energyPrice) < 0.01 && hp === hashprice
+
+                        // Color coding based on payback
+                        let cellColor = '#ef4444' // red for >48mo
+                        if (mixPayback && mixPayback <= 36) cellColor = '#22c55e' // green
+                        else if (mixPayback && mixPayback <= 48) cellColor = '#f59e0b' // yellow
 
                         return (
-                          <td key={hp} className={`${mixInvestor <= 0 ? 'negative' : ''} ${isCurrentScenario ? 'current' : ''}`}>
-                            {mixPayback ? `${mixPayback.toFixed(1)} mo` : 'N/A'}
+                          <td
+                            key={hp}
+                            className={isCurrentScenario ? 'current' : ''}
+                            style={{
+                              color: mixInvestor <= 0 ? '#ef4444' : cellColor,
+                              fontWeight: isCurrentScenario ? '700' : '400',
+                              backgroundColor: isCurrentScenario ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                            }}
+                          >
+                            {mixPayback ? `${mixPayback.toFixed(0)}` : 'N/A'}
                           </td>
                         )
                       })}

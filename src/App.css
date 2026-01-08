@@ -1452,3 +1452,134 @@ footer .company {
   margin-bottom: 16px;
   margin-top: -12px;
 }
+
+/* Market Context Card - Addresses investor concerns */
+.market-context {
+  margin-bottom: 24px;
+}
+
+.context-card {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.context-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #22c55e;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.context-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.context-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.context-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.context-value.highlight {
+  color: #fff;
+}
+
+.context-note {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.context-note a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.context-note a:hover {
+  text-decoration: underline;
+}
+
+.context-disclaimer {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .context-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Investor Returns Callout */
+.investor-callout {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.investor-callout h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.investor-callout .callout-note {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+/* Waterfall Structure Highlight */
+.waterfall-highlight {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.waterfall-phases {
+  display: flex;
+  gap: 24px;
+}
+
+.waterfall-phase {
+  flex: 1;
+}
+
+.waterfall-phase h4 {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.waterfall-phase .phase-detail {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
