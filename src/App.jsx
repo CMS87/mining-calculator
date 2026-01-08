@@ -1494,7 +1494,7 @@ function App() {
                 {/* Revenue inputs */}
                 <div className="input-row two-col" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '12px'}}>
                   <div>
-                    <label>Hashprice ($/PH/day) <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.75rem', color: '#3b82f6'}}>Live Data ↗</a></label>
+                    <label>Hashprice ($/PH/day) <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live Data ↗</a></label>
                     <input
                       type="number"
                       value={hashprice}
@@ -1795,7 +1795,7 @@ function App() {
               <div className="control-group">
                 <h3>Market Conditions</h3>
                 <div className="input-row">
-                  <label>Hashprice: ${hashprice}/PH/day <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#3b82f6', marginLeft: '8px'}}>Live ↗</a></label>
+                  <label>Hashprice: ${hashprice}/PH/day <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '2px 8px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a></label>
                   <input type="range" min="20" max="60" step="1" value={hashprice} onChange={e => setHashprice(+e.target.value)} />
                 </div>
                 <div className="input-row">
