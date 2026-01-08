@@ -1843,8 +1843,9 @@ function App() {
                   <input type="range" min="0" max="0.15" step="0.01" value={curtailment} onChange={e => setCurtailment(+e.target.value)} />
                 </div>
                 <div className="input-row">
-                  <label>Co-Mining Share: {Math.round(coMiningShare * 100)}%</label>
+                  <label>Hosting Fee (hashrate share): {Math.round(coMiningShare * 100)}%</label>
                   <input type="range" min="0.20" max="0.50" step="0.05" value={coMiningShare} onChange={e => setCoMiningShare(+e.target.value)} />
+                  <span style={{fontSize: '0.75rem', color: '#64748b'}}>Share we earn from hosting third-party miners</span>
                 </div>
               </div>
               <div className="control-group">
@@ -1875,6 +1876,10 @@ function App() {
               <div className="table-row">
                 <span>Power Capacity</span>
                 <span className="highlight">{facilityMW} MW</span>
+              </div>
+              <div className="table-row">
+                <span>Mining Containers (325 miners each)</span>
+                <span className="highlight">{Math.ceil(results.miners / 325)} containers</span>
               </div>
               <div className="table-row">
                 <span>ASIC Miners (@ {minerPowerKW} kW each)</span>
@@ -2070,8 +2075,8 @@ function App() {
 
           {/* Model Mixer */}
           <section className="mixer-section">
-            <h2>Mix the Models</h2>
-            <p className="section-intro">Blend Co-Mining and Self-Mining to find the optimal capital/return balance</p>
+            <h2>Business Model Mix</h2>
+            <p className="section-intro">Choose how much capacity to allocate to hosting (Co-Mining) vs owning miners (Self-Mining)</p>
 
             <div className="mixer-control">
               <div className="mixer-labels">
@@ -2140,9 +2145,9 @@ function App() {
         <>
           {/* Investor Returns Callout - Clarifies this is investor-level, not project-level */}
           <section className="investor-callout">
-            <h3>Investor-Level Returns (Not Project)</h3>
+            <h3>Your Returns (Investor-Level)</h3>
             <p className="callout-note">
-              All returns shown below are <strong>after the operator's share</strong> — what you actually receive, not project totals.
+              All returns shown are <strong>your share</strong> — what you actually receive, not project totals.
             </p>
             <div className="waterfall-highlight">
               <h4 style={{color: '#f59e0b', marginBottom: '12px', fontSize: '0.9rem'}}>Preferential Return Structure (Waterfall)</h4>
@@ -2150,7 +2155,7 @@ function App() {
                 <div className="waterfall-phase">
                   <h4>Phase 1: Until Capital Recovery</h4>
                   <p className="phase-detail" style={{color: '#22c55e'}}>
-                    Investor receives {(results.mixPhase1Pct * 100).toFixed(0)}% of profits
+                    You receive {(results.mixPhase1Pct * 100).toFixed(0)}% of profits
                   </p>
                   <p style={{color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px'}}>
                     → ${formatNumber(Math.round(results.mixPhase1Investor))}/month until payback (~{results.mixPayback.toFixed(0)} mo)
@@ -2159,7 +2164,7 @@ function App() {
                 <div className="waterfall-phase">
                   <h4>Phase 2: After Capital Recovery</h4>
                   <p className="phase-detail">
-                    Split becomes {(results.mixPhase2Pct * 100).toFixed(0)}% / {((1 - results.mixPhase2Pct) * 100).toFixed(0)}%
+                    Your share becomes {(results.mixPhase2Pct * 100).toFixed(0)}%
                   </p>
                   <p style={{color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px'}}>
                     → ${formatNumber(Math.round(results.mixPhase2Investor))}/month ongoing
@@ -2170,14 +2175,14 @@ function App() {
           </section>
 
           <section className="comparison-section">
-            <h2>Investment Structure</h2>
-            <p className="section-intro">Different splits for different capital commitments</p>
+            <h2>Profit Split (Investor vs Astro)</h2>
+            <p className="section-intro">How net profits are divided between you (investor) and Astro (operator)</p>
 
             <div className="deal-models">
               {/* Co-Mining Splits */}
               <div className="deal-model co-deal">
                 <h3>Co-Mining Deal</h3>
-                <p className="deal-desc">Lower capital ({formatCurrency(results.coMiningCapex)}) → Lower investor share</p>
+                <p className="deal-desc">Lower capital ({formatCurrency(results.coMiningCapex)}) → Lower your share</p>
 
                 <div className="phase-splits">
                   <div className="phase-split">
@@ -2215,7 +2220,7 @@ function App() {
               {/* Self-Mining Splits */}
               <div className="deal-model self-deal">
                 <h3>Self-Mining Deal</h3>
-                <p className="deal-desc">Higher capital ({formatCurrency(results.selfMiningCapex)}) → Higher investor share</p>
+                <p className="deal-desc">Higher capital ({formatCurrency(results.selfMiningCapex)}) → Higher your share</p>
 
                 <div className="phase-splits">
                   <div className="phase-split">
@@ -2252,8 +2257,8 @@ function App() {
             </div>
 
             <div className="split-legend">
-              <span className="legend-investor">■ Investor</span>
-              <span className="legend-operator">■ Operator</span>
+              <span className="legend-investor">■ Your Share</span>
+              <span className="legend-operator">■ Astro Share</span>
             </div>
           </section>
 
@@ -2369,14 +2374,9 @@ function App() {
                 <span className="col-self">{Math.round(selfPhase1Pct * 100)}% / {Math.round((1 - selfPhase1Pct) * 100)}%</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Phase 1 - Investor</span>
-                <span className="col-co">${formatNumber(Math.round(results.coPhase1Investor))}/mo</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfPhase1Investor))}/mo</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">Phase 1 - Operator</span>
-                <span className="col-co">${formatNumber(Math.round(results.coPhase1Operator))}/mo</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfPhase1Operator))}/mo</span>
+                <span className="col-label">Phase 1 - Your Monthly</span>
+                <span className="col-co highlight">${formatNumber(Math.round(results.coPhase1Investor))}/mo</span>
+                <span className="col-self highlight">${formatNumber(Math.round(results.selfPhase1Investor))}/mo</span>
               </div>
               <div className="table-row total">
                 <span className="col-label">Payback Period</span>
@@ -2389,19 +2389,14 @@ function App() {
                 <span className="col-self">{results.selfROI.toFixed(0)}%</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Phase 2 Split</span>
-                <span className="col-co">{Math.round(coPhase2Pct * 100)}% / {Math.round((1 - coPhase2Pct) * 100)}%</span>
-                <span className="col-self">{Math.round(selfPhase2Pct * 100)}% / {Math.round((1 - selfPhase2Pct) * 100)}%</span>
+                <span className="col-label">Phase 2 - Your Share</span>
+                <span className="col-co">{Math.round(coPhase2Pct * 100)}%</span>
+                <span className="col-self">{Math.round(selfPhase2Pct * 100)}%</span>
               </div>
               <div className="table-row">
-                <span className="col-label">Phase 2 - Investor</span>
+                <span className="col-label">Phase 2 - Your Monthly</span>
                 <span className="col-co">${formatNumber(Math.round(results.coPhase2Investor))}/mo</span>
                 <span className="col-self">${formatNumber(Math.round(results.selfPhase2Investor))}/mo</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">Phase 2 - Operator</span>
-                <span className="col-co">${formatNumber(Math.round(results.coPhase2Operator))}/mo</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfPhase2Operator))}/mo</span>
               </div>
             </div>
           </section>
