@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import './App.css'
 
 function App() {
-  // Check URL params: ?site=true hides gas/power tabs (for investor sharing)
+  // Check URL params: ?gas=true shows gas/power tabs (hidden by default for investor sharing)
   const urlParams = new URLSearchParams(window.location.search)
-  const siteOnly = urlParams.get('site') === 'true'
+  const showGas = urlParams.get('gas') === 'true'
 
   // Presentation Mode: 'models' (explain business), 'deal' (structure investment), or 'gas' (gas-to-power)
   const [mode, setMode] = useState('models')
@@ -403,7 +403,7 @@ function App() {
 
       {/* Mode Toggle */}
       <section className="scenario-toggle">
-        {!siteOnly && (
+        {showGas && (
           <>
             <button
               className={mode === 'power' ? 'active' : ''}
