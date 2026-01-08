@@ -2107,169 +2107,146 @@ function App() {
       {/* ============ PART 2: DEAL STRUCTURE ============ */}
       {mode === 'deal' && (
         <>
-          {/* Investor Returns Callout - Clarifies this is investor-level, not project-level */}
-          <section className="investor-callout">
-            <h3>Investor-Level</h3>
-            <p className="callout-note">
-              All returns shown are <strong>your share</strong> — what you actually receive, not project totals.
-            </p>
-            <div className="waterfall-highlight">
-              <h4 style={{color: '#f59e0b', marginBottom: '12px', fontSize: '0.9rem'}}>Preferential Return Structure</h4>
-              <div className="waterfall-phases">
-                <div className="waterfall-phase">
-                  <h4>Phase 1: Until Capital Recovery</h4>
-                  <p className="phase-detail" style={{color: '#22c55e'}}>
-                    You receive {(results.mixPhase1Pct * 100).toFixed(0)}% of profits
-                  </p>
-                  <p style={{color: '#64748b', fontSize: '0.8rem', marginTop: '2px'}}>
-                    (Blended: {(coPhase1Pct * 100).toFixed(0)}% Co-Mining + {(selfPhase1Pct * 100).toFixed(0)}% Self-Mining)
-                  </p>
-                  <p style={{color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px'}}>
-                    → ${formatNumber(Math.round(results.mixPhase1Investor))}/month until payback (~{results.mixPayback.toFixed(0)} mo)
-                  </p>
+          {/* Hero Investment Section */}
+          <section style={{marginBottom: '32px'}}>
+            <div style={{textAlign: 'center', marginBottom: '24px'}}>
+              <h2 style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff', marginBottom: '8px'}}>Investment Opportunity</h2>
+              <p style={{color: '#94a3b8', fontSize: '1rem'}}>
+                {modelMix === 0 ? '100% Co-Mining Model' : modelMix === 1 ? '100% Self-Mining Model' : `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining Blend`}
+              </p>
+            </div>
+
+            {/* Main KPIs */}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', maxWidth: '800px', margin: '0 auto 32px'}}>
+              <div style={{background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(34, 197, 94, 0.5)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center'}}>
+                <div style={{fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px'}}>Total Investment</div>
+                <div style={{fontSize: '2.2rem', fontWeight: '700', color: '#22c55e'}}>{formatCurrency(results.mixCapex)}</div>
+              </div>
+              <div style={{background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(59, 130, 246, 0.5)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center'}}>
+                <div style={{fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px'}}>Payback Period</div>
+                <div style={{fontSize: '2.2rem', fontWeight: '700', color: '#3b82f6'}}>{results.mixPayback.toFixed(0)} <span style={{fontSize: '1rem'}}>months</span></div>
+              </div>
+              <div style={{background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(245, 158, 11, 0.5)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center'}}>
+                <div style={{fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px'}}>Annual ROI</div>
+                <div style={{fontSize: '2.2rem', fontWeight: '700', color: '#f59e0b'}}>{results.mixROI.toFixed(0)}%</div>
+              </div>
+            </div>
+
+            {/* Cash Flow Timeline */}
+            <div style={{background: 'rgba(15, 23, 42, 0.6)', borderRadius: '16px', padding: '24px', maxWidth: '800px', margin: '0 auto'}}>
+              <h3 style={{fontSize: '1rem', color: '#f1f5f9', marginBottom: '20px', textAlign: 'center'}}>Cash Flow Structure</h3>
+
+              <div style={{display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '16px', alignItems: 'center'}}>
+                {/* Phase 1 */}
+                <div style={{background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '12px', padding: '20px'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
+                    <span style={{fontSize: '0.85rem', color: '#22c55e', fontWeight: '600'}}>PHASE 1</span>
+                    <span style={{fontSize: '0.75rem', color: '#64748b'}}>Until Payback</span>
+                  </div>
+                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px'}}>
+                    Your share: <strong style={{color: '#22c55e'}}>{(results.mixPhase1Pct * 100).toFixed(0)}%</strong>
+                  </div>
+                  <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff'}}>
+                    ${formatNumber(Math.round(results.mixPhase1Investor))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
+                  </div>
+                  <div style={{fontSize: '0.8rem', color: '#64748b', marginTop: '8px'}}>
+                    ~{results.mixPayback.toFixed(0)} months
+                  </div>
                 </div>
-                <div className="waterfall-phase">
-                  <h4>Phase 2: After Capital Recovery</h4>
-                  <p className="phase-detail">
-                    Your share becomes {(results.mixPhase2Pct * 100).toFixed(0)}%
-                  </p>
-                  <p style={{color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px'}}>
-                    → ${formatNumber(Math.round(results.mixPhase2Investor))}/month ongoing
-                  </p>
+
+                {/* Arrow */}
+                <div style={{fontSize: '1.5rem', color: '#475569'}}>→</div>
+
+                {/* Phase 2 */}
+                <div style={{background: 'rgba(148, 163, 184, 0.1)', border: '1px solid rgba(148, 163, 184, 0.3)', borderRadius: '12px', padding: '20px'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
+                    <span style={{fontSize: '0.85rem', color: '#94a3b8', fontWeight: '600'}}>PHASE 2</span>
+                    <span style={{fontSize: '0.75rem', color: '#64748b'}}>Ongoing</span>
+                  </div>
+                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px'}}>
+                    Your share: <strong style={{color: '#f1f5f9'}}>{(results.mixPhase2Pct * 100).toFixed(0)}%</strong>
+                  </div>
+                  <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff'}}>
+                    ${formatNumber(Math.round(results.mixPhase2Investor))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
+                  </div>
+                  <div style={{fontSize: '0.8rem', color: '#64748b', marginTop: '8px'}}>
+                    Perpetual income
+                  </div>
                 </div>
+              </div>
+
+              <div style={{marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(148, 163, 184, 0.2)', textAlign: 'center'}}>
+                <span style={{fontSize: '0.85rem', color: '#64748b'}}>Project Net Profit: </span>
+                <span style={{fontSize: '0.95rem', color: '#f1f5f9', fontWeight: '600'}}>${formatNumber(Math.round(results.mixNetMonthly))}/mo</span>
               </div>
             </div>
           </section>
 
-          <section className="comparison-section">
-            <h2>Profit Split (Investor vs Astro)</h2>
-            <p className="section-intro">How net profits are divided between you (investor) and Astro (operator)</p>
-
-            <div className="deal-models">
-              {/* Co-Mining Splits */}
-              <div className="deal-model co-deal">
-                <h3>Co-Mining Deal</h3>
-                <p className="deal-desc">Lower capital ({formatCurrency(results.coMiningCapex)}) → Lower your share</p>
-
-                <div className="phase-splits">
-                  <div className="phase-split">
-                    <h4>Phase 1: Until ROI</h4>
-                    <div className="split-visual">
-                      <div className="split-bar">
-                        <div className="investor-bar" style={{width: `${coPhase1Pct * 100}%`}}>
-                          {Math.round(coPhase1Pct * 100)}%
+          {/* Profit Split Adjusters - Collapsible style */}
+          <section style={{marginBottom: '32px'}}>
+            <details style={{background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', border: '1px solid rgba(148, 163, 184, 0.2)'}}>
+              <summary style={{padding: '16px 20px', cursor: 'pointer', fontSize: '0.95rem', color: '#94a3b8', fontWeight: '500'}}>
+                Adjust Profit Splits (Advanced)
+              </summary>
+              <div style={{padding: '20px', borderTop: '1px solid rgba(148, 163, 184, 0.2)'}}>
+                <div className="deal-models">
+                  <div className="deal-model co-deal">
+                    <h3>Co-Mining Split</h3>
+                    <div className="phase-splits">
+                      <div className="phase-split">
+                        <h4>Phase 1</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${coPhase1Pct * 100}%`}}>{Math.round(coPhase1Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - coPhase1Pct) * 100}%`}}>{Math.round((1 - coPhase1Pct) * 100)}%</div>
+                          </div>
                         </div>
-                        <div className="operator-bar" style={{width: `${(1 - coPhase1Pct) * 100}%`}}>
-                          {Math.round((1 - coPhase1Pct) * 100)}%
+                        <input type="range" min="0.5" max="0.90" step="0.05" value={coPhase1Pct} onChange={e => setCoPhase1Pct(+e.target.value)} />
+                      </div>
+                      <div className="phase-split">
+                        <h4>Phase 2</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${coPhase2Pct * 100}%`}}>{Math.round(coPhase2Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - coPhase2Pct) * 100}%`}}>{Math.round((1 - coPhase2Pct) * 100)}%</div>
+                          </div>
                         </div>
+                        <input type="range" min="0.2" max="0.7" step="0.05" value={coPhase2Pct} onChange={e => setCoPhase2Pct(+e.target.value)} />
                       </div>
                     </div>
-                    <input type="range" min="0.5" max="0.90" step="0.05" value={coPhase1Pct} onChange={e => setCoPhase1Pct(+e.target.value)} />
                   </div>
-
-                  <div className="phase-split">
-                    <h4>Phase 2: After ROI</h4>
-                    <div className="split-visual">
-                      <div className="split-bar">
-                        <div className="investor-bar" style={{width: `${coPhase2Pct * 100}%`}}>
-                          {Math.round(coPhase2Pct * 100)}%
+                  <div className="deal-model self-deal">
+                    <h3>Self-Mining Split</h3>
+                    <div className="phase-splits">
+                      <div className="phase-split">
+                        <h4>Phase 1</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${selfPhase1Pct * 100}%`}}>{Math.round(selfPhase1Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - selfPhase1Pct) * 100}%`}}>{Math.round((1 - selfPhase1Pct) * 100)}%</div>
+                          </div>
                         </div>
-                        <div className="operator-bar" style={{width: `${(1 - coPhase2Pct) * 100}%`}}>
-                          {Math.round((1 - coPhase2Pct) * 100)}%
+                        <input type="range" min="0.6" max="0.95" step="0.05" value={selfPhase1Pct} onChange={e => setSelfPhase1Pct(+e.target.value)} />
+                      </div>
+                      <div className="phase-split">
+                        <h4>Phase 2</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${selfPhase2Pct * 100}%`}}>{Math.round(selfPhase2Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - selfPhase2Pct) * 100}%`}}>{Math.round((1 - selfPhase2Pct) * 100)}%</div>
+                          </div>
                         </div>
+                        <input type="range" min="0.3" max="0.7" step="0.05" value={selfPhase2Pct} onChange={e => setSelfPhase2Pct(+e.target.value)} />
                       </div>
                     </div>
-                    <input type="range" min="0.2" max="0.7" step="0.05" value={coPhase2Pct} onChange={e => setCoPhase2Pct(+e.target.value)} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Self-Mining Splits */}
-              <div className="deal-model self-deal">
-                <h3>Self-Mining Deal</h3>
-                <p className="deal-desc">Higher capital ({formatCurrency(results.selfMiningCapex)}) → Higher your share</p>
-
-                <div className="phase-splits">
-                  <div className="phase-split">
-                    <h4>Phase 1: Until ROI</h4>
-                    <div className="split-visual">
-                      <div className="split-bar">
-                        <div className="investor-bar" style={{width: `${selfPhase1Pct * 100}%`}}>
-                          {Math.round(selfPhase1Pct * 100)}%
-                        </div>
-                        <div className="operator-bar" style={{width: `${(1 - selfPhase1Pct) * 100}%`}}>
-                          {Math.round((1 - selfPhase1Pct) * 100)}%
-                        </div>
-                      </div>
-                    </div>
-                    <input type="range" min="0.6" max="0.95" step="0.05" value={selfPhase1Pct} onChange={e => setSelfPhase1Pct(+e.target.value)} />
-                  </div>
-
-                  <div className="phase-split">
-                    <h4>Phase 2: After ROI</h4>
-                    <div className="split-visual">
-                      <div className="split-bar">
-                        <div className="investor-bar" style={{width: `${selfPhase2Pct * 100}%`}}>
-                          {Math.round(selfPhase2Pct * 100)}%
-                        </div>
-                        <div className="operator-bar" style={{width: `${(1 - selfPhase2Pct) * 100}%`}}>
-                          {Math.round((1 - selfPhase2Pct) * 100)}%
-                        </div>
-                      </div>
-                    </div>
-                    <input type="range" min="0.3" max="0.7" step="0.05" value={selfPhase2Pct} onChange={e => setSelfPhase2Pct(+e.target.value)} />
                   </div>
                 </div>
+                <div className="split-legend" style={{marginTop: '16px'}}>
+                  <span className="legend-investor">■ Your Share</span>
+                  <span className="legend-operator">■ Astro Share</span>
+                </div>
               </div>
-            </div>
-
-            <div className="split-legend">
-              <span className="legend-investor">■ Your Share</span>
-              <span className="legend-operator">■ Astro Share</span>
-            </div>
-          </section>
-
-          {/* Your Investment Summary - Based on selected model mix */}
-          <section className="investor-section">
-            <h2>Your Investment</h2>
-            <p className="section-intro" style={{marginBottom: '20px'}}>
-              {modelMix === 0 ? '100% Co-Mining' : modelMix === 1 ? '100% Self-Mining' : `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining`}
-            </p>
-
-            {/* Hero metrics */}
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', maxWidth: '700px', margin: '0 auto 24px'}}>
-              <div style={{background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '2px solid rgba(34, 197, 94, 0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center'}}>
-                <div style={{fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px'}}>Investment</div>
-                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#22c55e'}}>{formatCurrency(results.mixCapex)}</div>
-              </div>
-              <div style={{background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '2px solid rgba(59, 130, 246, 0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center'}}>
-                <div style={{fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px'}}>Payback</div>
-                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#3b82f6'}}>{results.mixPayback.toFixed(0)} mo</div>
-              </div>
-              <div style={{background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '2px solid rgba(245, 158, 11, 0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center'}}>
-                <div style={{fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px'}}>Annual ROI</div>
-                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#f59e0b'}}>{results.mixROI.toFixed(0)}%</div>
-              </div>
-            </div>
-
-            {/* Phase breakdown */}
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', maxWidth: '500px', margin: '0 auto'}}>
-              <div style={{background: 'rgba(15, 23, 42, 0.6)', borderRadius: '10px', padding: '16px'}}>
-                <div style={{fontSize: '0.8rem', color: '#64748b', marginBottom: '4px'}}>Phase 1 (until payback)</div>
-                <div style={{fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px'}}>You get {(results.mixPhase1Pct * 100).toFixed(0)}%</div>
-                <div style={{fontSize: '1.4rem', fontWeight: '600', color: '#22c55e'}}>${formatNumber(Math.round(results.mixPhase1Investor))}<span style={{fontSize: '0.9rem', color: '#64748b'}}>/mo</span></div>
-              </div>
-              <div style={{background: 'rgba(15, 23, 42, 0.6)', borderRadius: '10px', padding: '16px'}}>
-                <div style={{fontSize: '0.8rem', color: '#64748b', marginBottom: '4px'}}>Phase 2 (after payback)</div>
-                <div style={{fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px'}}>You get {(results.mixPhase2Pct * 100).toFixed(0)}%</div>
-                <div style={{fontSize: '1.4rem', fontWeight: '600', color: '#f1f5f9'}}>${formatNumber(Math.round(results.mixPhase2Investor))}<span style={{fontSize: '0.9rem', color: '#64748b'}}>/mo</span></div>
-              </div>
-            </div>
-
-            {/* Project context */}
-            <div style={{marginTop: '16px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b'}}>
-              Project generates ${formatNumber(Math.round(results.mixNetMonthly))}/mo net profit
-            </div>
+            </details>
           </section>
 
           {/* Sensitivity Table */}
