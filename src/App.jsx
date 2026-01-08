@@ -2231,72 +2231,44 @@ function App() {
 
           {/* Your Investment Summary - Based on selected model mix */}
           <section className="investor-section">
-            <h2>Your Investment Summary</h2>
-            <p className="section-intro" style={{marginBottom: '16px'}}>
-              Based on {modelMix === 0 ? '100% Co-Mining' : modelMix === 1 ? '100% Self-Mining' : `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining`} model
+            <h2>Your Investment</h2>
+            <p className="section-intro" style={{marginBottom: '20px'}}>
+              {modelMix === 0 ? '100% Co-Mining' : modelMix === 1 ? '100% Self-Mining' : `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining`}
             </p>
-            <div className="investor-comparison" style={{gridTemplateColumns: 'repeat(3, 1fr)', maxWidth: '600px', margin: '0 auto'}}>
-              <div className="investor-card highlight-card">
-                <span className="investor-label">Investment</span>
-                <span className="investor-value big">{formatCurrency(results.mixCapex)}</span>
-              </div>
-              <div className="investor-card highlight-card">
-                <span className="investor-label">Payback</span>
-                <span className="investor-value big">{results.mixPayback.toFixed(1)} mo</span>
-              </div>
-              <div className="investor-card highlight-card">
-                <span className="investor-label">Annual ROI</span>
-                <span className="investor-value big">{results.mixROI.toFixed(0)}%</span>
-              </div>
-            </div>
-            <div className="investor-comparison" style={{gridTemplateColumns: 'repeat(2, 1fr)', maxWidth: '400px', margin: '16px auto 0'}}>
-              <div className="investor-card">
-                <span className="investor-label">Phase 1 Monthly</span>
-                <span className="investor-value">${formatNumber(Math.round(results.mixPhase1Investor))}</span>
-              </div>
-              <div className="investor-card">
-                <span className="investor-label">Phase 2 Monthly</span>
-                <span className="investor-value">${formatNumber(Math.round(results.mixPhase2Investor))}</span>
-              </div>
-            </div>
-          </section>
 
-          {/* Deal Details Table */}
-          <section className="comparison-section">
-            <h2>Deal Details</h2>
-            <div className="simple-table" style={{maxWidth: '500px', margin: '0 auto'}}>
-              <div className="table-row">
-                <span>Total Investment</span>
-                <span className="highlight">{formatCurrency(results.mixCapex)}</span>
+            {/* Hero metrics */}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', maxWidth: '700px', margin: '0 auto 24px'}}>
+              <div style={{background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '2px solid rgba(34, 197, 94, 0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center'}}>
+                <div style={{fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px'}}>Investment</div>
+                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#22c55e'}}>{formatCurrency(results.mixCapex)}</div>
               </div>
-              <div className="table-row">
-                <span>Monthly Net Profit (Project)</span>
-                <span>${formatNumber(Math.round(results.mixNetMonthly))}</span>
+              <div style={{background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '2px solid rgba(59, 130, 246, 0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center'}}>
+                <div style={{fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px'}}>Payback</div>
+                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#3b82f6'}}>{results.mixPayback.toFixed(0)} mo</div>
               </div>
-              <div className="table-row">
-                <span>Phase 1 - Your Share</span>
-                <span className="highlight">{(results.mixPhase1Pct * 100).toFixed(0)}%</span>
+              <div style={{background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '2px solid rgba(245, 158, 11, 0.4)', borderRadius: '12px', padding: '20px', textAlign: 'center'}}>
+                <div style={{fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px'}}>Annual ROI</div>
+                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#f59e0b'}}>{results.mixROI.toFixed(0)}%</div>
               </div>
-              <div className="table-row">
-                <span>Phase 1 - Your Monthly</span>
-                <span className="highlight">${formatNumber(Math.round(results.mixPhase1Investor))}/mo</span>
+            </div>
+
+            {/* Phase breakdown */}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', maxWidth: '500px', margin: '0 auto'}}>
+              <div style={{background: 'rgba(15, 23, 42, 0.6)', borderRadius: '10px', padding: '16px'}}>
+                <div style={{fontSize: '0.8rem', color: '#64748b', marginBottom: '4px'}}>Phase 1 (until payback)</div>
+                <div style={{fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px'}}>You get {(results.mixPhase1Pct * 100).toFixed(0)}%</div>
+                <div style={{fontSize: '1.4rem', fontWeight: '600', color: '#22c55e'}}>${formatNumber(Math.round(results.mixPhase1Investor))}<span style={{fontSize: '0.9rem', color: '#64748b'}}>/mo</span></div>
               </div>
-              <div className="table-row total">
-                <span>Payback Period</span>
-                <span className="highlight">{results.mixPayback.toFixed(1)} months</span>
+              <div style={{background: 'rgba(15, 23, 42, 0.6)', borderRadius: '10px', padding: '16px'}}>
+                <div style={{fontSize: '0.8rem', color: '#64748b', marginBottom: '4px'}}>Phase 2 (after payback)</div>
+                <div style={{fontSize: '0.85rem', color: '#94a3b8', marginBottom: '8px'}}>You get {(results.mixPhase2Pct * 100).toFixed(0)}%</div>
+                <div style={{fontSize: '1.4rem', fontWeight: '600', color: '#f1f5f9'}}>${formatNumber(Math.round(results.mixPhase2Investor))}<span style={{fontSize: '0.9rem', color: '#64748b'}}>/mo</span></div>
               </div>
-              <div className="table-row">
-                <span>Annual ROI (Phase 1)</span>
-                <span className="highlight">{results.mixROI.toFixed(0)}%</span>
-              </div>
-              <div className="table-row">
-                <span>Phase 2 - Your Share</span>
-                <span>{(results.mixPhase2Pct * 100).toFixed(0)}%</span>
-              </div>
-              <div className="table-row">
-                <span>Phase 2 - Your Monthly</span>
-                <span>${formatNumber(Math.round(results.mixPhase2Investor))}/mo</span>
-              </div>
+            </div>
+
+            {/* Project context */}
+            <div style={{marginTop: '16px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b'}}>
+              Project generates ${formatNumber(Math.round(results.mixNetMonthly))}/mo net profit
             </div>
           </section>
 
