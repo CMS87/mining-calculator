@@ -2109,12 +2109,12 @@ function App() {
         <>
           {/* Investor Returns Callout - Clarifies this is investor-level, not project-level */}
           <section className="investor-callout">
-            <h3>Your Returns (Investor-Level)</h3>
+            <h3>Investor-Level</h3>
             <p className="callout-note">
               All returns shown are <strong>your share</strong> — what you actually receive, not project totals.
             </p>
             <div className="waterfall-highlight">
-              <h4 style={{color: '#f59e0b', marginBottom: '12px', fontSize: '0.9rem'}}>Preferential Return Structure (Waterfall)</h4>
+              <h4 style={{color: '#f59e0b', marginBottom: '12px', fontSize: '0.9rem'}}>Preferential Return Structure</h4>
               <div className="waterfall-phases">
                 <div className="waterfall-phase">
                   <h4>Phase 1: Until Capital Recovery</h4>
