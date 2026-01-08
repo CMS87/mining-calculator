@@ -2,6 +2,10 @@ import { useState, useMemo } from 'react'
 import './App.css'
 
 function App() {
+  // Check URL params: ?site=true hides gas/power tabs (for investor sharing)
+  const urlParams = new URLSearchParams(window.location.search)
+  const siteOnly = urlParams.get('site') === 'true'
+
   // Presentation Mode: 'models' (explain business), 'deal' (structure investment), or 'gas' (gas-to-power)
   const [mode, setMode] = useState('models')
 
@@ -41,13 +45,19 @@ function App() {
   // Generator economics (defaults: Taylor Power TGR400/NGEN-400)
   const [generatorCount, setGeneratorCount] = useState(12)
   const [generatorSizeKw, setGeneratorSizeKw] = useState(400)
-  const [generatorMode, setGeneratorMode] = useState('rto') // rent | buy | rto
+  const [generatorMode, setGeneratorMode] = useState('rto') // rent | buy | rto | finance
   const [generatorRentMonthly, setGeneratorRentMonthly] = useState(9500)      // $/mo no maintenance
   const [generatorBuyPrice, setGeneratorBuyPrice] = useState(171205)          // Taylor Power quote
   const [generatorBuyMaintenance, setGeneratorBuyMaintenance] = useState(1500) // $/mo if owned
   const [generatorRtoMonthly, setGeneratorRtoMonthly] = useState(12500)       // $/mo includes maintenance
   const [generatorRtoTerm, setGeneratorRtoTerm] = useState(28)                // months to ownership
   const [generatorRtoEquityPct, setGeneratorRtoEquityPct] = useState(0.50)    // 50% toward purchase
+  const [generatorRtoPostMaint, setGeneratorRtoPostMaint] = useState(1500)    // $/mo maintenance after ownership
+
+  // Financing option
+  const [financeRate, setFinanceRate] = useState(8.5)                         // annual interest rate %
+  const [financeTerm, setFinanceTerm] = useState(60)                          // loan term in months
+  const [financeDownPct, setFinanceDownPct] = useState(20)                    // down payment %
 
   // Generator lifecycle (for Buy mode cost projections)
   const [generatorLifetimeHours, setGeneratorLifetimeHours] = useState(60000) // total hours
@@ -225,15 +235,37 @@ function App() {
     let generatorCapex = 0
     let generatorEquityBuilt = 0
 
+    // RTO calculations
+    const rtoEquityPerMonth = generatorRtoMonthly * generatorRtoEquityPct // equity per generator per month
+    const rtoMonthsToOwn = generatorBuyPrice > 0 ? Math.ceil(generatorBuyPrice / rtoEquityPerMonth) : 0
+    const rtoTotalPaid = generatorRtoMonthly * rtoMonthsToOwn * generatorCount
+    const rtoPremium = rtoTotalPaid - (generatorBuyPrice * generatorCount) // cost above purchase price
+    const rtoPostOwnershipMonthly = generatorRtoPostMaint * generatorCount // after you own them
+
+    // Financing calculations (standard amortization formula)
+    const financeAmountPerUnit = generatorBuyPrice * (1 - financeDownPct / 100)
+    const financeDownPayment = generatorBuyPrice * (financeDownPct / 100) * generatorCount
+    const financeMonthlyRate = financeRate / 100 / 12
+    const financePaymentPerUnit = financeMonthlyRate > 0
+      ? (financeAmountPerUnit * financeMonthlyRate * Math.pow(1 + financeMonthlyRate, financeTerm)) /
+        (Math.pow(1 + financeMonthlyRate, financeTerm) - 1)
+      : financeAmountPerUnit / financeTerm
+    const financeMonthlyPayment = financePaymentPerUnit * generatorCount
+    const financeTotalPaid = (financePaymentPerUnit * financeTerm * generatorCount) + financeDownPayment
+    const financeTotalInterest = financeTotalPaid - (generatorBuyPrice * generatorCount)
+    const financePostOwnershipMonthly = generatorBuyMaintenance * generatorCount // after loan paid off
+
     if (generatorMode === 'rent') {
       generatorMonthly = generatorRentMonthly * generatorCount
     } else if (generatorMode === 'buy') {
       generatorMonthly = generatorBuyMaintenance * generatorCount
       generatorCapex = generatorBuyPrice * generatorCount
-    } else {
-      // RTO: maintenance included in payment
+    } else if (generatorMode === 'rto') {
       generatorMonthly = generatorRtoMonthly * generatorCount
-      generatorEquityBuilt = generatorRtoMonthly * generatorRtoEquityPct * generatorCount * generatorRtoTerm
+      generatorEquityBuilt = generatorRtoMonthly * generatorRtoEquityPct * generatorCount * rtoMonthsToOwn
+    } else if (generatorMode === 'finance') {
+      generatorMonthly = financeMonthlyPayment + (generatorBuyMaintenance * generatorCount) // loan + maintenance
+      generatorCapex = financeDownPayment // only down payment is upfront CAPEX
     }
 
     // ASIC CAPEX - calculated from $/TH × TH/s (same as Business Models)
@@ -313,9 +345,26 @@ function App() {
       majorOverhaulCount,
       totalOverhaulCost,
       annualOverhaulCost,
+      // RTO post-ownership
+      rtoEquityPerMonth,
+      rtoMonthsToOwn,
+      rtoTotalPaid,
+      rtoPremium,
+      rtoPostOwnershipMonthly,
+      // Financing
+      financeAmountPerUnit,
+      financeDownPayment,
+      financeMonthlyPayment,
+      financePaymentPerUnit,
+      financeTotalPaid,
+      financeTotalInterest,
+      financePostOwnershipMonthly,
     }
   }, [
     availability,
+    financeDownPct,
+    financeRate,
+    financeTerm,
     generatorBuyMaintenance,
     generatorBuyPrice,
     generatorCount,
@@ -324,6 +373,7 @@ function App() {
     generatorRentMonthly,
     generatorRtoEquityPct,
     generatorRtoMonthly,
+    generatorRtoPostMaint,
     generatorRtoTerm,
     generatorSizeKw,
     hashratePerUnit,
@@ -353,18 +403,22 @@ function App() {
 
       {/* Mode Toggle */}
       <section className="scenario-toggle">
-        <button
-          className={mode === 'power' ? 'active' : ''}
-          onClick={() => setMode('power')}
-        >
-          Power Generation
-        </button>
-        <button
-          className={mode === 'gas' ? 'active' : ''}
-          onClick={() => setMode('gas')}
-        >
-          Gas-to-Power Mining
-        </button>
+        {!siteOnly && (
+          <>
+            <button
+              className={mode === 'power' ? 'active' : ''}
+              onClick={() => setMode('power')}
+            >
+              Power Generation
+            </button>
+            <button
+              className={mode === 'gas' ? 'active' : ''}
+              onClick={() => setMode('gas')}
+            >
+              Gas-to-Power Mining
+            </button>
+          </>
+        )}
         <button
           className={mode === 'models' ? 'active' : ''}
           onClick={() => setMode('models')}
@@ -451,6 +505,7 @@ function App() {
                   <button className={generatorMode === 'rent' ? 'active' : ''} onClick={() => setGeneratorMode('rent')}>Rent</button>
                   <button className={generatorMode === 'buy' ? 'active' : ''} onClick={() => setGeneratorMode('buy')}>Buy</button>
                   <button className={generatorMode === 'rto' ? 'active' : ''} onClick={() => setGeneratorMode('rto')}>RTO</button>
+                  <button className={generatorMode === 'finance' ? 'active' : ''} onClick={() => setGeneratorMode('finance')}>Finance</button>
                 </div>
 
                 {generatorMode === 'rent' && (
@@ -487,17 +542,70 @@ function App() {
                     </div>
                     <div className="input-row two-col">
                       <div>
-                        <label>Term (months)</label>
-                        <input type="number" value={generatorRtoTerm} onChange={e => setGeneratorRtoTerm(+e.target.value)} />
-                      </div>
-                      <div>
                         <label>Equity Portion (%)</label>
                         <input type="number" value={(generatorRtoEquityPct * 100).toFixed(0)} onChange={e => setGeneratorRtoEquityPct(+e.target.value / 100)} />
                       </div>
+                      <div>
+                        <label>Post-Ownership Maint ($/unit/mo)</label>
+                        <input type="number" value={generatorRtoPostMaint} onChange={e => setGeneratorRtoPostMaint(+e.target.value)} />
+                      </div>
                     </div>
                     <div className="result-row compact">
-                      <span>Equity Built Over Term</span>
-                      <span className="highlight">{formatCurrencyFull(gasResults.generatorEquityBuilt)}</span>
+                      <span>Months to Ownership</span>
+                      <span className="highlight">{gasResults.rtoMonthsToOwn} months</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Total Paid (fleet)</span>
+                      <span>{formatCurrencyFull(gasResults.rtoTotalPaid)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Post-Ownership Cost</span>
+                      <span className="green">{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}/mo</span>
+                    </div>
+                  </>
+                )}
+
+                {generatorMode === 'finance' && (
+                  <>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Purchase Price ($/unit)</label>
+                        <input type="number" value={generatorBuyPrice} onChange={e => setGeneratorBuyPrice(+e.target.value)} />
+                      </div>
+                      <div>
+                        <label>Maintenance ($/unit/mo)</label>
+                        <input type="number" value={generatorBuyMaintenance} onChange={e => setGeneratorBuyMaintenance(+e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Interest Rate (%)</label>
+                        <input type="number" step="0.1" value={financeRate} onChange={e => setFinanceRate(+e.target.value)} />
+                      </div>
+                      <div>
+                        <label>Term (months)</label>
+                        <input type="number" value={financeTerm} onChange={e => setFinanceTerm(+e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="input-row">
+                      <label>Down Payment (%)</label>
+                      <input type="number" value={financeDownPct} onChange={e => setFinanceDownPct(+e.target.value)} />
+                    </div>
+                    <div className="result-row compact">
+                      <span>Down Payment</span>
+                      <span>{formatCurrencyFull(gasResults.financeDownPayment)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Monthly Loan Payment</span>
+                      <span className="highlight">{formatCurrencyFull(gasResults.financeMonthlyPayment)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Total Interest</span>
+                      <span style={{color: '#ef4444'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Post-Loan Cost</span>
+                      <span className="green">{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}/mo</span>
                     </div>
                   </>
                 )}
@@ -684,7 +792,12 @@ function App() {
               </div>
               <div className="table-row">
                 <span>Generator Cost ({generatorMode.toUpperCase()})</span>
-                <span>{generatorCount} units × ${generatorMode === 'rent' ? generatorRentMonthly.toLocaleString() : generatorMode === 'rto' ? generatorRtoMonthly.toLocaleString() : generatorBuyMaintenance.toLocaleString()}/mo = {formatCurrencyFull(gasResults.generatorMonthly)}</span>
+                <span>
+                  {generatorMode === 'rent' && `${generatorCount} units × $${generatorRentMonthly.toLocaleString()}/mo = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
+                  {generatorMode === 'buy' && `${generatorCount} units × $${generatorBuyMaintenance.toLocaleString()}/mo (maint) = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
+                  {generatorMode === 'rto' && `${generatorCount} units × $${generatorRtoMonthly.toLocaleString()}/mo = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
+                  {generatorMode === 'finance' && `Loan ${formatCurrencyFull(gasResults.financeMonthlyPayment)} + Maint ${formatCurrencyFull(generatorBuyMaintenance * generatorCount)} = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
+                </span>
               </div>
               <div className="table-row total">
                 <span>Effective Power Cost</span>
@@ -718,6 +831,59 @@ function App() {
                     : `Costing ${formatCurrency((gasResults.powerCostPerKwh - 0.06) * gasResults.availableMw * 24 * 30 * 1000)}/mo more`}
                 </span>
               </div>
+            </div>
+
+            {/* Acquisition Comparison Table */}
+            <h3 style={{marginTop: '32px', marginBottom: '16px'}}>Generator Acquisition Comparison</h3>
+            <div className="sensitivity-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Metric</th>
+                    <th>Rent</th>
+                    <th>Buy</th>
+                    <th>RTO</th>
+                    <th>Finance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Upfront Cost</td>
+                    <td>$0</td>
+                    <td>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
+                    <td>$0</td>
+                    <td>{formatCurrencyFull(gasResults.financeDownPayment)}</td>
+                  </tr>
+                  <tr>
+                    <td>Monthly Payment</td>
+                    <td>{formatCurrencyFull(generatorRentMonthly * generatorCount)}</td>
+                    <td>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
+                    <td>{formatCurrencyFull(generatorRtoMonthly * generatorCount)}</td>
+                    <td>{formatCurrencyFull(gasResults.financeMonthlyPayment + generatorBuyMaintenance * generatorCount)}</td>
+                  </tr>
+                  <tr>
+                    <td>Own After</td>
+                    <td>Never</td>
+                    <td>Day 1</td>
+                    <td>{gasResults.rtoMonthsToOwn} months</td>
+                    <td>{financeTerm} months</td>
+                  </tr>
+                  <tr>
+                    <td>Post-Ownership Cost</td>
+                    <td>N/A</td>
+                    <td>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}/mo</td>
+                    <td>{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}/mo</td>
+                    <td>{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}/mo</td>
+                  </tr>
+                  <tr>
+                    <td>Total Cost (5yr)</td>
+                    <td>{formatCurrencyFull(generatorRentMonthly * generatorCount * 60)}</td>
+                    <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * 60)}</td>
+                    <td>{formatCurrencyFull(gasResults.rtoTotalPaid + gasResults.rtoPostOwnershipMonthly * Math.max(0, 60 - gasResults.rtoMonthsToOwn))}</td>
+                    <td>{formatCurrencyFull(gasResults.financeTotalPaid + gasResults.financePostOwnershipMonthly * Math.max(0, 60 - financeTerm))}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             {/* CAPEX Summary (Buy mode) */}
@@ -826,6 +992,12 @@ function App() {
                     onClick={() => setGeneratorMode('rto')}
                   >
                     RTO
+                  </button>
+                  <button
+                    className={generatorMode === 'finance' ? 'active' : ''}
+                    onClick={() => setGeneratorMode('finance')}
+                  >
+                    Finance
                   </button>
                 </div>
 
@@ -959,14 +1131,6 @@ function App() {
                     </div>
                     <div className="input-row two-col">
                       <div>
-                        <label>Term to Ownership (months)</label>
-                        <input
-                          type="number"
-                          value={generatorRtoTerm}
-                          onChange={e => setGeneratorRtoTerm(+e.target.value)}
-                        />
-                      </div>
-                      <div>
                         <label>Equity Portion (%)</label>
                         <input
                           type="number"
@@ -974,14 +1138,134 @@ function App() {
                           onChange={e => setGeneratorRtoEquityPct(+e.target.value / 100)}
                         />
                       </div>
+                      <div>
+                        <label>Post-Ownership Maintenance ($/unit/mo)</label>
+                        <input
+                          type="number"
+                          value={generatorRtoPostMaint}
+                          onChange={e => setGeneratorRtoPostMaint(+e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="info-row" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                      RTO Economics
                     </div>
                     <div className="result-row compact">
-                      <span>Purchase Price (reference)</span>
-                      <span>{formatCurrency(generatorBuyPrice)}/unit</span>
+                      <span>Purchase Price (per unit)</span>
+                      <span>{formatCurrencyFull(generatorBuyPrice)}</span>
                     </div>
                     <div className="result-row compact">
-                      <span>Equity Built Over Term</span>
-                      <span className="highlight">{formatCurrency(gasResults.generatorEquityBuilt)}</span>
+                      <span>Equity Built per Month</span>
+                      <span>{formatCurrencyFull(gasResults.rtoEquityPerMonth)}/unit</span>
+                    </div>
+                    <div className="result-row compact total">
+                      <span>Months to Ownership</span>
+                      <span className="highlight">{gasResults.rtoMonthsToOwn} months</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Total Paid (fleet)</span>
+                      <span>{formatCurrencyFull(gasResults.rtoTotalPaid)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Premium Over Purchase</span>
+                      <span style={{color: gasResults.rtoPremium > 0 ? '#ef4444' : '#22c55e'}}>
+                        {formatCurrencyFull(gasResults.rtoPremium)} ({((gasResults.rtoPremium / (generatorBuyPrice * generatorCount)) * 100).toFixed(1)}%)
+                      </span>
+                    </div>
+
+                    <div className="info-row" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                      After Ownership ({gasResults.rtoMonthsToOwn}+ months)
+                    </div>
+                    <div className="result-row compact">
+                      <span>Monthly Generator Cost</span>
+                      <span className="highlight green">{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Savings vs RTO Period</span>
+                      <span className="green">{formatCurrencyFull(gasResults.generatorMonthly - gasResults.rtoPostOwnershipMonthly)}/mo</span>
+                    </div>
+                  </>
+                )}
+
+                {generatorMode === 'finance' && (
+                  <>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Purchase Price ($/unit)</label>
+                        <input type="number" value={generatorBuyPrice} onChange={e => setGeneratorBuyPrice(+e.target.value)} />
+                      </div>
+                      <div>
+                        <label>Maintenance ($/unit/mo)</label>
+                        <input type="number" value={generatorBuyMaintenance} onChange={e => setGeneratorBuyMaintenance(+e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="input-row two-col">
+                      <div>
+                        <label>Interest Rate (%)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={financeRate}
+                          onChange={e => setFinanceRate(+e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label>Term (months)</label>
+                        <input
+                          type="number"
+                          value={financeTerm}
+                          onChange={e => setFinanceTerm(+e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="input-row">
+                      <label>Down Payment (%)</label>
+                      <input
+                        type="number"
+                        value={financeDownPct}
+                        onChange={e => setFinanceDownPct(+e.target.value)}
+                      />
+                    </div>
+
+                    <div className="info-row" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                      Financing Details
+                    </div>
+                    <div className="result-row compact">
+                      <span>Fleet Purchase Price</span>
+                      <span>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Down Payment ({financeDownPct}%)</span>
+                      <span>{formatCurrencyFull(gasResults.financeDownPayment)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Financed Amount</span>
+                      <span>{formatCurrencyFull(gasResults.financeAmountPerUnit * generatorCount)}</span>
+                    </div>
+                    <div className="result-row compact total">
+                      <span>Monthly Loan Payment</span>
+                      <span className="highlight">{formatCurrencyFull(gasResults.financeMonthlyPayment)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Total Interest Over Term</span>
+                      <span style={{color: '#ef4444'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Total Cost (incl. interest)</span>
+                      <span>{formatCurrencyFull(gasResults.financeTotalPaid)}</span>
+                    </div>
+
+                    <div className="info-row" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                      After Loan Paid ({financeTerm}+ months)
+                    </div>
+                    <div className="result-row compact">
+                      <span>Monthly Generator Cost</span>
+                      <span className="highlight green">{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}</span>
+                    </div>
+                    <div className="result-row compact">
+                      <span>Savings vs Loan Period</span>
+                      <span className="green">{formatCurrencyFull(gasResults.generatorMonthly - gasResults.financePostOwnershipMonthly)}/mo</span>
                     </div>
                   </>
                 )}
@@ -1298,16 +1582,21 @@ function App() {
             {/* CAPEX & Payback */}
             <div className="simple-table" style={{marginTop: '20px'}}>
               <div className="table-row">
-                <span>Generator CAPEX ({generatorMode === 'buy' ? 'Purchase' : 'N/A - RTO/Rent'})</span>
-                <span>{formatCurrency(gasResults.generatorCapex)}</span>
+                <span>
+                  {generatorMode === 'buy' && 'Generator CAPEX (Purchase)'}
+                  {generatorMode === 'finance' && `Generator CAPEX (${financeDownPct}% Down)`}
+                  {generatorMode === 'rent' && 'Generator CAPEX (Rent - N/A)'}
+                  {generatorMode === 'rto' && 'Generator CAPEX (RTO - N/A)'}
+                </span>
+                <span>{formatCurrencyFull(gasResults.generatorCapex)}</span>
               </div>
               <div className="table-row">
                 <span>ASIC CAPEX ({gasResults.miners.toLocaleString()} × {formatCurrencyFull(gasResults.asicPricePerUnit)})</span>
                 <span>{formatCurrencyFull(gasResults.asicCapex)}</span>
               </div>
               <div className="table-row total">
-                <span>Total CAPEX</span>
-                <span className="highlight">{formatCurrency(gasResults.totalCapex)}</span>
+                <span>Total Upfront CAPEX</span>
+                <span className="highlight">{formatCurrencyFull(gasResults.totalCapex)}</span>
               </div>
               <div className="table-row">
                 <span>Payback Period</span>
@@ -1335,11 +1624,37 @@ function App() {
                 <span>Availability / Parasitic / Load</span>
                 <span>{Math.round(availability * 100)}% / {Math.round(parasiticLoad * 100)}% / {Math.round(loadFactor * 100)}%</span>
               </div>
-              {generatorMode === 'rto' && gasResults.generatorEquityBuilt > 0 && (
-                <div className="table-row total">
-                  <span>RTO Equity Built ({generatorRtoTerm} mo)</span>
-                  <span>{formatCurrency(gasResults.generatorEquityBuilt)}</span>
-                </div>
+              {generatorMode === 'rto' && (
+                <>
+                  <div className="table-row">
+                    <span>RTO Months to Own</span>
+                    <span className="highlight">{gasResults.rtoMonthsToOwn} months</span>
+                  </div>
+                  <div className="table-row">
+                    <span>RTO Total Cost (fleet)</span>
+                    <span>{formatCurrencyFull(gasResults.rtoTotalPaid)}</span>
+                  </div>
+                  <div className="table-row total">
+                    <span>Post-Ownership Monthly</span>
+                    <span className="green">{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}/mo</span>
+                  </div>
+                </>
+              )}
+              {generatorMode === 'finance' && (
+                <>
+                  <div className="table-row">
+                    <span>Finance Term</span>
+                    <span>{financeTerm} months @ {financeRate}%</span>
+                  </div>
+                  <div className="table-row">
+                    <span>Total Interest</span>
+                    <span style={{color: '#ef4444'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</span>
+                  </div>
+                  <div className="table-row total">
+                    <span>Post-Loan Monthly</span>
+                    <span className="green">{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}/mo</span>
+                  </div>
+                </>
               )}
             </div>
           </section>
