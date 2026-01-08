@@ -2115,19 +2115,39 @@ function App() {
               </h2>
             </div>
 
+            {/* Monthly Breakdown Row */}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', maxWidth: '800px', margin: '0 auto 16px'}}>
+              <div style={{background: 'rgba(30, 41, 59, 0.8)', borderRadius: '10px', padding: '16px 12px', textAlign: 'center'}}>
+                <div style={{fontSize: '1.4rem', fontWeight: '700', color: '#f1f5f9'}}>{formatCurrency(results.mixCapex)}</div>
+                <div style={{fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px'}}>Investment</div>
+              </div>
+              <div style={{background: 'rgba(30, 41, 59, 0.8)', borderRadius: '10px', padding: '16px 12px', textAlign: 'center'}}>
+                <div style={{fontSize: '1.4rem', fontWeight: '700', color: '#f1f5f9'}}>${formatNumber(Math.round(results.mixGrossRevenue / 1000))}K</div>
+                <div style={{fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px'}}>Gross</div>
+              </div>
+              <div style={{background: 'rgba(30, 41, 59, 0.8)', borderRadius: '10px', padding: '16px 12px', textAlign: 'center'}}>
+                <div style={{fontSize: '1.4rem', fontWeight: '700', color: '#ef4444'}}>-${formatNumber(Math.round(results.mixPowerCost / 1000))}K</div>
+                <div style={{fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px'}}>Energy</div>
+              </div>
+              <div style={{background: 'rgba(30, 41, 59, 0.8)', borderRadius: '10px', padding: '16px 12px', textAlign: 'center'}}>
+                <div style={{fontSize: '1.4rem', fontWeight: '700', color: '#ef4444'}}>-${formatNumber(Math.round(monthlyOpex / 1000))}K</div>
+                <div style={{fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px'}}>Opex</div>
+              </div>
+            </div>
+
             {/* Main KPIs */}
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', maxWidth: '800px', margin: '0 auto 32px'}}>
-              <div style={{background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(34, 197, 94, 0.5)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center'}}>
-                <div style={{fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px'}}>Total Investment</div>
-                <div style={{fontSize: '2.2rem', fontWeight: '700', color: '#22c55e'}}>{formatCurrency(results.mixCapex)}</div>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', maxWidth: '800px', margin: '0 auto 32px'}}>
+              <div style={{background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(34, 197, 94, 0.5)', borderRadius: '12px', padding: '20px 16px', textAlign: 'center'}}>
+                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#22c55e'}}>${formatNumber(Math.round(results.mixPhase1Investor / 1000))}K</div>
+                <div style={{fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px'}}>Monthly Net</div>
               </div>
-              <div style={{background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(59, 130, 246, 0.5)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center'}}>
-                <div style={{fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px'}}>Payback Period</div>
-                <div style={{fontSize: '2.2rem', fontWeight: '700', color: '#3b82f6'}}>{results.mixPayback.toFixed(0)} <span style={{fontSize: '1rem'}}>months</span></div>
+              <div style={{background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(59, 130, 246, 0.5)', borderRadius: '12px', padding: '20px 16px', textAlign: 'center'}}>
+                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#3b82f6'}}>{results.mixPayback.toFixed(0)} <span style={{fontSize: '0.9rem'}}>mo</span></div>
+                <div style={{fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px'}}>Payback</div>
               </div>
-              <div style={{background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(245, 158, 11, 0.5)', borderRadius: '16px', padding: '28px 20px', textAlign: 'center'}}>
-                <div style={{fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px'}}>Annual ROI</div>
-                <div style={{fontSize: '2.2rem', fontWeight: '700', color: '#f59e0b'}}>{results.mixROI.toFixed(0)}%</div>
+              <div style={{background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(15, 23, 42, 0.9) 100%)', border: '2px solid rgba(245, 158, 11, 0.5)', borderRadius: '12px', padding: '20px 16px', textAlign: 'center'}}>
+                <div style={{fontSize: '1.8rem', fontWeight: '700', color: '#f59e0b'}}>{results.mixROI.toFixed(0)}%</div>
+                <div style={{fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px'}}>Annual ROI</div>
               </div>
             </div>
 
