@@ -2335,10 +2335,14 @@ function App() {
                         const mixInvestor = mixNetMonthly * mixPhase1Pct
                         const mixPayback = mixInvestor > 0 ? (mixCapex / mixInvestor) : null
 
-                        // Check if this cell's payback matches the current scenario's payback
-                        const currentPayback = Math.round(results.mixPayback)
-                        const cellPayback = mixPayback ? Math.round(mixPayback) : null
-                        const matchesCurrentPayback = cellPayback === currentPayback
+                        // Check if this is the current scenario (exact match or bracketing)
+                        const isCurrentEnergy = Math.abs(ep - energyPrice) < 0.01
+                        const isExactMatch = isCurrentEnergy && hp === hashprice
+                        const nextHp = arr[idx + 1] || Infinity
+                        const prevHp = arr[idx - 1] || 0
+                        const isBracketLow = isCurrentEnergy && hashprice > hp && hashprice < nextHp
+                        const isBracketHigh = isCurrentEnergy && hashprice < hp && hashprice > prevHp
+                        const isBracketed = isBracketLow || isBracketHigh
 
                         // Color coding based on payback
                         let cellColor = '#ef4444' // red for >48mo
@@ -2350,9 +2354,9 @@ function App() {
                             key={hp}
                             style={{
                               color: mixInvestor <= 0 ? '#ef4444' : cellColor,
-                              fontWeight: matchesCurrentPayback ? '700' : '400',
-                              backgroundColor: matchesCurrentPayback ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-                              border: matchesCurrentPayback ? '2px solid rgba(59, 130, 246, 0.6)' : 'none'
+                              fontWeight: (isExactMatch || isBracketed) ? '700' : '400',
+                              backgroundColor: isExactMatch ? 'rgba(59, 130, 246, 0.3)' : isBracketed ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                              border: isBracketed ? '2px dashed rgba(59, 130, 246, 0.6)' : isExactMatch ? '2px solid rgba(59, 130, 246, 0.8)' : 'none'
                             }}
                           >
                             {mixPayback ? `${mixPayback.toFixed(0)}` : 'N/A'}
