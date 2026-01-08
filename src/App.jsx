@@ -2110,7 +2110,7 @@ function App() {
           {/* Hero Investment Section */}
           <section style={{marginBottom: '32px'}}>
             <div style={{textAlign: 'center', marginBottom: '24px'}}>
-              <h2 style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff', marginBottom: '8px'}}>Investment Opportunity</h2>
+              <h2 style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff', marginBottom: '8px'}}>Your Investment</h2>
               <p style={{color: '#94a3b8', fontSize: '1rem'}}>
                 {modelMix === 0 ? '100% Co-Mining Model' : modelMix === 1 ? '100% Self-Mining Model' : `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining Blend`}
               </p>
@@ -2302,8 +2302,10 @@ function App() {
                         const selfNetMonthly = selfGrossRevenue - selfPowerCost - monthlyOpex
                         const selfInvestor = selfNetMonthly * selfPhase1Pct
 
-                        // Blended
-                        const mixInvestor = coInvestor * (1 - modelMix) + selfInvestor * modelMix
+                        // Blended (same formula as main calculation)
+                        const mixNetMonthly = coNetMonthly * (1 - modelMix) + selfNetMonthly * modelMix
+                        const mixPhase1Pct = coPhase1Pct * (1 - modelMix) + selfPhase1Pct * modelMix
+                        const mixInvestor = mixNetMonthly * mixPhase1Pct
                         const mixPayback = mixInvestor > 0 ? (mixCapex / mixInvestor) : null
                         const isCurrentScenario = Math.abs(ep - energyPrice) < 0.01 && hp === hashprice
 
