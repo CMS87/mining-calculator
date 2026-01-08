@@ -2115,6 +2115,71 @@ function App() {
               </h2>
             </div>
 
+            {/* Profit Split Adjusters - Collapsible style */}
+            <details style={{background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', border: '1px solid rgba(148, 163, 184, 0.2)', marginBottom: '24px', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto'}}>
+              <summary style={{padding: '16px 20px', cursor: 'pointer', fontSize: '0.95rem', color: '#94a3b8', fontWeight: '500'}}>
+                Adjust Profit Splits (Advanced)
+              </summary>
+              <div style={{padding: '20px', borderTop: '1px solid rgba(148, 163, 184, 0.2)'}}>
+                <div className="deal-models">
+                  <div className="deal-model co-deal">
+                    <h3>Co-Mining Split</h3>
+                    <div className="phase-splits">
+                      <div className="phase-split">
+                        <h4>Phase 1</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${coPhase1Pct * 100}%`}}>{Math.round(coPhase1Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - coPhase1Pct) * 100}%`}}>{Math.round((1 - coPhase1Pct) * 100)}%</div>
+                          </div>
+                        </div>
+                        <input type="range" min="0.5" max="0.90" step="0.05" value={coPhase1Pct} onChange={e => setCoPhase1Pct(+e.target.value)} />
+                      </div>
+                      <div className="phase-split">
+                        <h4>Phase 2</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${coPhase2Pct * 100}%`}}>{Math.round(coPhase2Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - coPhase2Pct) * 100}%`}}>{Math.round((1 - coPhase2Pct) * 100)}%</div>
+                          </div>
+                        </div>
+                        <input type="range" min="0.2" max="0.7" step="0.05" value={coPhase2Pct} onChange={e => setCoPhase2Pct(+e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="deal-model self-deal">
+                    <h3>Self-Mining Split</h3>
+                    <div className="phase-splits">
+                      <div className="phase-split">
+                        <h4>Phase 1</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${selfPhase1Pct * 100}%`}}>{Math.round(selfPhase1Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - selfPhase1Pct) * 100}%`}}>{Math.round((1 - selfPhase1Pct) * 100)}%</div>
+                          </div>
+                        </div>
+                        <input type="range" min="0.6" max="0.95" step="0.05" value={selfPhase1Pct} onChange={e => setSelfPhase1Pct(+e.target.value)} />
+                      </div>
+                      <div className="phase-split">
+                        <h4>Phase 2</h4>
+                        <div className="split-visual">
+                          <div className="split-bar">
+                            <div className="investor-bar" style={{width: `${selfPhase2Pct * 100}%`}}>{Math.round(selfPhase2Pct * 100)}%</div>
+                            <div className="operator-bar" style={{width: `${(1 - selfPhase2Pct) * 100}%`}}>{Math.round((1 - selfPhase2Pct) * 100)}%</div>
+                          </div>
+                        </div>
+                        <input type="range" min="0.3" max="0.7" step="0.05" value={selfPhase2Pct} onChange={e => setSelfPhase2Pct(+e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="split-legend" style={{marginTop: '16px'}}>
+                  <span className="legend-investor">■ Your Share</span>
+                  <span className="legend-operator">■ Astro Share</span>
+                </div>
+              </div>
+            </details>
+
             {/* Monthly Breakdown Row */}
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', maxWidth: '800px', margin: '0 auto 16px'}}>
               <div style={{background: 'rgba(30, 41, 59, 0.8)', borderRadius: '10px', padding: '16px 12px', textAlign: 'center'}}>
@@ -2199,73 +2264,6 @@ function App() {
                 <span style={{fontSize: '0.95rem', color: '#f1f5f9', fontWeight: '600'}}>${formatNumber(Math.round(results.mixNetMonthly))}/mo</span>
               </div>
             </div>
-          </section>
-
-          {/* Profit Split Adjusters - Collapsible style */}
-          <section style={{marginBottom: '32px'}}>
-            <details style={{background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', border: '1px solid rgba(148, 163, 184, 0.2)'}}>
-              <summary style={{padding: '16px 20px', cursor: 'pointer', fontSize: '0.95rem', color: '#94a3b8', fontWeight: '500'}}>
-                Adjust Profit Splits (Advanced)
-              </summary>
-              <div style={{padding: '20px', borderTop: '1px solid rgba(148, 163, 184, 0.2)'}}>
-                <div className="deal-models">
-                  <div className="deal-model co-deal">
-                    <h3>Co-Mining Split</h3>
-                    <div className="phase-splits">
-                      <div className="phase-split">
-                        <h4>Phase 1</h4>
-                        <div className="split-visual">
-                          <div className="split-bar">
-                            <div className="investor-bar" style={{width: `${coPhase1Pct * 100}%`}}>{Math.round(coPhase1Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - coPhase1Pct) * 100}%`}}>{Math.round((1 - coPhase1Pct) * 100)}%</div>
-                          </div>
-                        </div>
-                        <input type="range" min="0.5" max="0.90" step="0.05" value={coPhase1Pct} onChange={e => setCoPhase1Pct(+e.target.value)} />
-                      </div>
-                      <div className="phase-split">
-                        <h4>Phase 2</h4>
-                        <div className="split-visual">
-                          <div className="split-bar">
-                            <div className="investor-bar" style={{width: `${coPhase2Pct * 100}%`}}>{Math.round(coPhase2Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - coPhase2Pct) * 100}%`}}>{Math.round((1 - coPhase2Pct) * 100)}%</div>
-                          </div>
-                        </div>
-                        <input type="range" min="0.2" max="0.7" step="0.05" value={coPhase2Pct} onChange={e => setCoPhase2Pct(+e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="deal-model self-deal">
-                    <h3>Self-Mining Split</h3>
-                    <div className="phase-splits">
-                      <div className="phase-split">
-                        <h4>Phase 1</h4>
-                        <div className="split-visual">
-                          <div className="split-bar">
-                            <div className="investor-bar" style={{width: `${selfPhase1Pct * 100}%`}}>{Math.round(selfPhase1Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - selfPhase1Pct) * 100}%`}}>{Math.round((1 - selfPhase1Pct) * 100)}%</div>
-                          </div>
-                        </div>
-                        <input type="range" min="0.6" max="0.95" step="0.05" value={selfPhase1Pct} onChange={e => setSelfPhase1Pct(+e.target.value)} />
-                      </div>
-                      <div className="phase-split">
-                        <h4>Phase 2</h4>
-                        <div className="split-visual">
-                          <div className="split-bar">
-                            <div className="investor-bar" style={{width: `${selfPhase2Pct * 100}%`}}>{Math.round(selfPhase2Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - selfPhase2Pct) * 100}%`}}>{Math.round((1 - selfPhase2Pct) * 100)}%</div>
-                          </div>
-                        </div>
-                        <input type="range" min="0.3" max="0.7" step="0.05" value={selfPhase2Pct} onChange={e => setSelfPhase2Pct(+e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="split-legend" style={{marginTop: '16px'}}>
-                  <span className="legend-investor">■ Your Share</span>
-                  <span className="legend-operator">■ Astro Share</span>
-                </div>
-              </div>
-            </details>
           </section>
 
           {/* Sensitivity Table */}
