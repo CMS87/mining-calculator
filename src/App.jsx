@@ -2305,7 +2305,7 @@ function App() {
                   {[3.5, 4.0, 4.5, 5.0, 5.5].map(ep => (
                     <tr key={ep}>
                       <td className="row-label">{ep}¢/kWh</td>
-                      {[30, 37, 45, 50, 55, 60].map(hp => {
+                      {[30, 37, 45, 50, 55, 60].map((hp, idx, arr) => {
                         // Calculate for this scenario
                         const uptime = 1 - curtailment
                         const miners = Math.floor(facilityMW * 1000 / minerPowerKW)
@@ -2334,7 +2334,15 @@ function App() {
                         const mixPhase1Pct = coPhase1Pct * (1 - modelMix) + selfPhase1Pct * modelMix
                         const mixInvestor = mixNetMonthly * mixPhase1Pct
                         const mixPayback = mixInvestor > 0 ? (mixCapex / mixInvestor) : null
-                        const isCurrentScenario = Math.abs(ep - energyPrice) < 0.01 && hp === hashprice
+
+                        // Check if this is the current scenario (exact match or bracketing)
+                        const isCurrentEnergy = Math.abs(ep - energyPrice) < 0.01
+                        const isExactMatch = isCurrentEnergy && hp === hashprice
+                        const nextHp = arr[idx + 1] || Infinity
+                        const prevHp = arr[idx - 1] || 0
+                        const isBracketLow = isCurrentEnergy && hashprice > hp && hashprice < nextHp
+                        const isBracketHigh = isCurrentEnergy && hashprice < hp && hashprice > prevHp
+                        const isBracketed = isBracketLow || isBracketHigh
 
                         // Color coding based on payback
                         let cellColor = '#ef4444' // red for >48mo
@@ -2344,11 +2352,11 @@ function App() {
                         return (
                           <td
                             key={hp}
-                            className={isCurrentScenario ? 'current' : ''}
                             style={{
                               color: mixInvestor <= 0 ? '#ef4444' : cellColor,
-                              fontWeight: isCurrentScenario ? '700' : '400',
-                              backgroundColor: isCurrentScenario ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
+                              fontWeight: (isExactMatch || isBracketed) ? '700' : '400',
+                              backgroundColor: isExactMatch ? 'rgba(59, 130, 246, 0.3)' : isBracketed ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                              border: isBracketed ? '2px dashed rgba(59, 130, 246, 0.6)' : isExactMatch ? '2px solid rgba(59, 130, 246, 0.8)' : 'none'
                             }}
                           >
                             {mixPayback ? `${mixPayback.toFixed(0)}` : 'N/A'}
