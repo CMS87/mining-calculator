@@ -2227,8 +2227,11 @@ function App() {
                     <span style={{fontSize: '0.85rem', color: '#22c55e', fontWeight: '600'}}>PHASE 1</span>
                     <span style={{fontSize: '0.75rem', color: '#64748b'}}>Until Payback</span>
                   </div>
-                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px'}}>
+                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '4px'}}>
                     Your share: <strong style={{color: '#22c55e'}}>{(results.mixPhase1Pct * 100).toFixed(0)}%</strong>
+                  </div>
+                  <div style={{fontSize: '0.7rem', color: '#64748b', marginBottom: '8px'}}>
+                    ({(coPhase1Pct * 100).toFixed(0)}% × {((1 - modelMix) * 100).toFixed(0)}%) + ({(selfPhase1Pct * 100).toFixed(0)}% × {(modelMix * 100).toFixed(0)}%)
                   </div>
                   <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff'}}>
                     ${formatNumber(Math.round(results.mixPhase1Investor))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
@@ -2247,14 +2250,17 @@ function App() {
                     <span style={{fontSize: '0.85rem', color: '#94a3b8', fontWeight: '600'}}>PHASE 2</span>
                     <span style={{fontSize: '0.75rem', color: '#64748b'}}>Ongoing</span>
                   </div>
-                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px'}}>
+                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '4px'}}>
                     Your share: <strong style={{color: '#f1f5f9'}}>{(results.mixPhase2Pct * 100).toFixed(0)}%</strong>
+                  </div>
+                  <div style={{fontSize: '0.7rem', color: '#64748b', marginBottom: '8px'}}>
+                    ({(coPhase2Pct * 100).toFixed(0)}% × {((1 - modelMix) * 100).toFixed(0)}%) + ({(selfPhase2Pct * 100).toFixed(0)}% × {(modelMix * 100).toFixed(0)}%)
                   </div>
                   <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff'}}>
                     ${formatNumber(Math.round(results.mixPhase2Investor))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
                   </div>
                   <div style={{fontSize: '0.8rem', color: '#64748b', marginTop: '8px'}}>
-                    Perpetual income
+                    Ongoing
                   </div>
                 </div>
               </div>
