@@ -1783,7 +1783,7 @@ function App() {
                 <h3>Site & Build-up</h3>
                 <div className="input-row">
                   <label>Facility Size: MW</label>
-                  <input type="number" min="1" step="0.5" value={facilityMW} onChange={e => setFacilityMW(+e.target.value)} />
+                  <input type="text" value={facilityMW} onChange={e => setFacilityMW(parseFloat(e.target.value) || 0)} />
                 </div>
                 <div className="input-row">
                   <label>Site + Infrastructure: {formatCurrency(siteBuildCost)}</label>
