@@ -1850,12 +1850,8 @@ function App() {
                 <span className="highlight">{facilityMW} MW</span>
               </div>
               <div className="table-row">
-                <span>Mining Containers (325 miners each)</span>
-                <span className="highlight">{Math.ceil(results.miners / 325)} containers</span>
-              </div>
-              <div className="table-row">
-                <span>ASIC Miners (@ {minerPowerKW} kW each)</span>
-                <span>{results.miners.toLocaleString()} units</span>
+                <span>Efficiency</span>
+                <span className="highlight">{efficiency} J/TH</span>
               </div>
               <div className="table-row">
                 <span>Total Hashrate</span>
@@ -1948,7 +1944,7 @@ function App() {
                     <span>{formatCurrency(siteBuildCost)}</span>
                   </div>
                   <div className="capex-line">
-                    <span>Miners ({results.miners.toLocaleString()} units)</span>
+                    <span>ASICs ({results.totalHashratePH.toFixed(0)} PH/s)</span>
                     <span>{formatCurrency(results.minerCost)}</span>
                   </div>
                   <div className="capex-line total">
