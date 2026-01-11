@@ -104,7 +104,7 @@ function App() {
     const coEffectiveHashratePH = coTotalHashratePH * uptime
     const coHashratePH = coEffectiveHashratePH * coMiningShare  // Our share from hosting
     const coGrossRevenue = coHashratePH * hashprice * 30
-    const coPowerCost = (energyPrice / 100) * totalPowerKW * 720 * uptime * coMiningShare
+    const coPowerCost = (energyPrice / 100) * totalPowerKW * 720 * coMiningShare
     const coNetMonthly = coGrossRevenue - coPowerCost - monthlyOpex
     const coAnnualNet = coNetMonthly * 12
     const coMiningCapex = siteBuildCost  // No miners to buy
@@ -116,7 +116,7 @@ function App() {
     const selfEffectiveHashratePH = selfTotalHashratePH * uptime
     const selfHashratePH = selfEffectiveHashratePH  // 100% is ours
     const selfGrossRevenue = selfHashratePH * hashprice * 30
-    const selfPowerCost = (energyPrice / 100) * totalPowerKW * 720 * uptime
+    const selfPowerCost = (energyPrice / 100) * totalPowerKW * 720
     const selfNetMonthly = selfGrossRevenue - selfPowerCost - monthlyOpex
     const selfAnnualNet = selfNetMonthly * 12
     const minerCost = selfTotalHashrateTH * selfPricePerTh
