@@ -9,7 +9,7 @@ function App() {
   // Presentation Mode: 'models' (explain business), 'deal' (structure investment), or 'gas' (gas-to-power)
   const [mode, setMode] = useState('models')
 
-  // Facility Inputs (fixed for Pecos 15 MW)
+  // Facility Inputs
   const [facilityMW, setFacilityMW] = useState(15)
   const [curtailment, setCurtailment] = useState(0.05)  // 5% curtailment = 95% uptime
   const [energyPrice, setEnergyPrice] = useState(4.5)   // ¢/kWh
@@ -397,7 +397,7 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>Pecos 15 MW Bitcoin Mining</h1>
+        <h1>Pecos {facilityMW} MW Bitcoin Mining</h1>
         <p className="subtitle">Astro Solutions LLC</p>
       </header>
 
@@ -1775,6 +1775,10 @@ function App() {
             <div className="controls-grid">
               <div className="control-group">
                 <h3>Site & Build-up</h3>
+                <div className="input-row">
+                  <label>Facility Size: {facilityMW} MW</label>
+                  <input type="range" min="1" max="50" step="0.5" value={facilityMW} onChange={e => setFacilityMW(+e.target.value)} />
+                </div>
                 <div className="input-row">
                   <label>Site + Infrastructure: {formatCurrency(siteBuildCost)}</label>
                   <input
