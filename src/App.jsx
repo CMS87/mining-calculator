@@ -1873,9 +1873,20 @@ function App() {
                       <label>$/TH</label>
                       <input type="text" value={coPricePerTh} onChange={e => setCoPricePerTh(parseFloat(e.target.value) || 0)} />
                     </div>
-                    <div style={{fontSize: '0.7rem', color: '#64748b', marginTop: '4px'}}>
-                      ASICs: {formatCurrency(results.hostedAsicValue)}<br/>
-                      Owner payback: {results.minerOwnerPaybackMonths?.toFixed(1) || '∞'} mo → 50/50
+                    <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '12px', padding: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px'}}>
+                      <div style={{marginBottom: '6px', fontWeight: '600', color: '#60a5fa'}}>Equity Building</div>
+                      <div>Hashrate: {(results.coTotalHashratePH * 1000).toLocaleString()} TH</div>
+                      <div>ASIC Value: {formatCurrency(results.hostedAsicValue)}</div>
+                      <div style={{marginTop: '6px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '6px'}}>
+                        <div>Net Revenue: {formatCurrency(results.coTotalNetRevenue)}/mo</div>
+                        <div>Owner ({((1-coMiningShare)*100).toFixed(0)}%): {formatCurrency(results.minerOwnerMonthly)}/mo</div>
+                        <div>Us ({(coMiningShare*100).toFixed(0)}%): {formatCurrency(results.coNetMonthly + monthlyOpex)}/mo</div>
+                      </div>
+                      <div style={{marginTop: '6px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '6px', fontWeight: '600'}}>
+                        <div style={{color: '#fbbf24'}}>Owner payback: {results.minerOwnerPaybackMonths?.toFixed(1) || '∞'} months</div>
+                        <div style={{color: '#4ade80', marginTop: '4px'}}>Then → 50/50 split</div>
+                        <div style={{color: '#4ade80'}}>Our share: {formatCurrency(results.coPhase2Monthly)}/mo</div>
+                      </div>
                     </div>
                   </div>
                   <div style={{padding: '12px', background: 'rgba(34,197,94,0.1)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.3)'}}>
