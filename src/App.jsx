@@ -1799,20 +1799,20 @@ function App() {
               <div className="control-group">
                 <h3>Market Conditions</h3>
                 <div className="input-row">
-                  <label>Hashprice: ${hashprice}/PH/day <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '2px 8px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a></label>
-                  <input type="range" min="20" max="60" step="1" value={hashprice} onChange={e => setHashprice(+e.target.value)} />
+                  <label>Hashprice: $/PH/day <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '2px 8px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a></label>
+                  <input type="number" min="1" step="1" value={hashprice} onChange={e => setHashprice(+e.target.value)} />
                 </div>
                 <div className="input-row">
-                  <label>Energy: {energyPrice}¢/kWh</label>
-                  <input type="range" min="3" max="8" step="0.5" value={energyPrice} onChange={e => setEnergyPrice(+e.target.value)} />
+                  <label>Energy: ¢/kWh</label>
+                  <input type="number" min="0" step="0.1" value={energyPrice} onChange={e => setEnergyPrice(+e.target.value)} />
                 </div>
                 <div className="input-row">
-                  <label>Curtailment: {(curtailment * 100).toFixed(0)}%</label>
-                  <input type="range" min="0" max="0.15" step="0.01" value={curtailment} onChange={e => setCurtailment(+e.target.value)} />
+                  <label>Curtailment: %</label>
+                  <input type="number" min="0" max="100" step="1" value={(curtailment * 100).toFixed(0)} onChange={e => setCurtailment(+e.target.value / 100)} />
                 </div>
                 <div className="input-row">
-                  <label>Hosting Fee (hashrate share): {Math.round(coMiningShare * 100)}%</label>
-                  <input type="range" min="0.20" max="0.50" step="0.05" value={coMiningShare} onChange={e => setCoMiningShare(+e.target.value)} />
+                  <label>Hosting Fee (hashrate share): %</label>
+                  <input type="number" min="0" max="100" step="1" value={Math.round(coMiningShare * 100)} onChange={e => setCoMiningShare(+e.target.value / 100)} />
                   <span style={{fontSize: '0.75rem', color: '#64748b'}}>Share we earn from hosting third-party miners</span>
                 </div>
               </div>
