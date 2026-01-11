@@ -1776,8 +1776,8 @@ function App() {
               <div className="control-group">
                 <h3>Site & Build-up</h3>
                 <div className="input-row">
-                  <label>Facility Size: {facilityMW} MW</label>
-                  <input type="range" min="1" max="50" step="0.5" value={facilityMW} onChange={e => setFacilityMW(+e.target.value)} />
+                  <label>Facility Size: MW</label>
+                  <input type="number" min="1" step="0.5" value={facilityMW} onChange={e => setFacilityMW(+e.target.value)} />
                 </div>
                 <div className="input-row">
                   <label>Site + Infrastructure: {formatCurrency(siteBuildCost)}</label>
