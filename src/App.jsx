@@ -1836,25 +1836,28 @@ function App() {
                 </div>
               </div>
               <div className="control-group">
-                <h3>Co-Mining ASICs (hosted)</h3>
-                <div className="input-row">
-                  <label>Efficiency: J/TH</label>
-                  <input type="text" value={coEfficiency} onChange={e => setCoEfficiency(parseFloat(e.target.value) || 0)} />
-                </div>
-                <span style={{fontSize: '0.75rem', color: '#64748b'}}>Best miners from hosted clients</span>
-              </div>
-              <div className="control-group">
-                <h3>Self-Mining ASICs (we buy)</h3>
-                <div className="input-row">
-                  <label>Efficiency: J/TH</label>
-                  <input type="text" value={selfEfficiency} onChange={e => setSelfEfficiency(parseFloat(e.target.value) || 0)} />
-                </div>
-                <div className="input-row">
-                  <label>Price: $/TH</label>
-                  <input type="text" value={selfPricePerTh} onChange={e => setSelfPricePerTh(parseFloat(e.target.value) || 0)} />
-                </div>
-                <div className="capex-summary">
-                  ASICs: {formatCurrency(results.minerCost)}
+                <h3>ASIC Specs</h3>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
+                  <div style={{padding: '12px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)'}}>
+                    <div style={{fontWeight: '600', marginBottom: '8px', color: '#60a5fa'}}>Co-Mining (hosted)</div>
+                    <div className="input-row">
+                      <label>J/TH</label>
+                      <input type="text" value={coEfficiency} onChange={e => setCoEfficiency(parseFloat(e.target.value) || 0)} />
+                    </div>
+                    <div style={{fontSize: '0.7rem', color: '#64748b', marginTop: '4px'}}>Best miners from clients</div>
+                  </div>
+                  <div style={{padding: '12px', background: 'rgba(34,197,94,0.1)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.3)'}}>
+                    <div style={{fontWeight: '600', marginBottom: '8px', color: '#4ade80'}}>Self-Mining (we buy)</div>
+                    <div className="input-row">
+                      <label>J/TH</label>
+                      <input type="text" value={selfEfficiency} onChange={e => setSelfEfficiency(parseFloat(e.target.value) || 0)} />
+                    </div>
+                    <div className="input-row">
+                      <label>$/TH</label>
+                      <input type="text" value={selfPricePerTh} onChange={e => setSelfPricePerTh(parseFloat(e.target.value) || 0)} />
+                    </div>
+                    <div style={{fontSize: '0.7rem', color: '#64748b', marginTop: '4px'}}>CAPEX: {formatCurrency(results.minerCost)}</div>
+                  </div>
                 </div>
               </div>
             </div>
