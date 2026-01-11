@@ -92,6 +92,7 @@ function App() {
     const totalHashratePH = totalHashrateTH / 1000                // PH/s
     const effectiveHashratePH = totalHashratePH * (1 - curtailment)  // after curtailment
     const minerCost = totalHashrateTH * pricePerTh                // Total ASIC cost
+    const miners = Math.floor(totalPowerKW / minerPowerKW)        // Approx miner count for display
     const uptime = 1 - curtailment
 
     // CAPEX breakdown
