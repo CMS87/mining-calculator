@@ -30,8 +30,10 @@ function App() {
   // Co-Mining hashrate share
   const [coMiningShare, setCoMiningShare] = useState(0.30)  // 30% of hashrate
 
-  // Model Mix: 0 = 100% Co-Mining, 1 = 100% Self-Mining
-  const [modelMix, setModelMix] = useState(0.5)  // 50/50 Co-Mining + Self-Mining
+  // Model Mix by MW (Self-Mining MW, rest goes to Co-Mining)
+  const [selfMiningMW, setSelfMiningMW] = useState(7.5)  // MW allocated to self-mining
+  // Derived: percentage for calculations
+  const modelMix = facilityMW > 0 ? Math.min(selfMiningMW / facilityMW, 1) : 0
 
   // Gas-to-Power inputs
   const [gasInputMode, setGasInputMode] = useState('gas') // 'gas' = MCF/day, 'power' = MW
@@ -200,7 +202,7 @@ function App() {
     }
   }, [facilityMW, curtailment, energyPrice, hashprice, monthlyOpex,
       siteBuildCost, efficiency, hashratePerUnit, pricePerTh,
-      coPhase1Pct, coPhase2Pct, selfPhase1Pct, selfPhase2Pct, coMiningShare, modelMix])
+      coPhase1Pct, coPhase2Pct, selfPhase1Pct, selfPhase2Pct, coMiningShare, selfMiningMW])
 
   const formatCurrency = (val) => {
     if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`
@@ -2046,26 +2048,22 @@ function App() {
           {/* Model Mixer */}
           <section className="mixer-section">
             <h2>Business Model Mix</h2>
-            <p className="section-intro">Choose how much capacity to allocate to hosting (Co-Mining) vs owning miners (Self-Mining)</p>
+            <p className="section-intro">Allocate MW between hosting (Co-Mining) and owning miners (Self-Mining)</p>
 
             <div className="mixer-control">
-              <div className="mixer-labels">
-                <span className="co-label">100% Co-Mining</span>
-                <span className="mix-label">Hybrid</span>
-                <span className="self-label">100% Self-Mining</span>
+              <div className="input-row two-col" style={{maxWidth: '400px', margin: '0 auto 16px'}}>
+                <div>
+                  <label>Self-Mining: MW</label>
+                  <input type="text" value={selfMiningMW} onChange={e => setSelfMiningMW(Math.min(parseFloat(e.target.value) || 0, facilityMW))} />
+                </div>
+                <div>
+                  <label>Co-Mining: MW</label>
+                  <input type="text" value={(facilityMW - selfMiningMW).toFixed(1)} disabled style={{background: 'rgba(100,116,139,0.2)'}} />
+                </div>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={modelMix}
-                onChange={e => setModelMix(+e.target.value)}
-                className="mixer-slider"
-              />
               <div className="mixer-value">
                 {modelMix === 0 ? '100% Co-Mining' :
-                 modelMix === 1 ? '100% Self-Mining' :
+                 modelMix >= 1 ? '100% Self-Mining' :
                  `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining`}
               </div>
             </div>
