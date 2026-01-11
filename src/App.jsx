@@ -1819,16 +1819,16 @@ function App() {
               <div className="control-group">
                 <h3>ASIC Specs</h3>
                 <div className="input-row">
-                  <label>Power: {minerPowerKW} kW/unit</label>
-                  <input type="range" min="3.0" max="4.0" step="0.05" value={minerPowerKW} onChange={e => setMinerPowerKW(+e.target.value)} />
+                  <label>Power: kW/unit</label>
+                  <input type="number" min="0" step="0.01" value={minerPowerKW} onChange={e => setMinerPowerKW(+e.target.value)} />
                 </div>
                 <div className="input-row">
-                  <label>Hashrate: {hashratePerUnit} TH/s</label>
-                  <input type="range" min="180" max="280" step="10" value={hashratePerUnit} onChange={e => setHashratePerUnit(+e.target.value)} />
+                  <label>Hashrate: TH/s</label>
+                  <input type="number" min="1" step="1" value={hashratePerUnit} onChange={e => setHashratePerUnit(+e.target.value)} />
                 </div>
                 <div className="input-row">
-                  <label>Price: ${pricePerTh}/TH</label>
-                  <input type="range" min="5" max="20" step="0.5" value={pricePerTh} onChange={e => setPricePerTh(+e.target.value)} />
+                  <label>Price: $/TH</label>
+                  <input type="number" min="0" step="0.1" value={pricePerTh} onChange={e => setPricePerTh(+e.target.value)} />
                 </div>
                 <div className="capex-summary">
                   Miners: {formatCurrency(results.minerCost)}
