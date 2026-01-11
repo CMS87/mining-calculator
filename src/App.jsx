@@ -20,9 +20,12 @@ function App() {
   const [siteBuildCost, setSiteBuildCost] = useState(3000000)  // $3M for site + infrastructure
 
   // Miner Specs (based on S21 Pro)
-  const [minerPowerKW, setMinerPowerKW] = useState(3.40)        // kW per unit
+  const [efficiency, setEfficiency] = useState(15.5)            // J/TH (Joules per Terahash)
   const [hashratePerUnit, setHashratePerUnit] = useState(220)   // TH/s per unit
   const [pricePerTh, setPricePerTh] = useState(11)              // $/TH
+
+  // Derived: power per miner from efficiency
+  const minerPowerKW = (efficiency * hashratePerUnit) / 1000    // kW per unit
 
   // Co-Mining hashrate share
   const [coMiningShare, setCoMiningShare] = useState(0.30)  // 30% of hashrate
@@ -193,7 +196,7 @@ function App() {
       mixROI,
     }
   }, [facilityMW, curtailment, energyPrice, hashprice, monthlyOpex,
-      siteBuildCost, minerPowerKW, hashratePerUnit, pricePerTh,
+      siteBuildCost, efficiency, hashratePerUnit, pricePerTh,
       coPhase1Pct, coPhase2Pct, selfPhase1Pct, selfPhase2Pct, coMiningShare, modelMix])
 
   const formatCurrency = (val) => {
@@ -383,7 +386,7 @@ function App() {
     loadFactor,
     majorOverhaulCost,
     majorOverhaulHours,
-    minerPowerKW,
+    efficiency,
     otherOpex,
     parasiticLoad,
     poolFee,
@@ -1413,7 +1416,7 @@ function App() {
                       }
                       const p = presets[e.target.value]
                       if (p) {
-                        setMinerPowerKW(p.kw)
+                        setEfficiency((p.kw * 1000) / p.th)  // Convert kW to J/TH
                         setHashratePerUnit(p.th)
                         setPricePerTh(p.pth)
                       }
@@ -1448,19 +1451,19 @@ function App() {
                     />
                   </div>
                   <div>
-                    <label>Power (kW)</label>
+                    <label>Efficiency (J/TH)</label>
                     <input
                       type="number"
-                      step="0.01"
-                      value={minerPowerKW}
-                      onChange={e => setMinerPowerKW(+e.target.value)}
+                      step="0.1"
+                      value={efficiency}
+                      onChange={e => setEfficiency(+e.target.value)}
                     />
                   </div>
                 </div>
 
                 <div className="result-row compact">
-                  <span>Efficiency</span>
-                  <span>{((minerPowerKW * 1000) / hashratePerUnit).toFixed(1)} J/TH ({((minerPowerKW * 1000) / hashratePerUnit).toFixed(1)} W/TH)</span>
+                  <span>Power per Unit</span>
+                  <span>{minerPowerKW.toFixed(2)} kW ({(minerPowerKW * 1000).toFixed(0)} W)</span>
                 </div>
 
                 {/* ASIC Pricing */}
@@ -1819,19 +1822,19 @@ function App() {
               <div className="control-group">
                 <h3>ASIC Specs</h3>
                 <div className="input-row">
-                  <label>Power: kW/unit</label>
-                  <input type="number" min="0" step="0.01" value={minerPowerKW} onChange={e => setMinerPowerKW(+e.target.value)} />
-                </div>
-                <div className="input-row">
                   <label>Hashrate: TH/s</label>
                   <input type="number" min="1" step="1" value={hashratePerUnit} onChange={e => setHashratePerUnit(+e.target.value)} />
+                </div>
+                <div className="input-row">
+                  <label>Efficiency: J/TH</label>
+                  <input type="number" min="1" step="0.1" value={efficiency} onChange={e => setEfficiency(+e.target.value)} />
                 </div>
                 <div className="input-row">
                   <label>Price: $/TH</label>
                   <input type="number" min="0" step="0.1" value={pricePerTh} onChange={e => setPricePerTh(+e.target.value)} />
                 </div>
                 <div className="capex-summary">
-                  Miners: {formatCurrency(results.minerCost)}
+                  Power: {minerPowerKW.toFixed(2)} kW/unit • Miners: {formatCurrency(results.minerCost)}
                 </div>
               </div>
             </div>
