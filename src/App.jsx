@@ -87,12 +87,13 @@ function App() {
   // Calculations - compute BOTH models for comparison
   const results = useMemo(() => {
     // Facility base calculations (from MW, efficiency, price)
+    const safeEfficiency = efficiency || 15.5                     // Avoid division by zero
     const totalPowerKW = facilityMW * 1000                        // Total power in kW
-    const totalHashrateTH = (totalPowerKW * 1000) / efficiency    // TH/s = Watts / (J/TH)
+    const totalHashrateTH = (totalPowerKW * 1000) / safeEfficiency // TH/s = Watts / (J/TH)
     const totalHashratePH = totalHashrateTH / 1000                // PH/s
     const effectiveHashratePH = totalHashratePH * (1 - curtailment)  // after curtailment
     const minerCost = totalHashrateTH * pricePerTh                // Total ASIC cost
-    const miners = Math.floor(totalPowerKW / minerPowerKW)        // Approx miner count for display
+    const miners = minerPowerKW > 0 ? Math.floor(totalPowerKW / minerPowerKW) : 0  // Approx miner count
     const uptime = 1 - curtailment
 
     // CAPEX breakdown
