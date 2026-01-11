@@ -97,17 +97,36 @@ function App() {
     const totalPowerKW = facilityMW * 1000
     const uptime = 1 - curtailment
 
-    // ========== CO-MINING MODEL (best miners, no ASIC cost) ==========
+    // ========== CO-MINING MODEL (best miners, no ASIC cost for us) ==========
     const safeCoEfficiency = coEfficiency || 15
     const coTotalHashrateTH = (totalPowerKW * 1000) / safeCoEfficiency
     const coTotalHashratePH = coTotalHashrateTH / 1000
     const coEffectiveHashratePH = coTotalHashratePH * uptime
+
+    // Hosted ASICs value (miner owner's investment)
+    const hostedAsicValue = coTotalHashrateTH * coPricePerTh
+
+    // Total facility gross revenue (before split)
+    const coTotalGrossRevenue = coEffectiveHashratePH * hashprice * 30
+    const coTotalPowerCost = (energyPrice / 100) * totalPowerKW * 720
+    const coTotalNetRevenue = coTotalGrossRevenue - coTotalPowerCost
+
+    // Phase 1: Miner owner gets (1 - coMiningShare) until they recover ASIC value
+    const minerOwnerShare = 1 - coMiningShare  // e.g., 70%
+    const minerOwnerMonthly = coTotalNetRevenue * minerOwnerShare
+    const minerOwnerPaybackMonths = minerOwnerMonthly > 0 ? hostedAsicValue / minerOwnerMonthly : Infinity
+
+    // Our share (hosting fee)
     const coHashratePH = coEffectiveHashratePH * coMiningShare  // Our share from hosting
     const coGrossRevenue = coHashratePH * hashprice * 30
-    const coPowerCost = (energyPrice / 100) * totalPowerKW * 720 * coMiningShare
-    const coNetMonthly = coGrossRevenue - coPowerCost - monthlyOpex
+    const coPowerCost = coTotalPowerCost * coMiningShare
+    const coNetMonthly = coTotalNetRevenue * coMiningShare - monthlyOpex
     const coAnnualNet = coNetMonthly * 12
     const coMiningCapex = siteBuildCost  // No miners to buy
+
+    // Phase 2: After miner owner recovers ASICs, split becomes 50/50
+    const coPhase2Share = 0.50
+    const coPhase2Monthly = coTotalNetRevenue * coPhase2Share - monthlyOpex
 
     // ========== SELF-MINING MODEL (second tier miners, we buy ASICs) ==========
     const safeSelfEfficiency = selfEfficiency || 18
@@ -181,6 +200,12 @@ function App() {
       coPhase1Operator,
       coPhase2Investor,
       coPhase2Operator,
+      // Co-Mining equity building
+      hostedAsicValue,
+      minerOwnerMonthly,
+      minerOwnerPaybackMonths,
+      coPhase2Monthly,
+      coTotalNetRevenue,
       coPayback,
       coROI,
       // Self-Mining
@@ -1844,7 +1869,14 @@ function App() {
                       <label>J/TH</label>
                       <input type="text" value={coEfficiency} onChange={e => setCoEfficiency(parseFloat(e.target.value) || 0)} />
                     </div>
-                    <div style={{fontSize: '0.7rem', color: '#64748b', marginTop: '4px'}}>Best miners from clients</div>
+                    <div className="input-row">
+                      <label>$/TH</label>
+                      <input type="text" value={coPricePerTh} onChange={e => setCoPricePerTh(parseFloat(e.target.value) || 0)} />
+                    </div>
+                    <div style={{fontSize: '0.7rem', color: '#64748b', marginTop: '4px'}}>
+                      ASICs: {formatCurrency(results.hostedAsicValue)}<br/>
+                      Owner payback: {results.minerOwnerPaybackMonths?.toFixed(1) || '∞'} mo → 50/50
+                    </div>
                   </div>
                   <div style={{padding: '12px', background: 'rgba(34,197,94,0.1)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.3)'}}>
                     <div style={{fontWeight: '600', marginBottom: '8px', color: '#4ade80'}}>Self-Mining (we buy)</div>
