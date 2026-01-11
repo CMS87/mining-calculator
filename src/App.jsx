@@ -19,12 +19,12 @@ function App() {
   // CAPEX - Site & Build-up (same for both models)
   const [siteBuildCost, setSiteBuildCost] = useState(3000000)  // $3M for site + infrastructure
 
-  // Miner Specs (based on S21 Pro)
+  // Miner Specs
   const [efficiency, setEfficiency] = useState(15.5)            // J/TH (Joules per Terahash)
-  const [hashratePerUnit, setHashratePerUnit] = useState(220)   // TH/s per unit
+  const [hashratePerUnit, setHashratePerUnit] = useState(220)   // TH/s per unit (used in gas-to-power)
   const [pricePerTh, setPricePerTh] = useState(11)              // $/TH
 
-  // Derived: power per miner from efficiency
+  // Derived: power per miner from efficiency (used in gas-to-power)
   const minerPowerKW = (efficiency * hashratePerUnit) / 1000    // kW per unit
 
   // Co-Mining hashrate share
@@ -86,11 +86,12 @@ function App() {
 
   // Calculations - compute BOTH models for comparison
   const results = useMemo(() => {
-    // Facility base calculations
-    const miners = Math.floor(facilityMW * 1000 / minerPowerKW)
-    const totalHashratePH = (miners * hashratePerUnit) / 1000  // PH/s
+    // Facility base calculations (from MW, efficiency, price)
+    const totalPowerKW = facilityMW * 1000                        // Total power in kW
+    const totalHashrateTH = (totalPowerKW * 1000) / efficiency    // TH/s = Watts / (J/TH)
+    const totalHashratePH = totalHashrateTH / 1000                // PH/s
     const effectiveHashratePH = totalHashratePH * (1 - curtailment)  // after curtailment
-    const minerCost = miners * hashratePerUnit * pricePerTh
+    const minerCost = totalHashrateTH * pricePerTh                // Total ASIC cost
     const uptime = 1 - curtailment
 
     // CAPEX breakdown
@@ -100,14 +101,14 @@ function App() {
     // ========== CO-MINING MODEL ==========
     const coHashratePH = effectiveHashratePH * coMiningShare
     const coGrossRevenue = coHashratePH * hashprice * 30
-    const coPowerCost = (energyPrice / 100) * minerPowerKW * miners * 720 * uptime * coMiningShare
+    const coPowerCost = (energyPrice / 100) * totalPowerKW * 720 * uptime * coMiningShare
     const coNetMonthly = coGrossRevenue - coPowerCost - monthlyOpex
     const coAnnualNet = coNetMonthly * 12
 
     // ========== SELF-MINING MODEL ==========
     const selfHashratePH = effectiveHashratePH  // 100%
     const selfGrossRevenue = selfHashratePH * hashprice * 30
-    const selfPowerCost = (energyPrice / 100) * minerPowerKW * miners * 720 * uptime
+    const selfPowerCost = (energyPrice / 100) * totalPowerKW * 720 * uptime
     const selfNetMonthly = selfGrossRevenue - selfPowerCost - monthlyOpex
     const selfAnnualNet = selfNetMonthly * 12
 
@@ -1822,19 +1823,15 @@ function App() {
               <div className="control-group">
                 <h3>ASIC Specs</h3>
                 <div className="input-row">
-                  <label>Hashrate: TH/s</label>
-                  <input type="number" min="1" step="1" value={hashratePerUnit} onChange={e => setHashratePerUnit(+e.target.value)} />
-                </div>
-                <div className="input-row">
                   <label>Efficiency: J/TH</label>
-                  <input type="number" min="1" step="0.1" value={efficiency} onChange={e => setEfficiency(+e.target.value)} />
+                  <input type="text" value={efficiency} onChange={e => setEfficiency(+e.target.value || 0)} />
                 </div>
                 <div className="input-row">
                   <label>Price: $/TH</label>
-                  <input type="number" min="0" step="0.1" value={pricePerTh} onChange={e => setPricePerTh(+e.target.value)} />
+                  <input type="text" value={pricePerTh} onChange={e => setPricePerTh(+e.target.value || 0)} />
                 </div>
                 <div className="capex-summary">
-                  Power: {minerPowerKW.toFixed(2)} kW/unit • Miners: {formatCurrency(results.minerCost)}
+                  ASICs: {formatCurrency(results.minerCost)}
                 </div>
               </div>
             </div>
