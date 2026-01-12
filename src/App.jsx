@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import './App.css'
 
 function App() {
@@ -8,19 +8,20 @@ function App() {
 
   // Presentation Mode: 'models' (explain business), 'deal' (structure investment), or 'gas' (gas-to-power)
   const [mode, setMode] = useState('models')
+  const [hashpriceLoading, setHashpriceLoading] = useState(true)
 
   // Facility Inputs
   const [facilityMW, setFacilityMW] = useState(15)
   const [curtailment, setCurtailment] = useState(0.05)  // 5% curtailment = 95% uptime
   const [energyPrice, setEnergyPrice] = useState(4.5)   // ¢/kWh
-  const [hashprice, setHashprice] = useState(37)        // $/PH/day
-  const [monthlyOpex, setMonthlyOpex] = useState(50000)
+  const [hashprice, setHashprice] = useState(47)        // $/PH/day - fetched live
+  const [monthlyOpex, setMonthlyOpex] = useState(60000)
 
   // CAPEX - Site & Build-up (same for both models)
   const [siteBuildCost, setSiteBuildCost] = useState(3000000)  // $3M for site + infrastructure
 
   // Miner Specs - Co-Mining (best miners from hosted clients)
-  const [coEfficiency, setCoEfficiency] = useState(15)          // J/TH - top tier
+  const [coEfficiency, setCoEfficiency] = useState(14)          // J/TH - top tier
   const [coPricePerTh, setCoPricePerTh] = useState(14)          // $/TH - premium
 
   // Miner Specs - Self-Mining (second tier, lower CAPEX)
@@ -91,6 +92,31 @@ function App() {
   // Self-Mining splits (higher capital, higher investor share)
   const [selfPhase1Pct, setSelfPhase1Pct] = useState(0.85)  // 85% until ROI
   const [selfPhase2Pct, setSelfPhase2Pct] = useState(0.50)  // 50% after ROI
+
+  // Fetch live hashprice on mount
+  useEffect(() => {
+    const fetchHashprice = async () => {
+      try {
+        // Try to fetch from Hashrate Index API (public endpoint)
+        const response = await fetch('https://api.hashrateindex.com/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `{ getHashprice { usd } }`
+          })
+        })
+        const data = await response.json()
+        if (data?.data?.getHashprice?.usd) {
+          setHashprice(Math.round(data.data.getHashprice.usd))
+        }
+      } catch (err) {
+        console.log('Using default hashprice, live fetch failed:', err.message)
+      } finally {
+        setHashpriceLoading(false)
+      }
+    }
+    fetchHashprice()
+  }, [])
 
   // Calculations - compute BOTH models for comparison
   const results = useMemo(() => {
@@ -1564,7 +1590,7 @@ function App() {
                 {/* Revenue inputs */}
                 <div className="input-row two-col" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '12px'}}>
                   <div>
-                    <label>Hashprice ($/PH/day) <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live Data ↗</a></label>
+                    <label>Hashprice ($/PH/day) {hashpriceLoading ? <span style={{fontSize: '0.7rem', color: '#fbbf24', marginLeft: '8px'}}>Loading...</span> : <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #22c55e, #16a34a)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>}</label>
                     <input
                       type="number"
                       value={hashprice}
