@@ -2204,18 +2204,29 @@ function App() {
               {/* After Equity section - only show if there's Co-Mining in the mix */}
               {modelMix < 1 && (
                 <div style={{marginTop: '20px', padding: '16px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '10px', border: '1px solid rgba(34, 197, 94, 0.3)'}}>
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px'}}>
+                  <div style={{fontSize: '0.75rem', color: '#4ade80', fontWeight: '600', marginBottom: '8px'}}>AFTER EQUITY (50% Co-Mining share)</div>
+                  <div style={{fontSize: '0.7rem', color: '#94a3b8', marginBottom: '12px'}}>~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months after miner owners recover equipment</div>
+
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', fontSize: '0.8rem'}}>
                     <div>
-                      <div style={{fontSize: '0.75rem', color: '#4ade80', fontWeight: '600', marginBottom: '4px'}}>AFTER EQUITY (50% Co-Mining share)</div>
-                      <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months after miner owners recover equipment</div>
+                      <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Hashrate</div>
+                      <div style={{color: '#f1f5f9', fontWeight: '600'}}>{Math.round(results.coTotalHashratePH * 0.5 * (1 - modelMix) + results.selfHashratePH * modelMix)} PH/s</div>
+                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+{Math.round(results.coTotalHashratePH * 0.2 * (1 - modelMix))} PH/s</div>
                     </div>
-                    <div style={{textAlign: 'right'}}>
-                      <div style={{fontSize: '1.3rem', fontWeight: '700', color: '#4ade80'}}>
-                        ${formatNumber(Math.round(results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix))}/mo
-                      </div>
-                      <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>
-                        +${formatNumber(Math.round((results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix) - results.mixNetMonthly))}/mo increase
-                      </div>
+                    <div>
+                      <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Revenue</div>
+                      <div style={{color: '#22c55e', fontWeight: '600'}}>${formatNumber(Math.round(results.coTotalGrossRevenue * 0.5 * (1 - modelMix) + results.selfGrossRevenue * modelMix))}</div>
+                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+${formatNumber(Math.round(results.coTotalGrossRevenue * 0.2 * (1 - modelMix)))}</div>
+                    </div>
+                    <div>
+                      <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Power Cost</div>
+                      <div style={{color: '#ef4444', fontWeight: '600'}}>${formatNumber(Math.round(results.coTotalPowerCost * 0.5 * (1 - modelMix) + results.selfPowerCost * modelMix))}</div>
+                      <div style={{color: '#f87171', fontSize: '0.65rem'}}>+${formatNumber(Math.round(results.coTotalPowerCost * 0.2 * (1 - modelMix)))}</div>
+                    </div>
+                    <div>
+                      <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Net Monthly</div>
+                      <div style={{color: '#4ade80', fontWeight: '700', fontSize: '1rem'}}>${formatNumber(Math.round(results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix))}</div>
+                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+${formatNumber(Math.round((results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix) - results.mixNetMonthly))}</div>
                     </div>
                   </div>
                 </div>
