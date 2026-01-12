@@ -2149,48 +2149,6 @@ function App() {
             </div>
           </section>
 
-          {/* Side-by-Side Comparison */}
-          <section className="comparison-section">
-            <h2>Model Comparison</h2>
-            <div className="comparison-table">
-              <div className="table-header">
-                <span></span>
-                <span className="col-co">Co-Mining</span>
-                <span className="col-self">Self-Mining</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">CAPEX</span>
-                <span className="col-co">{formatCurrency(results.coMiningCapex)}</span>
-                <span className="col-self">{formatCurrency(results.selfMiningCapex)}</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">Hashrate</span>
-                <span className="col-co">{results.coHashratePH.toFixed(0)} PH/s</span>
-                <span className="col-self">{results.selfHashratePH.toFixed(0)} PH/s</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">Monthly Revenue</span>
-                <span className="col-co">${formatNumber(Math.round(results.coGrossRevenue))}</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfGrossRevenue))}</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">Monthly Power Cost</span>
-                <span className="col-co">${formatNumber(Math.round(results.coPowerCost))}</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfPowerCost))}</span>
-              </div>
-              <div className="table-row total">
-                <span className="col-label">Monthly Net Profit</span>
-                <span className="col-co highlight">${formatNumber(Math.round(results.coNetMonthly))}</span>
-                <span className="col-self highlight">${formatNumber(Math.round(results.selfNetMonthly))}</span>
-              </div>
-              <div className="table-row">
-                <span className="col-label">Annual Net Profit</span>
-                <span className="col-co">${formatNumber(Math.round(results.coAnnualNet))}</span>
-                <span className="col-self">${formatNumber(Math.round(results.selfAnnualNet))}</span>
-              </div>
-            </div>
-          </section>
-
           {/* Model Mixer */}
           <section className="mixer-section">
             <h2>Business Model Mix</h2>
