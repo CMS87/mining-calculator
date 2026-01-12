@@ -4,7 +4,8 @@ import './App.css'
 function App() {
   // Check URL params: ?gas=true shows gas/power tabs (hidden by default for investor sharing)
   const urlParams = new URLSearchParams(window.location.search)
-  const showGas = urlParams.get('gas') === 'true'
+  // const showGas = urlParams.get('gas') === 'true'
+  const showGas = true
 
   // Presentation Mode: 'models' (explain business), 'deal' (structure investment), or 'gas' (gas-to-power)
   const [mode, setMode] = useState('models')
