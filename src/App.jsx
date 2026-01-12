@@ -2016,46 +2016,19 @@ function App() {
                 </div>
 
                 <div className="model-phases" style={{marginTop: '16px', padding: '12px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px'}}>
-                  <h4 style={{color: '#60a5fa', marginBottom: '12px'}}>Investor Monthly Returns</h4>
-                  <div style={{display: 'grid', gap: '10px'}}>
-                    <div style={{padding: '10px', background: 'rgba(251,191,36,0.15)', borderRadius: '6px', border: '1px solid rgba(251,191,36,0.4)'}}>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <div>
-                          <div style={{fontWeight: '600', color: '#fbbf24'}}>Month 0 – {results.minerOwnerPaybackMonths?.toFixed(0) || '?'}</div>
-                          <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>Miner owner recovering ASICs</div>
-                        </div>
-                        <div style={{textAlign: 'right'}}>
-                          <div style={{fontSize: '1.2rem', fontWeight: '700', color: '#fbbf24'}}>{formatCurrency(results.coPhase1aInvestor)}</div>
-                          <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>per month</div>
-                        </div>
-                      </div>
+                  <h4 style={{color: '#60a5fa', marginBottom: '10px'}}>Investor Monthly Returns</h4>
+                  <div style={{display: 'grid', gap: '8px'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(251,191,36,0.15)', borderRadius: '6px'}}>
+                      <span style={{color: '#fbbf24', fontSize: '0.85rem'}}>Initial (30% share)</span>
+                      <span style={{fontWeight: '700', color: '#fbbf24', fontSize: '1.1rem'}}>{formatCurrency(results.coPhase1aInvestor)}</span>
                     </div>
-                    <div style={{textAlign: 'center', color: '#4ade80', fontSize: '0.8rem'}}>↓ After miner payback, our share increases 30% → 50% ↓</div>
-                    <div style={{padding: '10px', background: 'rgba(34,197,94,0.15)', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.4)'}}>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <div>
-                          <div style={{fontWeight: '600', color: '#4ade80'}}>Month {results.minerOwnerPaybackMonths?.toFixed(0) || '?'}+</div>
-                          <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>50/50 split with miner owner</div>
-                        </div>
-                        <div style={{textAlign: 'right'}}>
-                          <div style={{fontSize: '1.2rem', fontWeight: '700', color: '#4ade80'}}>{formatCurrency(results.coPhase1bInvestor)}</div>
-                          <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>per month (+{Math.round((results.coPhase1bInvestor / results.coPhase1aInvestor - 1) * 100) || 0}%)</div>
-                        </div>
-                      </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(34,197,94,0.15)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.3)'}}>
+                      <span style={{color: '#4ade80', fontSize: '0.85rem'}}>After equity (50% share)</span>
+                      <span style={{fontWeight: '700', color: '#4ade80', fontSize: '1.1rem'}}>{formatCurrency(results.coPhase1bInvestor)}</span>
                     </div>
-                    <div style={{textAlign: 'center', color: '#a78bfa', fontSize: '0.8rem'}}>↓ After investor ROI, split adjusts ↓</div>
-                    <div style={{padding: '10px', background: 'rgba(139,92,246,0.15)', borderRadius: '6px', border: '1px solid rgba(139,92,246,0.4)'}}>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <div>
-                          <div style={{fontWeight: '600', color: '#a78bfa'}}>Steady State</div>
-                          <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>Long-term returns</div>
-                        </div>
-                        <div style={{textAlign: 'right'}}>
-                          <div style={{fontSize: '1.2rem', fontWeight: '700', color: '#a78bfa'}}>{formatCurrency(results.coPhase2Investor)}</div>
-                          <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>per month</div>
-                        </div>
-                      </div>
-                    </div>
+                  </div>
+                  <div style={{marginTop: '10px', fontSize: '0.75rem', color: '#94a3b8', lineHeight: '1.4'}}>
+                    Share increases from 30% to 50% after miner owners recover their equipment cost (~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months)
                   </div>
                 </div>
               </div>
