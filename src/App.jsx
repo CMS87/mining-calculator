@@ -1899,7 +1899,7 @@ function App() {
                     </div>
                     <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '12px', padding: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px'}}>
                       <div style={{marginBottom: '6px', fontWeight: '600', color: '#60a5fa'}}>Equity Building</div>
-                      <div>Hashrate: {(results.coTotalHashratePH * 1000).toLocaleString()} TH</div>
+                      <div>Hashrate: {results.coTotalHashratePH.toFixed(0)} PH</div>
                       <div>ASIC Value: {formatCurrency(results.hostedAsicValue)}</div>
                       <div style={{marginTop: '6px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '6px'}}>
                         <div>Net Revenue: {formatCurrency(results.coTotalNetRevenue)}/mo</div>
