@@ -265,9 +265,11 @@ function App() {
       coPhase1Pct, coPhase2Pct, selfPhase1Pct, selfPhase2Pct, coMiningShare, selfMiningMW])
 
   const formatCurrency = (val) => {
-    if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`
-    if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`
-    return `$${val.toFixed(0)}`
+    const abs = Math.abs(val)
+    const sign = val < 0 ? '-' : ''
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(2)}M`
+    if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(0)}k`
+    return `${sign}$${abs.toFixed(0)}`
   }
 
   // Full precision currency (no abbreviation)
