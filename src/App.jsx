@@ -2335,56 +2335,51 @@ function App() {
 
             {/* Cash Flow Timeline */}
             <div style={{background: 'rgba(15, 23, 42, 0.6)', borderRadius: '16px', padding: '24px', maxWidth: '800px', margin: '0 auto'}}>
-              <h3 style={{fontSize: '1rem', color: '#f1f5f9', marginBottom: '20px', textAlign: 'center'}}>Cash Flow Structure</h3>
+              <h3 style={{fontSize: '1rem', color: '#f1f5f9', marginBottom: '20px', textAlign: 'center'}}>Project Cash Flow</h3>
 
               <div style={{display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '16px', alignItems: 'center'}}>
-                {/* Phase 1 */}
-                <div style={{background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '12px', padding: '20px'}}>
+                {/* Initial - 30% share */}
+                <div style={{background: 'rgba(251, 191, 36, 0.1)', border: '1px solid rgba(251, 191, 36, 0.3)', borderRadius: '12px', padding: '20px'}}>
                   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
-                    <span style={{fontSize: '0.85rem', color: '#22c55e', fontWeight: '600'}}>PHASE 1</span>
-                    <span style={{fontSize: '0.75rem', color: '#64748b'}}>Until Payback</span>
+                    <span style={{fontSize: '0.85rem', color: '#fbbf24', fontWeight: '600'}}>INITIAL</span>
+                    <span style={{fontSize: '0.75rem', color: '#64748b'}}>30% Co-Mining share</span>
                   </div>
-                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '4px'}}>
-                    Your share: <strong style={{color: '#22c55e'}}>{(results.mixPhase1Pct * 100).toFixed(0)}%</strong>
+                  <div style={{fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px'}}>
+                    Co-Mining: ${formatNumber(Math.round(results.coNetMonthly))}/mo<br/>
+                    Self-Mining: ${formatNumber(Math.round(results.selfNetMonthly))}/mo
                   </div>
-                  <div style={{fontSize: '0.7rem', color: '#64748b', marginBottom: '8px'}}>
-                    ({(coPhase1Pct * 100).toFixed(0)}% × {((1 - modelMix) * 100).toFixed(0)}%) + ({(selfPhase1Pct * 100).toFixed(0)}% × {(modelMix * 100).toFixed(0)}%)
+                  <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fbbf24'}}>
+                    ${formatNumber(Math.round(results.mixNetMonthly))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
                   </div>
-                  <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff'}}>
-                    ${formatNumber(Math.round(results.mixPhase1Investor))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
-                  </div>
-                  <div style={{fontSize: '0.8rem', color: '#64748b', marginTop: '8px'}}>
-                    ~{results.mixPayback.toFixed(0)} months
+                  <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '8px'}}>
+                    Blended project net
                   </div>
                 </div>
 
                 {/* Arrow */}
                 <div style={{fontSize: '1.5rem', color: '#475569'}}>→</div>
 
-                {/* Phase 2 */}
-                <div style={{background: 'rgba(148, 163, 184, 0.1)', border: '1px solid rgba(148, 163, 184, 0.3)', borderRadius: '12px', padding: '20px'}}>
+                {/* After equity - 50% share */}
+                <div style={{background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '12px', padding: '20px'}}>
                   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
-                    <span style={{fontSize: '0.85rem', color: '#94a3b8', fontWeight: '600'}}>PHASE 2</span>
-                    <span style={{fontSize: '0.75rem', color: '#64748b'}}>Ongoing</span>
+                    <span style={{fontSize: '0.85rem', color: '#4ade80', fontWeight: '600'}}>AFTER EQUITY</span>
+                    <span style={{fontSize: '0.75rem', color: '#64748b'}}>50% Co-Mining share</span>
                   </div>
-                  <div style={{fontSize: '0.9rem', color: '#94a3b8', marginBottom: '4px'}}>
-                    Your share: <strong style={{color: '#f1f5f9'}}>{(results.mixPhase2Pct * 100).toFixed(0)}%</strong>
+                  <div style={{fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px'}}>
+                    Co-Mining: ${formatNumber(Math.round(results.coPhase2Monthly))}/mo<br/>
+                    Self-Mining: ${formatNumber(Math.round(results.selfNetMonthly))}/mo
                   </div>
-                  <div style={{fontSize: '0.7rem', color: '#64748b', marginBottom: '8px'}}>
-                    ({(coPhase2Pct * 100).toFixed(0)}% × {((1 - modelMix) * 100).toFixed(0)}%) + ({(selfPhase2Pct * 100).toFixed(0)}% × {(modelMix * 100).toFixed(0)}%)
+                  <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#4ade80'}}>
+                    ${formatNumber(Math.round(results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
                   </div>
-                  <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fff'}}>
-                    ${formatNumber(Math.round(results.mixPhase2Investor))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
-                  </div>
-                  <div style={{fontSize: '0.8rem', color: '#64748b', marginTop: '8px'}}>
-                    Ongoing
+                  <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '8px'}}>
+                    After ~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months
                   </div>
                 </div>
               </div>
 
               <div style={{marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(148, 163, 184, 0.2)', textAlign: 'center'}}>
-                <span style={{fontSize: '0.85rem', color: '#64748b'}}>Project Net Profit: </span>
-                <span style={{fontSize: '0.95rem', color: '#f1f5f9', fontWeight: '600'}}>${formatNumber(Math.round(results.mixNetMonthly))}/mo</span>
+                <span style={{fontSize: '0.85rem', color: '#64748b'}}>Co-Mining share increases 30% → 50% after miner owners recover equipment cost</span>
               </div>
             </div>
           </section>
