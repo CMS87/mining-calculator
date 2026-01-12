@@ -146,11 +146,28 @@ function App() {
     const effectiveHashratePH = selfEffectiveHashratePH
 
     // ========== DEAL STRUCTURE (separate splits per model) ==========
-    // Co-Mining Deal (70/30 default)
-    const coPhase1Investor = coNetMonthly * coPhase1Pct
-    const coPhase1Operator = coNetMonthly * (1 - coPhase1Pct)
-    const coPhase2Investor = coNetMonthly * coPhase2Pct
-    const coPhase2Operator = coNetMonthly * (1 - coPhase2Pct)
+    // Co-Mining Deal - two transitions:
+    // 1. Miner owner transition: 30/70 → 50/50 (after miner payback)
+    // 2. Investor transition: 70/30 → 50/50 (after investor ROI)
+
+    // Phase 1A: Miner recovering (we get 30%)
+    const coPhase1aNet = coNetMonthly  // Our 30% share - opex
+    const coPhase1aInvestor = coPhase1aNet * coPhase1Pct
+    const coPhase1aOperator = coPhase1aNet * (1 - coPhase1Pct)
+
+    // Phase 1B: After miner payback (we get 50%), investor still recovering
+    const coPhase1bNet = coPhase2Monthly  // Our 50% share - opex
+    const coPhase1bInvestor = coPhase1bNet * coPhase1Pct
+    const coPhase1bOperator = coPhase1bNet * (1 - coPhase1Pct)
+
+    // Phase 2: After both paybacks (we get 50%, investor gets 50%)
+    const coPhase2Net = coPhase2Monthly
+    const coPhase2Investor = coPhase2Net * coPhase2Pct
+    const coPhase2Operator = coPhase2Net * (1 - coPhase2Pct)
+
+    // Legacy names for compatibility
+    const coPhase1Investor = coPhase1aInvestor
+    const coPhase1Operator = coPhase1aOperator
     const coPayback = coPhase1Investor > 0 ? coMiningCapex / coPhase1Investor : Infinity
     const coROI = coMiningCapex > 0 ? (coPhase1Investor * 12 / coMiningCapex * 100) : 0
 
@@ -206,6 +223,11 @@ function App() {
       minerOwnerPaybackMonths,
       coPhase2Monthly,
       coTotalNetRevenue,
+      // Co-Mining phases (miner transition + investor transition)
+      coPhase1aNet,
+      coPhase1aInvestor,
+      coPhase1bNet,
+      coPhase1bInvestor,
       coPayback,
       coROI,
       // Self-Mining
@@ -1990,6 +2012,27 @@ function App() {
                     <span className={results.coNetMonthly >= 0 ? 'highlight' : 'red'}>
                       ${formatNumber(Math.round(results.coNetMonthly))}
                     </span>
+                  </div>
+                </div>
+
+                <div className="model-phases" style={{marginTop: '16px', padding: '12px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px'}}>
+                  <h4 style={{color: '#60a5fa', marginBottom: '8px'}}>Investor Returns by Phase</h4>
+                  <div style={{fontSize: '0.8rem', marginBottom: '12px', color: '#94a3b8'}}>
+                    Miner owner payback: {results.minerOwnerPaybackMonths?.toFixed(1) || '∞'} months
+                  </div>
+                  <div style={{display: 'grid', gap: '8px'}}>
+                    <div style={{padding: '8px', background: 'rgba(251,191,36,0.1)', borderRadius: '6px', border: '1px solid rgba(251,191,36,0.3)'}}>
+                      <div style={{fontWeight: '600', color: '#fbbf24', marginBottom: '4px'}}>Phase 1A: Miner Recovering (0-{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} mo)</div>
+                      <div style={{fontSize: '0.8rem', color: '#94a3b8'}}>Our share: {Math.round(coMiningShare * 100)}% → Investor ({Math.round(coPhase1Pct * 100)}%): <span style={{color: '#4ade80', fontWeight: '600'}}>{formatCurrency(results.coPhase1aInvestor)}/mo</span></div>
+                    </div>
+                    <div style={{padding: '8px', background: 'rgba(34,197,94,0.1)', borderRadius: '6px', border: '1px solid rgba(34,197,94,0.3)'}}>
+                      <div style={{fontWeight: '600', color: '#4ade80', marginBottom: '4px'}}>Phase 1B: After Miner Payback ({results.minerOwnerPaybackMonths?.toFixed(0) || '?'}+ mo)</div>
+                      <div style={{fontSize: '0.8rem', color: '#94a3b8'}}>Our share: 50% → Investor ({Math.round(coPhase1Pct * 100)}%): <span style={{color: '#4ade80', fontWeight: '600'}}>{formatCurrency(results.coPhase1bInvestor)}/mo</span></div>
+                    </div>
+                    <div style={{padding: '8px', background: 'rgba(139,92,246,0.1)', borderRadius: '6px', border: '1px solid rgba(139,92,246,0.3)'}}>
+                      <div style={{fontWeight: '600', color: '#a78bfa', marginBottom: '4px'}}>Phase 2: After Investor ROI</div>
+                      <div style={{fontSize: '0.8rem', color: '#94a3b8'}}>Our share: 50% → Investor ({Math.round(coPhase2Pct * 100)}%): <span style={{color: '#4ade80', fontWeight: '600'}}>{formatCurrency(results.coPhase2Investor)}/mo</span></div>
+                    </div>
                   </div>
                 </div>
               </div>
