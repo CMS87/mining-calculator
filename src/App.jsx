@@ -2243,6 +2243,25 @@ function App() {
                 </div>
               </div>
 
+              {/* After Equity section - only show if there's Co-Mining in the mix */}
+              {modelMix < 1 && (
+                <div style={{marginTop: '20px', padding: '16px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '10px', border: '1px solid rgba(34, 197, 94, 0.3)'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px'}}>
+                    <div>
+                      <div style={{fontSize: '0.75rem', color: '#4ade80', fontWeight: '600', marginBottom: '4px'}}>AFTER EQUITY (50% Co-Mining share)</div>
+                      <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months after miner owners recover equipment</div>
+                    </div>
+                    <div style={{textAlign: 'right'}}>
+                      <div style={{fontSize: '1.3rem', fontWeight: '700', color: '#4ade80'}}>
+                        ${formatNumber(Math.round(results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix))}/mo
+                      </div>
+                      <div style={{fontSize: '0.7rem', color: '#94a3b8'}}>
+                        +${formatNumber(Math.round((results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix) - results.mixNetMonthly))}/mo increase
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
