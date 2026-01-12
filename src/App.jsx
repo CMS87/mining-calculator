@@ -26,8 +26,8 @@ function App() {
   const [coPricePerTh, setCoPricePerTh] = useState(14)          // $/TH - premium
 
   // Miner Specs - Self-Mining (second tier, lower CAPEX)
-  const [selfEfficiency, setSelfEfficiency] = useState(18)      // J/TH - second tier
-  const [selfPricePerTh, setSelfPricePerTh] = useState(8)       // $/TH - budget
+  const [selfEfficiency, setSelfEfficiency] = useState(15)      // J/TH - second tier
+  const [selfPricePerTh, setSelfPricePerTh] = useState(10)      // $/TH - budget
 
   // For gas-to-power section (uses self-mining specs)
   const [hashratePerUnit, setHashratePerUnit] = useState(220)   // TH/s per unit
