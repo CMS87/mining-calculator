@@ -39,7 +39,7 @@ function App() {
   const [coMiningShare, setCoMiningShare] = useState(0.30)  // 30% of hashrate
 
   // Model Mix by MW (Self-Mining MW, rest goes to Co-Mining)
-  const [selfMiningMW, setSelfMiningMW] = useState(7.5)  // MW allocated to self-mining
+  const [selfMiningMW, setSelfMiningMW] = useState(0)  // MW allocated to self-mining (0 = 100% Co-Mining)
   // Derived: percentage for calculations
   const modelMix = facilityMW > 0 ? Math.min(selfMiningMW / facilityMW, 1) : 0
 
@@ -216,18 +216,31 @@ function App() {
 
     // ========== HYBRID MODEL (Mixed) ==========
     const mixCapex = coMiningCapex * (1 - modelMix) + selfMiningCapex * modelMix
+
+    // Phase 1: 30% Co-Mining share
     const mixHashratePH = coHashratePH * (1 - modelMix) + selfHashratePH * modelMix
     const mixGrossRevenue = coGrossRevenue * (1 - modelMix) + selfGrossRevenue * modelMix
     const mixPowerCost = coPowerCost * (1 - modelMix) + selfPowerCost * modelMix
     const mixNetMonthly = mixGrossRevenue - mixPowerCost - monthlyOpex
     const mixAnnualNet = mixNetMonthly * 12
+
+    // Phase 2: After equity (50% Co-Mining share) - increased hashrate and power cost
+    const coPhase2HashratePH = coEffectiveHashratePH * coPhase2Share  // 50% share hashrate
+    const coPhase2GrossRevenue = coPhase2HashratePH * hashprice * 30
+    const coPhase2PowerCost = coTotalPowerCost * coPhase2Share
+    const mixPhase2HashratePH = coPhase2HashratePH * (1 - modelMix) + selfHashratePH * modelMix
+    const mixPhase2GrossRevenue = coPhase2GrossRevenue * (1 - modelMix) + selfGrossRevenue * modelMix
+    const mixPhase2PowerCost = coPhase2PowerCost * (1 - modelMix) + selfPowerCost * modelMix
+    const mixPhase2NetMonthly = mixPhase2GrossRevenue - mixPhase2PowerCost - monthlyOpex
+    const mixPhase2AnnualNet = mixPhase2NetMonthly * 12
+
     // Blend the investor percentages based on mix
     const mixPhase1Pct = coPhase1Pct * (1 - modelMix) + selfPhase1Pct * modelMix
     const mixPhase2Pct = coPhase2Pct * (1 - modelMix) + selfPhase2Pct * modelMix
     const mixPhase1Investor = mixNetMonthly * mixPhase1Pct
     const mixPhase1Operator = mixNetMonthly * (1 - mixPhase1Pct)
-    const mixPhase2Investor = mixNetMonthly * mixPhase2Pct
-    const mixPhase2Operator = mixNetMonthly * (1 - mixPhase2Pct)
+    const mixPhase2Investor = mixPhase2NetMonthly * mixPhase2Pct
+    const mixPhase2Operator = mixPhase2NetMonthly * (1 - mixPhase2Pct)
     const mixPayback = mixPhase1Investor > 0 ? mixCapex / mixPhase1Investor : Infinity
     const mixROI = mixCapex > 0 ? (mixPhase1Investor * 12 / mixCapex * 100) : 0
 
@@ -279,13 +292,20 @@ function App() {
       selfPhase2Operator,
       selfPayback,
       selfROI,
-      // Hybrid/Mix
+      // Hybrid/Mix Phase 1 (30% Co-Mining)
       mixCapex,
       mixHashratePH,
       mixGrossRevenue,
       mixPowerCost,
       mixNetMonthly,
       mixAnnualNet,
+      // Hybrid/Mix Phase 2 (50% Co-Mining - After Equity)
+      mixPhase2HashratePH,
+      mixPhase2GrossRevenue,
+      mixPhase2PowerCost,
+      mixPhase2NetMonthly,
+      mixPhase2AnnualNet,
+      // Investor splits
       mixPhase1Pct,
       mixPhase2Pct,
       mixPhase1Investor,
@@ -2155,20 +2175,24 @@ function App() {
             <p className="section-intro">Allocate MW between hosting (Co-Mining) and owning miners (Self-Mining)</p>
 
             <div className="mixer-control">
-              <div className="input-row two-col" style={{maxWidth: '400px', margin: '0 auto 16px'}}>
-                <div>
-                  <label>Self-Mining: MW</label>
-                  <input type="text" value={selfMiningMW} onChange={e => setSelfMiningMW(Math.min(parseFloat(e.target.value) || 0, facilityMW))} />
+              <div style={{maxWidth: '500px', margin: '0 auto'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem'}}>
+                  <span style={{color: '#3b82f6', fontWeight: '600'}}>Co-Mining: {(facilityMW - selfMiningMW).toFixed(1)} MW</span>
+                  <span style={{color: '#f59e0b', fontWeight: '600'}}>Self-Mining: {selfMiningMW.toFixed(1)} MW</span>
                 </div>
-                <div>
-                  <label>Co-Mining: MW</label>
-                  <input type="text" value={(facilityMW - selfMiningMW).toFixed(1)} disabled style={{background: 'rgba(100,116,139,0.2)'}} />
+                <input
+                  type="range"
+                  min="0"
+                  max={facilityMW}
+                  step="0.5"
+                  value={selfMiningMW}
+                  onChange={e => setSelfMiningMW(+e.target.value)}
+                  style={{width: '100%', accentColor: '#f59e0b'}}
+                />
+                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '0.7rem', color: '#64748b'}}>
+                  <span>← 100% Co-Mining</span>
+                  <span>100% Self-Mining →</span>
                 </div>
-              </div>
-              <div className="mixer-value">
-                {modelMix === 0 ? '100% Co-Mining' :
-                 modelMix >= 1 ? '100% Self-Mining' :
-                 `${((1 - modelMix) * 100).toFixed(0)}% Co-Mining / ${(modelMix * 100).toFixed(0)}% Self-Mining`}
               </div>
             </div>
 
@@ -2210,23 +2234,23 @@ function App() {
                   <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', fontSize: '0.8rem'}}>
                     <div>
                       <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Hashrate</div>
-                      <div style={{color: '#f1f5f9', fontWeight: '600'}}>{Math.round(results.coTotalHashratePH * 0.5 * (1 - modelMix) + results.selfHashratePH * modelMix)} PH/s</div>
-                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+{Math.round(results.coTotalHashratePH * 0.2 * (1 - modelMix))} PH/s</div>
+                      <div style={{color: '#f1f5f9', fontWeight: '600'}}>{Math.round(results.mixPhase2HashratePH)} PH/s</div>
+                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+{Math.round(results.mixPhase2HashratePH - results.mixHashratePH)} PH/s</div>
                     </div>
                     <div>
                       <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Revenue</div>
-                      <div style={{color: '#22c55e', fontWeight: '600'}}>${formatNumber(Math.round(results.coTotalGrossRevenue * 0.5 * (1 - modelMix) + results.selfGrossRevenue * modelMix))}</div>
-                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+${formatNumber(Math.round(results.coTotalGrossRevenue * 0.2 * (1 - modelMix)))}</div>
+                      <div style={{color: '#22c55e', fontWeight: '600'}}>${formatNumber(Math.round(results.mixPhase2GrossRevenue))}</div>
+                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+${formatNumber(Math.round(results.mixPhase2GrossRevenue - results.mixGrossRevenue))}</div>
                     </div>
                     <div>
                       <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Power Cost</div>
-                      <div style={{color: '#ef4444', fontWeight: '600'}}>${formatNumber(Math.round(results.coTotalPowerCost * 0.5 * (1 - modelMix) + results.selfPowerCost * modelMix))}</div>
-                      <div style={{color: '#f87171', fontSize: '0.65rem'}}>+${formatNumber(Math.round(results.coTotalPowerCost * 0.2 * (1 - modelMix)))}</div>
+                      <div style={{color: '#ef4444', fontWeight: '600'}}>${formatNumber(Math.round(results.mixPhase2PowerCost))}</div>
+                      <div style={{color: '#f87171', fontSize: '0.65rem'}}>+${formatNumber(Math.round(results.mixPhase2PowerCost - results.mixPowerCost))}</div>
                     </div>
                     <div>
                       <div style={{color: '#64748b', fontSize: '0.7rem', marginBottom: '2px'}}>Net Monthly</div>
-                      <div style={{color: '#4ade80', fontWeight: '700', fontSize: '1rem'}}>${formatNumber(Math.round(results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix))}</div>
-                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+${formatNumber(Math.round((results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix) - results.mixNetMonthly))}</div>
+                      <div style={{color: '#4ade80', fontWeight: '700', fontSize: '1rem'}}>${formatNumber(Math.round(results.mixPhase2NetMonthly))}</div>
+                      <div style={{color: '#4ade80', fontSize: '0.65rem'}}>+${formatNumber(Math.round(results.mixPhase2NetMonthly - results.mixNetMonthly))}</div>
                     </div>
                   </div>
                 </div>
@@ -2318,8 +2342,8 @@ function App() {
               </div>
             </details>
 
-            {/* Project P&L Row */}
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', maxWidth: '900px', margin: '0 auto 16px'}}>
+            {/* Project P&L Row - Phase 1 (30% Co-Mining share) */}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', maxWidth: '900px', margin: '0 auto 8px'}}>
               <div style={{background: 'rgba(30, 41, 59, 0.8)', borderRadius: '10px', padding: '14px 10px', textAlign: 'center'}}>
                 <div style={{fontSize: '1.2rem', fontWeight: '700', color: '#f1f5f9'}}>{formatCurrency(results.mixCapex)}</div>
                 <div style={{fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px'}}>Investment</div>
@@ -2341,6 +2365,32 @@ function App() {
                 <div style={{fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '4px'}}>Net Profit</div>
               </div>
             </div>
+
+            {/* After Equity Row - Phase 2 (50% Co-Mining share) - only show if there's Co-Mining */}
+            {modelMix < 1 && (
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', maxWidth: '900px', margin: '0 auto 16px'}}>
+                <div style={{background: 'rgba(34, 197, 94, 0.1)', borderRadius: '10px', padding: '10px 10px', textAlign: 'center', border: '1px solid rgba(34, 197, 94, 0.3)'}}>
+                  <div style={{fontSize: '0.65rem', color: '#4ade80', fontWeight: '600'}}>AFTER EQUITY</div>
+                  <div style={{fontSize: '0.6rem', color: '#64748b'}}>~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months</div>
+                </div>
+                <div style={{background: 'rgba(34, 197, 94, 0.1)', borderRadius: '10px', padding: '10px 10px', textAlign: 'center', border: '1px solid rgba(34, 197, 94, 0.3)'}}>
+                  <div style={{fontSize: '1rem', fontWeight: '600', color: '#f1f5f9'}}>${formatNumber(Math.round(results.mixPhase2GrossRevenue / 1000))}K</div>
+                  <div style={{fontSize: '0.55rem', color: '#4ade80'}}>+${formatNumber(Math.round((results.mixPhase2GrossRevenue - results.mixGrossRevenue) / 1000))}K</div>
+                </div>
+                <div style={{background: 'rgba(34, 197, 94, 0.1)', borderRadius: '10px', padding: '10px 10px', textAlign: 'center', border: '1px solid rgba(34, 197, 94, 0.3)'}}>
+                  <div style={{fontSize: '1rem', fontWeight: '600', color: '#ef4444'}}>-${formatNumber(Math.round(results.mixPhase2PowerCost / 1000))}K</div>
+                  <div style={{fontSize: '0.55rem', color: '#f87171'}}>+${formatNumber(Math.round((results.mixPhase2PowerCost - results.mixPowerCost) / 1000))}K</div>
+                </div>
+                <div style={{background: 'rgba(34, 197, 94, 0.1)', borderRadius: '10px', padding: '10px 10px', textAlign: 'center', border: '1px solid rgba(34, 197, 94, 0.3)'}}>
+                  <div style={{fontSize: '1rem', fontWeight: '600', color: '#64748b'}}>-${formatNumber(Math.round(monthlyOpex / 1000))}K</div>
+                  <div style={{fontSize: '0.55rem', color: '#64748b'}}>same</div>
+                </div>
+                <div style={{background: 'rgba(34, 197, 94, 0.15)', borderRadius: '10px', padding: '10px 10px', textAlign: 'center', border: '1px solid rgba(34, 197, 94, 0.4)', borderLeft: '2px solid #4ade80'}}>
+                  <div style={{fontSize: '1rem', fontWeight: '700', color: '#4ade80'}}>${formatNumber(Math.round(results.mixPhase2NetMonthly / 1000))}K</div>
+                  <div style={{fontSize: '0.55rem', color: '#4ade80'}}>+${formatNumber(Math.round((results.mixPhase2NetMonthly - results.mixNetMonthly) / 1000))}K</div>
+                </div>
+              </div>
+            )}
 
             {/* Investor KPIs */}
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', maxWidth: '800px', margin: '0 auto 32px'}}>
@@ -2367,21 +2417,21 @@ function App() {
               const minerFirst = minerPayback <= investorPayback
 
               // Phase 1: Both recovering (30% Co-Mining, Phase1 investor split)
-              const phase1ProjectNet = results.coNetMonthly * (1 - modelMix) + results.selfNetMonthly * modelMix
+              const phase1ProjectNet = results.mixNetMonthly  // Uses 30% Co-Mining share
               const phase1InvestorPct = results.mixPhase1Pct
 
               // Phase 2: One done, one recovering
               // If miner finishes first: 50% Co-Mining, Phase1 investor split
               // If investor finishes first: 30% Co-Mining, Phase2 investor split
               const phase2ProjectNet = minerFirst
-                ? (results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix)
-                : (results.coNetMonthly * (1 - modelMix) + results.selfNetMonthly * modelMix)
+                ? results.mixPhase2NetMonthly  // 50% Co-Mining share
+                : results.mixNetMonthly        // 30% Co-Mining share
               const phase2InvestorPct = minerFirst ? results.mixPhase1Pct : results.mixPhase2Pct
               const phase2CoShare = minerFirst ? '50%' : '30%'
               const phase2Status = minerFirst ? 'Investor still recovering ROI' : 'Miner owners still recovering'
 
               // Phase 3: Both done (50% Co-Mining, Phase2 investor split)
-              const phase3ProjectNet = results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix
+              const phase3ProjectNet = results.mixPhase2NetMonthly  // 50% Co-Mining share
               const phase3InvestorPct = results.mixPhase2Pct
 
               return (
