@@ -2044,19 +2044,6 @@ function App() {
                   </div>
                 </div>
 
-                <div className="model-phases" style={{marginTop: '16px', padding: '12px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px'}}>
-                  <h4 style={{color: '#60a5fa', marginBottom: '10px'}}>Investor Returns (70% of project)</h4>
-                  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(251,191,36,0.15)', borderRadius: '6px'}}>
-                      <span style={{color: '#fbbf24', fontSize: '0.8rem'}}>Initial</span>
-                      <span style={{fontWeight: '700', color: '#fbbf24'}}>{formatCurrency(results.coPhase1aInvestor)}</span>
-                    </div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(34,197,94,0.15)', borderRadius: '6px'}}>
-                      <span style={{color: '#4ade80', fontSize: '0.8rem'}}>After equity</span>
-                      <span style={{fontWeight: '700', color: '#4ade80'}}>{formatCurrency(results.coPhase1bInvestor)}</span>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Self-Mining Card */}
