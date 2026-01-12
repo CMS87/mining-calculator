@@ -2345,14 +2345,14 @@ function App() {
                     <span style={{fontSize: '0.75rem', color: '#64748b'}}>30% Co-Mining share</span>
                   </div>
                   <div style={{fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px'}}>
-                    Co-Mining: ${formatNumber(Math.round(results.coNetMonthly))}/mo<br/>
-                    Self-Mining: ${formatNumber(Math.round(results.selfNetMonthly))}/mo
+                    Co-Mining ({((1 - modelMix) * facilityMW).toFixed(1)} MW): ${formatNumber(Math.round(results.coNetMonthly * (1 - modelMix)))}<br/>
+                    Self-Mining ({(modelMix * facilityMW).toFixed(1)} MW): ${formatNumber(Math.round(results.selfNetMonthly * modelMix))}
                   </div>
                   <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#fbbf24'}}>
-                    ${formatNumber(Math.round(results.mixNetMonthly))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
+                    ${formatNumber(Math.round(results.coNetMonthly * (1 - modelMix) + results.selfNetMonthly * modelMix))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
                   </div>
                   <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '8px'}}>
-                    Blended project net
+                    Project net profit
                   </div>
                 </div>
 
@@ -2366,8 +2366,8 @@ function App() {
                     <span style={{fontSize: '0.75rem', color: '#64748b'}}>50% Co-Mining share</span>
                   </div>
                   <div style={{fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px'}}>
-                    Co-Mining: ${formatNumber(Math.round(results.coPhase2Monthly))}/mo<br/>
-                    Self-Mining: ${formatNumber(Math.round(results.selfNetMonthly))}/mo
+                    Co-Mining ({((1 - modelMix) * facilityMW).toFixed(1)} MW): ${formatNumber(Math.round(results.coPhase2Monthly * (1 - modelMix)))}<br/>
+                    Self-Mining ({(modelMix * facilityMW).toFixed(1)} MW): ${formatNumber(Math.round(results.selfNetMonthly * modelMix))}
                   </div>
                   <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#4ade80'}}>
                     ${formatNumber(Math.round(results.coPhase2Monthly * (1 - modelMix) + results.selfNetMonthly * modelMix))}<span style={{fontSize: '0.85rem', color: '#64748b'}}>/mo</span>
