@@ -93,21 +93,29 @@ function App() {
   const [selfPhase1Pct, setSelfPhase1Pct] = useState(0.85)  // 85% until ROI
   const [selfPhase2Pct, setSelfPhase2Pct] = useState(0.50)  // 50% after ROI
 
-  // Fetch live hashprice on mount
+  // Fetch live hashprice on mount (calculated from BTC price and network hashrate)
   useEffect(() => {
     const fetchHashprice = async () => {
       try {
-        // Try to fetch from Hashrate Index API (public endpoint)
-        const response = await fetch('https://api.hashrateindex.com/graphql', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: `{ getHashprice { usd } }`
-          })
-        })
-        const data = await response.json()
-        if (data?.data?.getHashprice?.usd) {
-          setHashprice(Math.round(data.data.getHashprice.usd))
+        // Fetch BTC price and network hashrate in parallel
+        const [priceRes, hashrateRes] = await Promise.all([
+          fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'),
+          fetch('https://mempool.space/api/v1/mining/hashrate/3d')
+        ])
+        const priceData = await priceRes.json()
+        const hashrateData = await hashrateRes.json()
+
+        const btcPrice = priceData?.bitcoin?.usd
+        const networkHashrate = hashrateData?.currentHashrate // in H/s
+
+        if (btcPrice && networkHashrate) {
+          // Hashprice = (Block Reward × BTC Price × 144 blocks/day) / (Network Hashrate in PH/s)
+          // Block reward = 3.125 BTC (post-halving April 2024)
+          const blockReward = 3.125
+          const blocksPerDay = 144
+          const networkHashratePH = networkHashrate / 1e15 // Convert H/s to PH/s
+          const calculatedHashprice = (blockReward * btcPrice * blocksPerDay) / networkHashratePH
+          setHashprice(Math.round(calculatedHashprice * 10) / 10) // Round to 1 decimal
         }
       } catch (err) {
         console.log('Using default hashprice, live fetch failed:', err.message)
