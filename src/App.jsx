@@ -14,7 +14,7 @@ function App() {
   const [facilityMW, setFacilityMW] = useState(15)
   const [curtailment, setCurtailment] = useState(0.05)  // 5% curtailment = 95% uptime
   const [energyPrice, setEnergyPrice] = useState(4.5)   // ¢/kWh
-  const [hashprice, setHashprice] = useState(47)        // $/PH/day - fetched live
+  const [hashprice, setHashprice] = useState(39.5)      // $/PH/day - fetched live
   const [monthlyOpex, setMonthlyOpex] = useState(60000)
 
   // CAPEX - Site & Build-up (same for both models)
