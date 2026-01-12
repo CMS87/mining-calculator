@@ -223,6 +223,8 @@ function App() {
       minerOwnerPaybackMonths,
       coPhase2Monthly,
       coTotalNetRevenue,
+      coTotalGrossRevenue,
+      coTotalPowerCost,
       // Co-Mining phases (miner transition + investor transition)
       coPhase1aNet,
       coPhase1aInvestor,
@@ -1994,41 +1996,65 @@ function App() {
                 </div>
 
                 <div className="model-pnl">
-                  <h4>Monthly P&L</h4>
-                  <div className="pnl-row">
-                    <span>Revenue</span>
-                    <span className="green">${formatNumber(Math.round(results.coGrossRevenue))}</span>
+                  <h4>Project Monthly P&L</h4>
+                  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
+                    {/* Initial 30% share */}
+                    <div style={{background: 'rgba(251,191,36,0.1)', padding: '10px', borderRadius: '6px'}}>
+                      <div style={{color: '#fbbf24', fontSize: '0.75rem', marginBottom: '8px', fontWeight: '600'}}>Initial (30% share)</div>
+                      <div className="pnl-row" style={{fontSize: '0.8rem'}}>
+                        <span>Revenue</span>
+                        <span className="green">${formatNumber(Math.round(results.coGrossRevenue))}</span>
+                      </div>
+                      <div className="pnl-row" style={{fontSize: '0.8rem'}}>
+                        <span>Power</span>
+                        <span className="red">−${formatNumber(Math.round(results.coPowerCost))}</span>
+                      </div>
+                      <div className="pnl-row" style={{fontSize: '0.8rem'}}>
+                        <span>OPEX</span>
+                        <span className="red">−${formatNumber(monthlyOpex)}</span>
+                      </div>
+                      <div className="pnl-row total" style={{marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(251,191,36,0.3)'}}>
+                        <span>Net</span>
+                        <span style={{color: '#fbbf24', fontWeight: '700'}}>${formatNumber(Math.round(results.coNetMonthly))}</span>
+                      </div>
+                    </div>
+                    {/* After equity 50% share */}
+                    <div style={{background: 'rgba(34,197,94,0.1)', padding: '10px', borderRadius: '6px'}}>
+                      <div style={{color: '#4ade80', fontSize: '0.75rem', marginBottom: '8px', fontWeight: '600'}}>After equity (50% share)</div>
+                      <div className="pnl-row" style={{fontSize: '0.8rem'}}>
+                        <span>Revenue</span>
+                        <span className="green">${formatNumber(Math.round(results.coTotalGrossRevenue * 0.5))}</span>
+                      </div>
+                      <div className="pnl-row" style={{fontSize: '0.8rem'}}>
+                        <span>Power</span>
+                        <span className="red">−${formatNumber(Math.round(results.coTotalPowerCost * 0.5))}</span>
+                      </div>
+                      <div className="pnl-row" style={{fontSize: '0.8rem'}}>
+                        <span>OPEX</span>
+                        <span className="red">−${formatNumber(monthlyOpex)}</span>
+                      </div>
+                      <div className="pnl-row total" style={{marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(34,197,94,0.3)'}}>
+                        <span>Net</span>
+                        <span style={{color: '#4ade80', fontWeight: '700'}}>${formatNumber(Math.round(results.coPhase2Monthly))}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="pnl-row">
-                    <span>Power ({Math.round(coMiningShare * 100)}%)</span>
-                    <span className="red">−${formatNumber(Math.round(results.coPowerCost))}</span>
-                  </div>
-                  <div className="pnl-row">
-                    <span>OPEX</span>
-                    <span className="red">−${formatNumber(monthlyOpex)}</span>
-                  </div>
-                  <div className="pnl-row total">
-                    <span>Net Profit</span>
-                    <span className={results.coNetMonthly >= 0 ? 'highlight' : 'red'}>
-                      ${formatNumber(Math.round(results.coNetMonthly))}
-                    </span>
+                  <div style={{marginTop: '8px', fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center'}}>
+                    Share increases after miner owners recover equipment (~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months)
                   </div>
                 </div>
 
                 <div className="model-phases" style={{marginTop: '16px', padding: '12px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px'}}>
-                  <h4 style={{color: '#60a5fa', marginBottom: '10px'}}>Investor Monthly Returns</h4>
-                  <div style={{display: 'grid', gap: '8px'}}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(251,191,36,0.15)', borderRadius: '6px'}}>
-                      <span style={{color: '#fbbf24', fontSize: '0.85rem'}}>Initial (30% share)</span>
-                      <span style={{fontWeight: '700', color: '#fbbf24', fontSize: '1.1rem'}}>{formatCurrency(results.coPhase1aInvestor)}</span>
+                  <h4 style={{color: '#60a5fa', marginBottom: '10px'}}>Investor Returns (70% of project)</h4>
+                  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(251,191,36,0.15)', borderRadius: '6px'}}>
+                      <span style={{color: '#fbbf24', fontSize: '0.8rem'}}>Initial</span>
+                      <span style={{fontWeight: '700', color: '#fbbf24'}}>{formatCurrency(results.coPhase1aInvestor)}</span>
                     </div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(34,197,94,0.15)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.3)'}}>
-                      <span style={{color: '#4ade80', fontSize: '0.85rem'}}>After equity (50% share)</span>
-                      <span style={{fontWeight: '700', color: '#4ade80', fontSize: '1.1rem'}}>{formatCurrency(results.coPhase1bInvestor)}</span>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', background: 'rgba(34,197,94,0.15)', borderRadius: '6px'}}>
+                      <span style={{color: '#4ade80', fontSize: '0.8rem'}}>After equity</span>
+                      <span style={{fontWeight: '700', color: '#4ade80'}}>{formatCurrency(results.coPhase1bInvestor)}</span>
                     </div>
-                  </div>
-                  <div style={{marginTop: '10px', fontSize: '0.75rem', color: '#94a3b8', lineHeight: '1.4'}}>
-                    Share increases from 30% to 50% after miner owners recover their equipment cost (~{results.minerOwnerPaybackMonths?.toFixed(0) || '?'} months)
                   </div>
                 </div>
               </div>
