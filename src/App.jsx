@@ -143,7 +143,7 @@ function App() {
 
     // Total facility gross revenue (before split)
     const coTotalGrossRevenue = coEffectiveHashratePH * hashprice * 30
-    const coTotalPowerCost = (energyPrice / 100) * totalPowerKW * 720
+    const coTotalPowerCost = (energyPrice / 100) * totalPowerKW * 720 * uptime  // Adjusted for curtailment
     const coTotalNetRevenue = coTotalGrossRevenue - coTotalPowerCost
 
     // Phase 1: Miner owner gets (1 - coMiningShare) until they recover ASIC value
@@ -170,7 +170,7 @@ function App() {
     const selfEffectiveHashratePH = selfTotalHashratePH * uptime
     const selfHashratePH = selfEffectiveHashratePH  // 100% is ours
     const selfGrossRevenue = selfHashratePH * hashprice * 30
-    const selfPowerCost = (energyPrice / 100) * totalPowerKW * 720
+    const selfPowerCost = (energyPrice / 100) * totalPowerKW * 720 * uptime  // Adjusted for curtailment
     const selfNetMonthly = selfGrossRevenue - selfPowerCost - monthlyOpex
     const selfAnnualNet = selfNetMonthly * 12
     const minerCost = selfTotalHashrateTH * selfPricePerTh
