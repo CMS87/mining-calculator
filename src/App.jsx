@@ -2033,11 +2033,11 @@ function App() {
 
                 <div className="model-stats">
                   <div className="stat">
-                    <span className="stat-label">Our Hashrate Share</span>
-                    <span className="stat-value">{Math.round(coMiningShare * 100)}%</span>
+                    <span className="stat-label">Total Facility Hashrate</span>
+                    <span className="stat-value">{Math.round(results.coTotalHashratePH * results.uptime)} PH/s</span>
                   </div>
                   <div className="stat">
-                    <span className="stat-label">Effective Hashrate</span>
+                    <span className="stat-label">Our Share ({Math.round(coMiningShare * 100)}%)</span>
                     <span className="stat-value">{results.coHashratePH.toFixed(0)} PH/s</span>
                   </div>
                 </div>
