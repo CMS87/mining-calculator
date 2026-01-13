@@ -112,10 +112,11 @@ function App() {
         if (btcPrice && networkHashrate) {
           // Hashprice = (Block Reward × BTC Price × 144 blocks/day) / (Network Hashrate in PH/s)
           // Block reward = 3.125 BTC (post-halving April 2024)
+          // Apply 5% correction factor to align with hashrateindex.com
           const blockReward = 3.125
           const blocksPerDay = 144
           const networkHashratePH = networkHashrate / 1e15 // Convert H/s to PH/s
-          const calculatedHashprice = (blockReward * btcPrice * blocksPerDay) / networkHashratePH
+          const calculatedHashprice = (blockReward * btcPrice * blocksPerDay) / networkHashratePH * 0.95
           setHashprice(Math.round(calculatedHashprice * 10) / 10) // Round to 1 decimal
         }
       } catch (err) {
@@ -188,29 +189,29 @@ function App() {
     // Phase 1A: Miner recovering (we get 30%)
     const coPhase1aNet = coNetMonthly  // Our 30% share - opex
     const coPhase1aInvestor = coPhase1aNet * coPhase1Pct
-    const coPhase1aOperator = coPhase1aNet * (1 - coPhase1Pct)
+    const coPhase1aPartner = coPhase1aNet * (1 - coPhase1Pct)
 
     // Phase 1B: After miner payback (we get 50%), investor still recovering
     const coPhase1bNet = coPhase2Monthly  // Our 50% share - opex
     const coPhase1bInvestor = coPhase1bNet * coPhase1Pct
-    const coPhase1bOperator = coPhase1bNet * (1 - coPhase1Pct)
+    const coPhase1bPartner = coPhase1bNet * (1 - coPhase1Pct)
 
     // Phase 2: After both paybacks (we get 50%, investor gets 50%)
     const coPhase2Net = coPhase2Monthly
     const coPhase2Investor = coPhase2Net * coPhase2Pct
-    const coPhase2Operator = coPhase2Net * (1 - coPhase2Pct)
+    const coPhase2Partner = coPhase2Net * (1 - coPhase2Pct)
 
     // Legacy names for compatibility
     const coPhase1Investor = coPhase1aInvestor
-    const coPhase1Operator = coPhase1aOperator
+    const coPhase1Partner = coPhase1aPartner
     const coPayback = coPhase1Investor > 0 ? coMiningCapex / coPhase1Investor : Infinity
     const coROI = coMiningCapex > 0 ? (coPhase1Investor * 12 / coMiningCapex * 100) : 0
 
     // Self-Mining Deal (85/15 default)
     const selfPhase1Investor = selfNetMonthly * selfPhase1Pct
-    const selfPhase1Operator = selfNetMonthly * (1 - selfPhase1Pct)
+    const selfPhase1Partner = selfNetMonthly * (1 - selfPhase1Pct)
     const selfPhase2Investor = selfNetMonthly * selfPhase2Pct
-    const selfPhase2Operator = selfNetMonthly * (1 - selfPhase2Pct)
+    const selfPhase2Partner = selfNetMonthly * (1 - selfPhase2Pct)
     const selfPayback = selfPhase1Investor > 0 ? selfMiningCapex / selfPhase1Investor : Infinity
     const selfROI = selfMiningCapex > 0 ? (selfPhase1Investor * 12 / selfMiningCapex * 100) : 0
 
@@ -238,9 +239,9 @@ function App() {
     const mixPhase1Pct = coPhase1Pct * (1 - modelMix) + selfPhase1Pct * modelMix
     const mixPhase2Pct = coPhase2Pct * (1 - modelMix) + selfPhase2Pct * modelMix
     const mixPhase1Investor = mixNetMonthly * mixPhase1Pct
-    const mixPhase1Operator = mixNetMonthly * (1 - mixPhase1Pct)
+    const mixPhase1Partner = mixNetMonthly * (1 - mixPhase1Pct)
     const mixPhase2Investor = mixPhase2NetMonthly * mixPhase2Pct
-    const mixPhase2Operator = mixPhase2NetMonthly * (1 - mixPhase2Pct)
+    const mixPhase2Partner = mixPhase2NetMonthly * (1 - mixPhase2Pct)
     const mixPayback = mixPhase1Investor > 0 ? mixCapex / mixPhase1Investor : Infinity
     const mixROI = mixCapex > 0 ? (mixPhase1Investor * 12 / mixCapex * 100) : 0
 
@@ -262,9 +263,9 @@ function App() {
       coNetMonthly,
       coAnnualNet,
       coPhase1Investor,
-      coPhase1Operator,
+      coPhase1Partner,
       coPhase2Investor,
-      coPhase2Operator,
+      coPhase2Partner,
       // Co-Mining equity building
       hostedAsicValue,
       minerOwnerMonthly,
@@ -287,9 +288,9 @@ function App() {
       selfNetMonthly,
       selfAnnualNet,
       selfPhase1Investor,
-      selfPhase1Operator,
+      selfPhase1Partner,
       selfPhase2Investor,
-      selfPhase2Operator,
+      selfPhase2Partner,
       selfPayback,
       selfROI,
       // Hybrid/Mix Phase 1 (30% Co-Mining)
@@ -309,9 +310,9 @@ function App() {
       mixPhase1Pct,
       mixPhase2Pct,
       mixPhase1Investor,
-      mixPhase1Operator,
+      mixPhase1Partner,
       mixPhase2Investor,
-      mixPhase2Operator,
+      mixPhase2Partner,
       mixPayback,
       mixROI,
     }
@@ -2288,7 +2289,7 @@ function App() {
                         <div className="split-visual">
                           <div className="split-bar">
                             <div className="investor-bar" style={{width: `${coPhase1Pct * 100}%`}}>{Math.round(coPhase1Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - coPhase1Pct) * 100}%`}}>{Math.round((1 - coPhase1Pct) * 100)}%</div>
+                            <div className="partner-bar" style={{width: `${(1 - coPhase1Pct) * 100}%`}}>{Math.round((1 - coPhase1Pct) * 100)}%</div>
                           </div>
                         </div>
                         <input type="range" min="0.5" max="0.90" step="0.05" value={coPhase1Pct} onChange={e => setCoPhase1Pct(+e.target.value)} />
@@ -2298,7 +2299,7 @@ function App() {
                         <div className="split-visual">
                           <div className="split-bar">
                             <div className="investor-bar" style={{width: `${coPhase2Pct * 100}%`}}>{Math.round(coPhase2Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - coPhase2Pct) * 100}%`}}>{Math.round((1 - coPhase2Pct) * 100)}%</div>
+                            <div className="partner-bar" style={{width: `${(1 - coPhase2Pct) * 100}%`}}>{Math.round((1 - coPhase2Pct) * 100)}%</div>
                           </div>
                         </div>
                         <input type="range" min="0.2" max="0.7" step="0.05" value={coPhase2Pct} onChange={e => setCoPhase2Pct(+e.target.value)} />
@@ -2313,7 +2314,7 @@ function App() {
                         <div className="split-visual">
                           <div className="split-bar">
                             <div className="investor-bar" style={{width: `${selfPhase1Pct * 100}%`}}>{Math.round(selfPhase1Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - selfPhase1Pct) * 100}%`}}>{Math.round((1 - selfPhase1Pct) * 100)}%</div>
+                            <div className="partner-bar" style={{width: `${(1 - selfPhase1Pct) * 100}%`}}>{Math.round((1 - selfPhase1Pct) * 100)}%</div>
                           </div>
                         </div>
                         <input type="range" min="0.6" max="0.95" step="0.05" value={selfPhase1Pct} onChange={e => setSelfPhase1Pct(+e.target.value)} />
@@ -2323,7 +2324,7 @@ function App() {
                         <div className="split-visual">
                           <div className="split-bar">
                             <div className="investor-bar" style={{width: `${selfPhase2Pct * 100}%`}}>{Math.round(selfPhase2Pct * 100)}%</div>
-                            <div className="operator-bar" style={{width: `${(1 - selfPhase2Pct) * 100}%`}}>{Math.round((1 - selfPhase2Pct) * 100)}%</div>
+                            <div className="partner-bar" style={{width: `${(1 - selfPhase2Pct) * 100}%`}}>{Math.round((1 - selfPhase2Pct) * 100)}%</div>
                           </div>
                         </div>
                         <input type="range" min="0.3" max="0.7" step="0.05" value={selfPhase2Pct} onChange={e => setSelfPhase2Pct(+e.target.value)} />
@@ -2333,7 +2334,7 @@ function App() {
                 </div>
                 <div className="split-legend" style={{marginTop: '16px'}}>
                   <span className="legend-investor">■ Your Share</span>
-                  <span className="legend-operator">■ Astro Share</span>
+                  <span className="legend-partner">■ Astro Share</span>
                 </div>
               </div>
             </details>
@@ -2453,7 +2454,7 @@ function App() {
                           <span style={{fontWeight: '700', color: '#fbbf24'}}>{formatCurrency(phase1ProjectNet * phase1InvestorPct)}</span>
                         </div>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                          <span style={{color: '#64748b'}}>Operator ({((1 - phase1InvestorPct) * 100).toFixed(0)}%)</span>
+                          <span style={{color: '#64748b'}}>Partner ({((1 - phase1InvestorPct) * 100).toFixed(0)}%)</span>
                           <span style={{color: '#64748b'}}>{formatCurrency(phase1ProjectNet * (1 - phase1InvestorPct))}</span>
                         </div>
                       </div>
@@ -2482,7 +2483,7 @@ function App() {
                           <span style={{fontWeight: '700', color: '#60a5fa'}}>{formatCurrency(phase2ProjectNet * phase2InvestorPct)}</span>
                         </div>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                          <span style={{color: '#64748b'}}>Operator ({((1 - phase2InvestorPct) * 100).toFixed(0)}%)</span>
+                          <span style={{color: '#64748b'}}>Partner ({((1 - phase2InvestorPct) * 100).toFixed(0)}%)</span>
                           <span style={{color: '#64748b'}}>{formatCurrency(phase2ProjectNet * (1 - phase2InvestorPct))}</span>
                         </div>
                       </div>
@@ -2511,7 +2512,7 @@ function App() {
                           <span style={{fontWeight: '700', color: '#4ade80'}}>{formatCurrency(phase3ProjectNet * phase3InvestorPct)}</span>
                         </div>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                          <span style={{color: '#64748b'}}>Operator ({((1 - phase3InvestorPct) * 100).toFixed(0)}%)</span>
+                          <span style={{color: '#64748b'}}>Partner ({((1 - phase3InvestorPct) * 100).toFixed(0)}%)</span>
                           <span style={{color: '#64748b'}}>{formatCurrency(phase3ProjectNet * (1 - phase3InvestorPct))}</span>
                         </div>
                       </div>
@@ -2556,7 +2557,8 @@ function App() {
                   <tr>
                     <th>Energy \ Hashprice</th>
                     <th>$30/PH</th>
-                    <th>$37/PH</th>
+                    <th>$35/PH</th>
+                    <th>$40/PH</th>
                     <th>$45/PH</th>
                     <th>$50/PH</th>
                     <th>$55/PH</th>
@@ -2567,7 +2569,7 @@ function App() {
                   {[3.5, 4.0, 4.5, 5.0, 5.5].map(ep => (
                     <tr key={ep}>
                       <td className="row-label">{ep}¢/kWh</td>
-                      {[30, 37, 45, 50, 55, 60].map((hp, idx, arr) => {
+                      {[30, 35, 40, 45, 50, 55, 60].map((hp, idx, arr) => {
                         // Calculate for this scenario
                         const uptime = 1 - curtailment
                         const miners = Math.floor(facilityMW * 1000 / minerPowerKW)
