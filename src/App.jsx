@@ -2570,30 +2570,34 @@ function App() {
                     <tr key={ep}>
                       <td className="row-label">{ep}¢/kWh</td>
                       {[30, 35, 40, 45, 50, 55, 60].map((hp, idx, arr) => {
-                        // Calculate for this scenario
+                        // Calculate for this scenario - matching main calculation logic
+                        const totalPowerKW = facilityMW * 1000
                         const uptime = 1 - curtailment
-                        const miners = Math.floor(facilityMW * 1000 / minerPowerKW)
-                        const totalHashratePH = (miners * hashratePerUnit) / 1000
-                        const effectiveHashratePH = totalHashratePH * uptime
-                        const minerCost = miners * hashratePerUnit * pricePerTh
+
+                        // Co-Mining (efficiency-based, matching main calc)
+                        const safeCoEfficiency = coEfficiency || 15
+                        const coTotalHashrateTH = (totalPowerKW * 1000) / safeCoEfficiency
+                        const coTotalHashratePH = coTotalHashrateTH / 1000
+                        const coEffectiveHashratePH = coTotalHashratePH * uptime
+                        const coTotalGrossRevenue = coEffectiveHashratePH * hp * 30
+                        const coTotalPowerCost = (ep / 100) * totalPowerKW * 720 * uptime
+                        const coTotalNetRevenue = coTotalGrossRevenue - coTotalPowerCost
+                        const coNetMonthly = coTotalNetRevenue * coMiningShare - monthlyOpex
                         const coMiningCapex = siteBuildCost
-                        const selfMiningCapex = siteBuildCost + minerCost
-                        const mixCapex = coMiningCapex * (1 - modelMix) + selfMiningCapex * modelMix
 
-                        // Co-Mining
-                        const coHashratePH = effectiveHashratePH * coMiningShare
-                        const coGrossRevenue = coHashratePH * hp * 30
-                        const coPowerCost = (ep / 100) * minerPowerKW * miners * 720 * uptime * coMiningShare
-                        const coNetMonthly = coGrossRevenue - coPowerCost - monthlyOpex
-                        const coInvestor = coNetMonthly * coPhase1Pct
-
-                        // Self-Mining
-                        const selfGrossRevenue = effectiveHashratePH * hp * 30
-                        const selfPowerCost = (ep / 100) * minerPowerKW * miners * 720 * uptime
+                        // Self-Mining (efficiency-based, matching main calc)
+                        const safeSelfEfficiency = selfEfficiency || 18
+                        const selfTotalHashrateTH = (totalPowerKW * 1000) / safeSelfEfficiency
+                        const selfTotalHashratePH = selfTotalHashrateTH / 1000
+                        const selfEffectiveHashratePH = selfTotalHashratePH * uptime
+                        const selfGrossRevenue = selfEffectiveHashratePH * hp * 30
+                        const selfPowerCost = (ep / 100) * totalPowerKW * 720 * uptime
                         const selfNetMonthly = selfGrossRevenue - selfPowerCost - monthlyOpex
-                        const selfInvestor = selfNetMonthly * selfPhase1Pct
+                        const minerCost = selfTotalHashrateTH * selfPricePerTh
+                        const selfMiningCapex = siteBuildCost + minerCost
 
                         // Blended (same formula as main calculation)
+                        const mixCapex = coMiningCapex * (1 - modelMix) + selfMiningCapex * modelMix
                         const mixNetMonthly = coNetMonthly * (1 - modelMix) + selfNetMonthly * modelMix
                         const mixPhase1Pct = coPhase1Pct * (1 - modelMix) + selfPhase1Pct * modelMix
                         const mixInvestor = mixNetMonthly * mixPhase1Pct
