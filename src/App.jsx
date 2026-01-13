@@ -2599,14 +2599,13 @@ function App() {
                         const mixInvestor = mixNetMonthly * mixPhase1Pct
                         const mixPayback = mixInvestor > 0 ? (mixCapex / mixInvestor) : null
 
-                        // Check if this is the current scenario (exact match or bracketing)
-                        const isCurrentEnergy = Math.abs(ep - energyPrice) < 0.01
-                        const isExactMatch = isCurrentEnergy && hp === hashprice
-                        const nextHp = arr[idx + 1] || Infinity
-                        const prevHp = arr[idx - 1] || 0
-                        const isBracketLow = isCurrentEnergy && hashprice > hp && hashprice < nextHp
-                        const isBracketHigh = isCurrentEnergy && hashprice < hp && hashprice > prevHp
-                        const isBracketed = isBracketLow || isBracketHigh
+                        // Check if this is the closest cell to current scenario
+                        const isCurrentEnergy = Math.abs(ep - energyPrice) < 0.25
+                        // Find closest hashprice column
+                        const closestHp = arr.reduce((prev, curr) =>
+                          Math.abs(curr - hashprice) < Math.abs(prev - hashprice) ? curr : prev
+                        )
+                        const isClosestCell = isCurrentEnergy && hp === closestHp
 
                         // Color coding based on payback
                         let cellColor = '#ef4444' // red for >48mo
@@ -2618,9 +2617,9 @@ function App() {
                             key={hp}
                             style={{
                               color: mixInvestor <= 0 ? '#ef4444' : cellColor,
-                              fontWeight: (isExactMatch || isBracketed) ? '700' : '400',
-                              backgroundColor: isExactMatch ? 'rgba(59, 130, 246, 0.3)' : isBracketed ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-                              border: isBracketed ? '2px dashed rgba(59, 130, 246, 0.6)' : isExactMatch ? '2px solid rgba(59, 130, 246, 0.8)' : 'none'
+                              fontWeight: isClosestCell ? '700' : '400',
+                              backgroundColor: isClosestCell ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
+                              border: isClosestCell ? '2px solid rgba(59, 130, 246, 0.8)' : 'none'
                             }}
                           >
                             {mixPayback ? `${mixPayback.toFixed(0)}` : 'N/A'}
