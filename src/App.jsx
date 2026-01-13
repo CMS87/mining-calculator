@@ -1954,21 +1954,6 @@ function App() {
                       <label>$/TH</label>
                       <input type="text" value={coPricePerTh} onChange={e => setCoPricePerTh(parseFloat(e.target.value) || 0)} />
                     </div>
-                    <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '12px', padding: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px'}}>
-                      <div style={{marginBottom: '6px', fontWeight: '600', color: '#60a5fa'}}>Equity Building</div>
-                      <div>Hashrate: {results.coTotalHashratePH.toFixed(0)} PH</div>
-                      <div>ASIC Value: {formatCurrency(results.hostedAsicValue)}</div>
-                      <div style={{marginTop: '6px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '6px'}}>
-                        <div>Net Revenue: {formatCurrency(results.coTotalNetRevenue)}/mo</div>
-                        <div>Owner ({((1-coMiningShare)*100).toFixed(0)}%): {formatCurrency(results.minerOwnerMonthly)}/mo</div>
-                        <div>Us ({(coMiningShare*100).toFixed(0)}%): {formatCurrency(results.coNetMonthly + monthlyOpex)}/mo</div>
-                      </div>
-                      <div style={{marginTop: '6px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '6px', fontWeight: '600'}}>
-                        <div style={{color: '#fbbf24'}}>Owner payback: {results.minerOwnerPaybackMonths?.toFixed(1) || '∞'} months</div>
-                        <div style={{color: '#4ade80', marginTop: '4px'}}>Then → 50/50 split</div>
-                        <div style={{color: '#4ade80'}}>Our share: {formatCurrency(results.coPhase2Monthly)}/mo</div>
-                      </div>
-                    </div>
                   </div>
                   <div style={{padding: '12px', background: 'rgba(34,197,94,0.1)', borderRadius: '8px', border: '1px solid rgba(34,197,94,0.3)'}}>
                     <div style={{fontWeight: '600', marginBottom: '8px', color: '#4ade80'}}>Self-Mining (we buy)</div>
@@ -2050,6 +2035,48 @@ function App() {
                     <li>Stable hosting revenue stream</li>
                     <li>No ASIC procurement needed</li>
                   </ul>
+
+                  <div style={{marginTop: '16px', padding: '12px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.3)'}}>
+                    <div style={{fontWeight: '600', color: '#60a5fa', marginBottom: '10px'}}>Equity Building</div>
+
+                    <div style={{fontSize: '0.8rem', color: '#94a3b8'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span>Hashrate:</span>
+                        <span style={{color: '#f1f5f9'}}>{results.coTotalHashratePH.toFixed(0)} PH</span>
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span>ASIC Value:</span>
+                        <span style={{color: '#f1f5f9'}}>{formatCurrency(results.hostedAsicValue)}</span>
+                      </div>
+                    </div>
+
+                    <div style={{fontSize: '0.8rem', color: '#94a3b8', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(59,130,246,0.2)'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span>Net Revenue:</span>
+                        <span style={{color: '#f1f5f9'}}>{formatCurrency(results.coTotalNetRevenue)}/mo</span>
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span>Owner ({((1-coMiningShare)*100).toFixed(0)}%):</span>
+                        <span style={{color: '#f1f5f9'}}>{formatCurrency(results.minerOwnerMonthly)}/mo</span>
+                      </div>
+                      <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                        <span>Us ({(coMiningShare*100).toFixed(0)}%):</span>
+                        <span style={{color: '#f1f5f9'}}>{formatCurrency(results.coNetMonthly + monthlyOpex)}/mo</span>
+                      </div>
+                    </div>
+
+                    <div style={{fontSize: '0.8rem', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(59,130,246,0.2)'}}>
+                      <div style={{color: '#fbbf24', fontWeight: '600', marginBottom: '6px'}}>
+                        Owner payback: {results.minerOwnerPaybackMonths?.toFixed(1) || '∞'} months
+                      </div>
+                      <div style={{color: '#4ade80', fontWeight: '600'}}>
+                        Then → 50/50 split
+                      </div>
+                      <div style={{color: '#4ade80', fontWeight: '700', fontSize: '0.9rem', marginTop: '4px'}}>
+                        Our share: {formatCurrency(results.coPhase2Monthly + monthlyOpex)}/mo
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="model-pnl">
