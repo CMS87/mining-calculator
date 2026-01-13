@@ -112,11 +112,11 @@ function App() {
         if (btcPrice && networkHashrate) {
           // Hashprice = (Block Reward × BTC Price × 144 blocks/day) / (Network Hashrate in PH/s)
           // Block reward = 3.125 BTC (post-halving April 2024)
-          // Apply 5% correction factor to align with hashrateindex.com
+          // Apply 3% correction factor to align with hashrateindex.com
           const blockReward = 3.125
           const blocksPerDay = 144
           const networkHashratePH = networkHashrate / 1e15 // Convert H/s to PH/s
-          const calculatedHashprice = (blockReward * btcPrice * blocksPerDay) / networkHashratePH * 0.95
+          const calculatedHashprice = (blockReward * btcPrice * blocksPerDay) / networkHashratePH * 0.97
           setHashprice(Math.round(calculatedHashprice * 10) / 10) // Round to 1 decimal
         }
       } catch (err) {
