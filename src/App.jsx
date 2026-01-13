@@ -2525,13 +2525,23 @@ function App() {
                   </div>
 
                   <div style={{marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px'}}>
-                    <div style={{padding: '10px 14px', background: minerFirst ? 'rgba(251, 191, 36, 0.1)' : 'rgba(59, 130, 246, 0.1)', borderRadius: '6px', fontSize: '0.75rem'}}>
-                      <span style={{color: minerFirst ? '#fbbf24' : '#60a5fa'}}>Equity Transition (~{minerPayback.toFixed(0)} mo):</span>
-                      <span style={{color: '#94a3b8'}}> Co-Mining 30% → 50%</span>
+                    {/* First milestone (yellow - triggers Phase 1→2) */}
+                    <div style={{padding: '10px 14px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '6px', fontSize: '0.75rem'}}>
+                      <span style={{color: '#fbbf24'}}>
+                        {minerFirst ? 'Equity Transition' : 'Investor ROI'} (~{firstMilestone.toFixed(0)} mo):
+                      </span>
+                      <span style={{color: '#94a3b8'}}>
+                        {minerFirst ? ' Co-Mining 30% → 50%' : ` Split ${(results.mixPhase1Pct * 100).toFixed(0)}% → ${(results.mixPhase2Pct * 100).toFixed(0)}%`}
+                      </span>
                     </div>
-                    <div style={{padding: '10px 14px', background: !minerFirst ? 'rgba(251, 191, 36, 0.1)' : 'rgba(59, 130, 246, 0.1)', borderRadius: '6px', fontSize: '0.75rem'}}>
-                      <span style={{color: !minerFirst ? '#fbbf24' : '#60a5fa'}}>Investor ROI (~{investorPayback.toFixed(0)} mo):</span>
-                      <span style={{color: '#94a3b8'}}> Split {(results.mixPhase1Pct * 100).toFixed(0)}% → {(results.mixPhase2Pct * 100).toFixed(0)}%</span>
+                    {/* Second milestone (blue - triggers Phase 2→3) */}
+                    <div style={{padding: '10px 14px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '6px', fontSize: '0.75rem'}}>
+                      <span style={{color: '#60a5fa'}}>
+                        {minerFirst ? 'Investor ROI' : 'Equity Transition'} (~{secondMilestone.toFixed(0)} mo):
+                      </span>
+                      <span style={{color: '#94a3b8'}}>
+                        {minerFirst ? ` Split ${(results.mixPhase1Pct * 100).toFixed(0)}% → ${(results.mixPhase2Pct * 100).toFixed(0)}%` : ' Co-Mining 30% → 50%'}
+                      </span>
                     </div>
                   </div>
                 </div>
