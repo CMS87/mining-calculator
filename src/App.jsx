@@ -12,12 +12,12 @@ function App() {
   // ====== CONTAINER & FACILITY ======
   const [containerCount, setContainerCount] = useState(4)  // 4 × 53ft containers
   const containerMW = 1.4                                   // 1.4 MW per container (fixed)
-  const [containerCapex, setContainerCapex] = useState(600000)  // 4 containers × $150k
+  const [containerCapex, setContainerCapex] = useState(340000)  // 4 containers × $85k
 
   // ====== MINER SPECS (single set — no self/co split) ======
   const [hashratePerUnit, setHashratePerUnit] = useState(234)   // TH/s per unit (S21 Pro 234T)
   const [efficiency, setEfficiency] = useState(15.0)            // J/TH (3510W / 234TH)
-  const [pricePerTh, setPricePerTh] = useState(12)              // $/TH
+  const [pricePerTh, setPricePerTh] = useState(8)              // $/TH
 
   // ====== CONTAINER PHYSICAL CAPACITY ======
   const pdusPerContainer = 28                                    // 28 PDUs per container (confirmed from wiring docs + photos)
@@ -232,8 +232,8 @@ function App() {
   // ====== MINER PRESET HANDLER ======
   const handleMinerPreset = (e) => {
     const presets = {
-      s21pro234: { kw: 3.51, th: 234, pth: 12 },
-      s21pro220: { kw: 3.3,  th: 220, pth: 11 },
+      s21pro234: { kw: 3.51, th: 234, pth: 8 },
+      s21pro220: { kw: 3.3,  th: 220, pth: 7 },
       s21xp:    { kw: 3.645, th: 270, pth: 16 },
       s21:      { kw: 3.5,  th: 200, pth: 10 },
       t21:      { kw: 3.61, th: 190, pth: 9 },
@@ -1163,7 +1163,7 @@ function App() {
                     />
                   </div>
                   <div style={{fontSize: '0.7rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '8px', paddingLeft: '4px'}}>
-                    {containerCount} containers × $150k = ${(containerCapex / 1000).toFixed(0)}k
+                    {containerCount} containers × ${(containerCapex/containerCount/1000).toFixed(0)}k each = ${(containerCapex/1000).toFixed(0)}k total
                   </div>
                   <div className="result-row compact">
                     <span>Generator CAPEX</span>
