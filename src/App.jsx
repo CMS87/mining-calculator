@@ -36,7 +36,6 @@ function App() {
   const [curtailment, setCurtailment] = useState(0.05)          // 5% curtailment
 
   // ====== GAS-TO-POWER ======
-  const [gasAvailable, setGasAvailable] = useState(500)         // MCF/day placeholder until Ed confirms
   const [heatRate, setHeatRate] = useState(11500)               // BTU/kWh (TGR400 spec)
   const [hhv, setHhv] = useState(1000)                          // BTU/scf
   const [wahaPrice, setWahaPrice] = useState(0)                 // ~$0 stranded gas
