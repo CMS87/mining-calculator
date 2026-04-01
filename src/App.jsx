@@ -23,7 +23,7 @@ function App() {
   const pdusPerContainer = 28                                    // 28 PDUs per container (confirmed from wiring docs + photos)
   const outletsPerPdu = 12                                       // 12 C19/C20 outlets per PDU strip
   const maxMinersPerContainer = pdusPerContainer * outletsPerPdu // 336 hard cap — PDU slots are the bottleneck
-  const [minersPerContainerOverride, setMinersPerContainerOverride] = useState(336) // settable by user
+  const [minersPerContainerOverride, setMinersPerContainerOverride] = useState(324) // settable by user
 
   // Derived miner values
   const minerPowerW = efficiency * hashratePerUnit               // Watts per miner
