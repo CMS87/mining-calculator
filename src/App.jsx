@@ -46,7 +46,7 @@ function App() {
   // ====== GENERATORS (Taylor Power TGR400 defaults) ======
   const [generatorCount, setGeneratorCount] = useState(12)
   const [generatorSizeKw, setGeneratorSizeKw] = useState(400)
-  const [generatorMode, setGeneratorMode] = useState('rto')
+  const [generatorMode, setGeneratorMode] = useState('finance')
   const [generatorRentMonthly, setGeneratorRentMonthly] = useState(9500)
   const [generatorBuyPrice, setGeneratorBuyPrice] = useState(171205)
   const [generatorBuyMaintenance, setGeneratorBuyMaintenance] = useState(1500)
@@ -313,7 +313,7 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Generator Count</label>
-                    <input type="number" value={generatorCount} onChange={e => setGeneratorCount(+e.target.value)} />
+                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setGeneratorCount(v); }} />
                   </div>
                   <div>
                     <label>Size per Generator (kW)</label>
@@ -479,22 +479,14 @@ function App() {
                 </div>
 
                 <div className="input-row" style={{marginTop: '12px'}}>
-                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}>(Ed runs at ~80%)</span></label>
+                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}></span></label>
                   <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => setGeneratorLoadPct(+e.target.value)} />
                   <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Running below 100% extends generator life and reduces fuel burn</span>
                 </div>
 
-                <div className="input-row">
-                  <label>Available Gas (MCF/day)</label>
-                  <input type="number" value={gasAvailable} onChange={e => setGasAvailable(+e.target.value)} />
-                  <span style={{fontSize: '0.7rem', color: '#94a3b8'}}>Placeholder until Ed confirms</span>
-                </div>
-
                 <div className="result-row compact" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
                   <span>Gas Required</span>
-                  <span className={gasResults.mcfPerDay <= gasAvailable ? 'highlight' : ''} style={{color: gasResults.mcfPerDay > gasAvailable ? '#ef4444' : undefined}}>
-                    {gasResults.mcfPerDay.toFixed(0)} MCF/day {gasResults.mcfPerDay > gasAvailable ? '(exceeds available!)' : ''}
-                  </span>
+                  <span className="highlight">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
                 </div>
                 <div className="result-row compact">
                   <span>Net Power Output</span>
@@ -813,12 +805,12 @@ function App() {
               <div className="card-body">
                 <div className="input-row">
                   <label>Containers (53ft)</label>
-                  <input type="number" min="1" value={containerCount} onChange={e => setContainerCount(+e.target.value)} />
+                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCount(v); }} />
                 </div>
                 <div className="input-row two-col">
                   <div>
                     <label>Miners per Container</label>
-                    <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => setMinersPerContainerOverride(+e.target.value)} />
+                    <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setMinersPerContainerOverride(v); }} />
                   </div>
                   <div style={{paddingTop: '22px'}}>
                     <span style={{fontSize: '0.72rem', color: '#94a3b8'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu})</span>
@@ -1002,11 +994,11 @@ function App() {
                 <h3>Site & Mining</h3>
                 <div className="input-row">
                   <label>Containers (53ft, {containerMW} MW each)</label>
-                  <input type="number" min="1" value={containerCount} onChange={e => setContainerCount(+e.target.value)} />
+                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCount(v); }} />
                 </div>
                 <div className="input-row" style={{marginTop: '-4px'}}>
                   <label>Miners per Container</label>
-                  <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => setMinersPerContainerOverride(+e.target.value)} />
+                  <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setMinersPerContainerOverride(v); }} />
                   <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu} outlets){minersPerContainerOverride > maxMinersPerContainer ? ' ⚠️ exceeds PDU cap' : ''}</span>
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '12px', paddingLeft: '4px'}}>
@@ -1069,7 +1061,7 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Count</label>
-                    <input type="number" value={generatorCount} onChange={e => setGeneratorCount(+e.target.value)} />
+                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setGeneratorCount(v); }} />
                   </div>
                   <div>
                     <label>kW each</label>
@@ -1080,7 +1072,7 @@ function App() {
                   Fleet: <strong>{gasResults.fleetCapacityMw.toFixed(2)} MW</strong> × {Math.round(generatorLoadPct * 100)}% load = <strong>{gasResults.availableMw.toFixed(2)} MW</strong> to miners
                 </div>
                 <div className="input-row" style={{marginBottom: '12px'}}>
-                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}>(Ed's ~80%)</span></label>
+                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}></span></label>
                   <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => setGeneratorLoadPct(+e.target.value)} />
                 </div>
 
