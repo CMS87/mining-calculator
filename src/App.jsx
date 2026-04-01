@@ -54,7 +54,7 @@ function App() {
   const [generatorRtoTerm, setGeneratorRtoTerm] = useState(28)
   const [generatorRtoEquityPct, setGeneratorRtoEquityPct] = useState(0.50)
   const [generatorRtoPostMaint, setGeneratorRtoPostMaint] = useState(1500)
-  const [financeRate, setFinanceRate] = useState(8.5)
+  const [financeRate, setFinanceRate] = useState(5.0)
   const [financeTerm, setFinanceTerm] = useState(60)
   const [financeDownPct, setFinanceDownPct] = useState(20)
   const [generatorLifetimeHours, setGeneratorLifetimeHours] = useState(60000)
