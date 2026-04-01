@@ -628,76 +628,86 @@ function App() {
 
 
 
-            {/* Acquisition Comparison Table */}
-            <h3 style={{marginTop: '32px', marginBottom: '16px'}}>Generator Acquisition Comparison</h3>
+            {/* Generator Acquisition Comparison */}
+            <h3 style={{marginTop: '32px', marginBottom: '8px'}}>Generator Acquisition Comparison</h3>
+            <p className="section-intro">Which mode gives the best net position? All figures for full fleet of {generatorCount} generators.</p>
             <div className="sensitivity-table">
               <table>
                 <thead>
                   <tr>
                     <th>Metric</th>
                     <th>Rent</th>
-                    <th>Buy</th>
+                    <th>Finance ({financeRate}%)</th>
                     <th>RTO</th>
-                    <th>Finance</th>
+                    <th>Buy Cash</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Upfront Cost</td>
-                    <td>$0</td>
-                    <td>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
-                    <td>$0</td>
+                    <td className="row-label">Upfront Cash Needed</td>
+                    <td style={{color:'#22c55e'}}>$0</td>
                     <td>{formatCurrencyFull(gasResults.financeDownPayment)}</td>
+                    <td style={{color:'#22c55e'}}>$0</td>
+                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
                   </tr>
                   <tr>
-                    <td>Monthly Payment</td>
+                    <td className="row-label">Monthly Generator Cost</td>
                     <td>{formatCurrencyFull(generatorRentMonthly * generatorCount)}</td>
-                    <td>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
-                    <td>{formatCurrencyFull(generatorRtoMonthly * generatorCount)}</td>
                     <td>{formatCurrencyFull(gasResults.financeMonthlyPayment + generatorBuyMaintenance * generatorCount)}</td>
+                    <td>{formatCurrencyFull(generatorRtoMonthly * generatorCount)}</td>
+                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
                   </tr>
                   <tr>
-                    <td>Own After</td>
-                    <td>Never</td>
-                    <td>Day 1</td>
-                    <td>{gasResults.rtoMonthsToOwn} months</td>
+                    <td className="row-label">Net Mining Profit/mo</td>
+                    {[
+                      gasResults.monthlyRevenue - (generatorRentMonthly * generatorCount),
+                      gasResults.monthlyRevenue - (gasResults.financeMonthlyPayment + generatorBuyMaintenance * generatorCount),
+                      gasResults.monthlyRevenue - (generatorRtoMonthly * generatorCount),
+                      gasResults.monthlyRevenue - (generatorBuyMaintenance * generatorCount),
+                    ].map((net, i) => (
+                      <td key={i} style={{color: net >= 0 ? '#22c55e' : '#ef4444', fontWeight:'700'}}>
+                        {formatCurrency(net)}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="row-label">You Own Generators After</td>
+                    <td style={{color:'#ef4444'}}>Never</td>
                     <td>{financeTerm} months</td>
+                    <td>{gasResults.rtoMonthsToOwn} months</td>
+                    <td style={{color:'#22c55e'}}>Day 1</td>
                   </tr>
                   <tr>
-                    <td>Post-Ownership Cost</td>
-                    <td>N/A</td>
-                    <td>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}/mo</td>
-                    <td>{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}/mo</td>
-                    <td>{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}/mo</td>
+                    <td className="row-label">Post-Ownership Cost/mo</td>
+                    <td style={{color:'#ef4444'}}>Same forever</td>
+                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}</td>
+                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}</td>
+                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
                   </tr>
                   <tr>
-                    <td>Total Cost (5yr)</td>
-                    <td>{formatCurrencyFull(generatorRentMonthly * generatorCount * 60)}</td>
-                    <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * 60)}</td>
-                    <td>{formatCurrencyFull(gasResults.rtoTotalPaid + gasResults.rtoPostOwnershipMonthly * Math.max(0, 60 - gasResults.rtoMonthsToOwn))}</td>
+                    <td className="row-label">Total Paid — 3 Years</td>
+                    <td>{formatCurrencyFull(generatorRentMonthly * generatorCount * 36)}</td>
+                    <td>{formatCurrencyFull(gasResults.financeDownPayment + (gasResults.financeMonthlyPayment + generatorBuyMaintenance * generatorCount) * Math.min(36, financeTerm) + gasResults.financePostOwnershipMonthly * Math.max(0, 36 - financeTerm))}</td>
+                    <td>{formatCurrencyFull(generatorRtoMonthly * generatorCount * Math.min(36, gasResults.rtoMonthsToOwn) + gasResults.rtoPostOwnershipMonthly * Math.max(0, 36 - gasResults.rtoMonthsToOwn))}</td>
+                    <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * 36)}</td>
+                  </tr>
+                  <tr>
+                    <td className="row-label">Total Paid — 5 Years</td>
+                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(generatorRentMonthly * generatorCount * 60)}</td>
                     <td>{formatCurrencyFull(gasResults.financeTotalPaid + gasResults.financePostOwnershipMonthly * Math.max(0, 60 - financeTerm))}</td>
+                    <td>{formatCurrencyFull(gasResults.rtoTotalPaid + gasResults.rtoPostOwnershipMonthly * Math.max(0, 60 - gasResults.rtoMonthsToOwn))}</td>
+                    <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * 60)}</td>
+                  </tr>
+                  <tr>
+                    <td className="row-label">Asset Value at End</td>
+                    <td style={{color:'#ef4444'}}>$0</td>
+                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
+                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
+                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-
-            {/* CAPEX Summary (Buy mode) */}
-            {generatorMode === 'buy' && (
-              <div className="simple-table" style={{marginTop: '20px'}}>
-                <div className="table-row">
-                  <span>Generator CAPEX</span>
-                  <span>{formatCurrencyFull(gasResults.generatorCapex)}</span>
-                </div>
-                <div className="table-row">
-                  <span>Lifetime Overhaul Cost</span>
-                  <span>{formatCurrencyFull(gasResults.totalOverhaulCost)}</span>
-                </div>
-                <div className="table-row total">
-                  <span>Total Ownership Cost ({gasResults.lifetimeYears.toFixed(1)} yrs)</span>
-                  <span className="highlight">{formatCurrencyFull(gasResults.generatorCapex + gasResults.totalOverhaulCost)}</span>
-                </div>
-              </div>
-            )}
 
             {/* Power Cost vs Grid Comparison Table */}
             <h3 style={{marginTop: '32px', marginBottom: '16px'}}>Power Cost vs Grid Comparison</h3>
