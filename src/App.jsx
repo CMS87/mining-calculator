@@ -38,8 +38,10 @@ function App() {
   // ====== GAS-TO-POWER ======
   const [heatRate, setHeatRate] = useState(11500)               // BTU/kWh (TGR400 spec)
   const [hhv, setHhv] = useState(1000)                          // BTU/scf
-  const [wahaPrice, setWahaPrice] = useState(0)                 // ~$0 stranded gas
-  const [wahaAdder, setWahaAdder] = useState(0)                 // ~$0
+  const [wahaPriceStr, setWahaPriceStr] = useState('0')         // ~$0 stranded gas
+  const wahaPrice = parseFloat(wahaPriceStr) || 0
+  const [wahaAdderStr, setWahaAdderStr] = useState('0')         // ~$0
+  const wahaAdder = parseFloat(wahaAdderStr) || 0
   const [generatorLoadPct, setGeneratorLoadPct] = useState(0.80)  // 80% = Ed's preferred operating point
 
   // ====== GENERATORS (Taylor Power TGR400 defaults) ======
@@ -413,7 +415,7 @@ function App() {
                     </div>
                     <div className="input-row">
                       <label>Down Payment (%)</label>
-                      <input type="number" value={financeDownPct || ""} onChange={e => { const v = parseFloat(e.target.value); setFinanceDownPct(isNaN(v) ? 0 : v); }} />
+                      <input type="number" value={financeDownPct} onChange={e => { setFinanceDownPct(e.target.value === "" ? 0 : (parseFloat(e.target.value) ?? 0)); }} />
                     </div>
                     <div className="result-row compact">
                       <span>Down Payment</span>
@@ -461,11 +463,11 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Gas Index ($/MCF)</label>
-                    <input type="number" step="0.01" value={wahaPrice || ""} onChange={e => { const v = parseFloat(e.target.value); setWahaPrice(isNaN(v) ? 0 : v); }} />
+                    <input type="number" step="0.01" value={wahaPriceStr} onChange={e => setWahaPriceStr(e.target.value)} />
                   </div>
                   <div>
                     <label>Adder ($/MCF)</label>
-                    <input type="number" step="0.01" value={wahaAdder || ""} onChange={e => { const v = parseFloat(e.target.value); setWahaAdder(isNaN(v) ? 0 : v); }} />
+                    <input type="number" step="0.01" value={wahaAdderStr} onChange={e => setWahaAdderStr(e.target.value)} />
                   </div>
                 </div>
                 <div className="info-row" style={{color: '#4ade80', fontWeight: '600', fontSize: '0.8rem'}}>
@@ -864,7 +866,7 @@ function App() {
                 </div>
                 <div className="input-row">
                   <label>Other Opex ($/month)</label>
-                  <input type="number" value={otherOpex || ""} onChange={e => { const v = parseFloat(e.target.value); setOtherOpex(isNaN(v) ? 0 : v); }} />
+                  <input type="number" value={otherOpex} onChange={e => { setOtherOpex(e.target.value === "" ? 0 : (parseFloat(e.target.value) ?? 0)); }} />
                 </div>
 
                 <div className="result-row compact" style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '12px', paddingTop: '8px'}}>
@@ -1132,7 +1134,7 @@ function App() {
                   </div>
                   <div>
                     <label>Other Opex ($/mo)</label>
-                    <input type="number" value={otherOpex || ""} onChange={e => { const v = parseFloat(e.target.value); setOtherOpex(isNaN(v) ? 0 : v); }} />
+                    <input type="number" value={otherOpex} onChange={e => { setOtherOpex(e.target.value === "" ? 0 : (parseFloat(e.target.value) ?? 0)); }} />
                   </div>
                 </div>
 
