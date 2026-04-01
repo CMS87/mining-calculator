@@ -12,7 +12,7 @@ function App() {
   // ====== CONTAINER & FACILITY ======
   const [containerCount, setContainerCount] = useState(4)  // 4 × 53ft containers
   const containerMW = 1.4                                   // 1.4 MW per container (fixed)
-  const [containerCapex, setContainerCapex] = useState(340000)  // 4 containers × $85k
+  const [containerCapex, setContainerCapex] = useState(360000)  // 4 containers × $90k
 
   // ====== MINER SPECS (single set — no self/co split) ======
   const [hashratePerUnit, setHashratePerUnit] = useState(234)   // TH/s per unit (S21 Pro 234T)
@@ -48,10 +48,10 @@ function App() {
   const [generatorCount, setGeneratorCount] = useState(12)
   const [generatorSizeKw, setGeneratorSizeKw] = useState(400)
   const [generatorMode, setGeneratorMode] = useState('finance')
-  const [generatorRentMonthly, setGeneratorRentMonthly] = useState(9500)
-  const [generatorBuyPrice, setGeneratorBuyPrice] = useState(171205)
+  const [generatorRentMonthly, setGeneratorRentMonthly] = useState(10500)
+  const [generatorBuyPrice, setGeneratorBuyPrice] = useState(185000)
   const [generatorBuyMaintenance, setGeneratorBuyMaintenance] = useState(1500)
-  const [generatorRtoMonthly, setGeneratorRtoMonthly] = useState(12500)
+  const [generatorRtoMonthly, setGeneratorRtoMonthly] = useState(13500)
   const [generatorRtoTerm, setGeneratorRtoTerm] = useState(28)
   const [generatorRtoEquityPct, setGeneratorRtoEquityPct] = useState(0.50)
   const [generatorRtoPostMaint, setGeneratorRtoPostMaint] = useState(1500)
