@@ -6,7 +6,7 @@ import './App.css'
 
 function App() {
   // Tab mode: 'gas' (Gas→Power), 'mining' (Power→BTC), 'full' (Full Model)
-  const [mode, setMode] = useState('full')
+  const [mode, setMode] = useState('gas')
   const [hashpriceLoading, setHashpriceLoading] = useState(true)
 
   // ====== CONTAINER & FACILITY ======
