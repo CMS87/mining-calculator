@@ -413,7 +413,7 @@ function App() {
                     </div>
                     <div className="input-row">
                       <label>Down Payment (%)</label>
-                      <input type="number" value={financeDownPct} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setFinanceDownPct(v); }} />
+                      <input type="number" value={financeDownPct || ""} onChange={e => { const v = parseFloat(e.target.value); setFinanceDownPct(isNaN(v) ? 0 : v); }} />
                     </div>
                     <div className="result-row compact">
                       <span>Down Payment</span>
@@ -461,11 +461,11 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Gas Index ($/MCF)</label>
-                    <input type="number" step="0.01" value={wahaPrice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setWahaPrice(v); }} />
+                    <input type="number" step="0.01" value={wahaPrice || ""} onChange={e => { const v = parseFloat(e.target.value); setWahaPrice(isNaN(v) ? 0 : v); }} />
                   </div>
                   <div>
                     <label>Adder ($/MCF)</label>
-                    <input type="number" step="0.01" value={wahaAdder} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setWahaAdder(v); }} />
+                    <input type="number" step="0.01" value={wahaAdder || ""} onChange={e => { const v = parseFloat(e.target.value); setWahaAdder(isNaN(v) ? 0 : v); }} />
                   </div>
                 </div>
                 <div className="info-row" style={{color: '#4ade80', fontWeight: '600', fontSize: '0.8rem'}}>
@@ -945,7 +945,7 @@ function App() {
                 </div>
                 <div className="input-row">
                   <label>Other Opex ($/month)</label>
-                  <input type="number" value={otherOpex} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setOtherOpex(v); }} />
+                  <input type="number" value={otherOpex || ""} onChange={e => { const v = parseFloat(e.target.value); setOtherOpex(isNaN(v) ? 0 : v); }} />
                 </div>
 
                 <div className="result-row compact" style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '12px', paddingTop: '8px'}}>
@@ -1213,7 +1213,7 @@ function App() {
                   </div>
                   <div>
                     <label>Other Opex ($/mo)</label>
-                    <input type="number" value={otherOpex} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setOtherOpex(v); }} />
+                    <input type="number" value={otherOpex || ""} onChange={e => { const v = parseFloat(e.target.value); setOtherOpex(isNaN(v) ? 0 : v); }} />
                   </div>
                 </div>
 
