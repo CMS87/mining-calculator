@@ -781,6 +781,21 @@ function App() {
                   <span>Price per Unit</span>
                   <span>${pricePerTh}/TH × {hashratePerUnit} TH/s = <strong>{formatCurrencyFull(gasResults.asicPricePerUnit)}</strong></span>
                 </div>
+                <div style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '12px', paddingTop: '12px'}}>
+                  <div className="input-row">
+                    <label>Container CAPEX ($)</label>
+                    <input type="text" value={containerCapex.toLocaleString()} onChange={e => { const v = parseFloat(e.target.value.replace(/,/g,'')); if (!isNaN(v)) setContainerCapex(v); }} />
+                    <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>{containerCount} containers × ${(containerCapex/containerCount/1000).toFixed(0)}k each</span>
+                  </div>
+                  <div className="result-row compact" style={{marginTop:'4px'}}>
+                    <span>Miner CAPEX</span>
+                    <span>{formatCurrencyFull(gasResults.asicCapex)}</span>
+                  </div>
+                  <div className="result-row compact total">
+                    <span>Total Hardware CAPEX</span>
+                    <span className="highlight">{formatCurrencyFull(containerCapex + gasResults.asicCapex)}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
