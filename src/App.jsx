@@ -317,7 +317,7 @@ function App() {
                   </div>
                   <div>
                     <label>Size per Generator (kW)</label>
-                    <input type="number" value={generatorSizeKw} onChange={e => setGeneratorSizeKw(+e.target.value)} />
+                    <input type="number" value={generatorSizeKw} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorSizeKw(v); }} />
                   </div>
                 </div>
 
@@ -336,7 +336,7 @@ function App() {
                 {generatorMode === 'rent' && (
                   <div className="input-row">
                     <label>Rent ($/generator/month)</label>
-                    <input type="number" value={generatorRentMonthly} onChange={e => setGeneratorRentMonthly(+e.target.value)} />
+                    <input type="number" value={generatorRentMonthly} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorRentMonthly(v); }} />
                   </div>
                 )}
 
@@ -345,11 +345,11 @@ function App() {
                     <div className="input-row two-col">
                       <div>
                         <label>Purchase Price ($/unit)</label>
-                        <input type="number" value={generatorBuyPrice} onChange={e => setGeneratorBuyPrice(+e.target.value)} />
+                        <input type="number" value={generatorBuyPrice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorBuyPrice(v); }} />
                       </div>
                       <div>
                         <label>Maintenance ($/unit/mo)</label>
-                        <input type="number" value={generatorBuyMaintenance} onChange={e => setGeneratorBuyMaintenance(+e.target.value)} />
+                        <input type="number" value={generatorBuyMaintenance} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorBuyMaintenance(v); }} />
                       </div>
                     </div>
                     <div className="result-row compact">
@@ -363,7 +363,7 @@ function App() {
                   <>
                     <div className="input-row">
                       <label>RTO Payment ($/generator/month)</label>
-                      <input type="number" value={generatorRtoMonthly} onChange={e => setGeneratorRtoMonthly(+e.target.value)} />
+                      <input type="number" value={generatorRtoMonthly} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorRtoMonthly(v); }} />
                     </div>
                     <div className="input-row two-col">
                       <div>
@@ -372,7 +372,7 @@ function App() {
                       </div>
                       <div>
                         <label>Post-Ownership Maint ($/unit/mo)</label>
-                        <input type="number" value={generatorRtoPostMaint} onChange={e => setGeneratorRtoPostMaint(+e.target.value)} />
+                        <input type="number" value={generatorRtoPostMaint} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorRtoPostMaint(v); }} />
                       </div>
                     </div>
                     <div className="result-row compact">
@@ -395,26 +395,26 @@ function App() {
                     <div className="input-row two-col">
                       <div>
                         <label>Purchase Price ($/unit)</label>
-                        <input type="number" value={generatorBuyPrice} onChange={e => setGeneratorBuyPrice(+e.target.value)} />
+                        <input type="number" value={generatorBuyPrice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorBuyPrice(v); }} />
                       </div>
                       <div>
                         <label>Maintenance ($/unit/mo)</label>
-                        <input type="number" value={generatorBuyMaintenance} onChange={e => setGeneratorBuyMaintenance(+e.target.value)} />
+                        <input type="number" value={generatorBuyMaintenance} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorBuyMaintenance(v); }} />
                       </div>
                     </div>
                     <div className="input-row two-col">
                       <div>
                         <label>Interest Rate (%)</label>
-                        <input type="number" step="0.1" value={financeRate} onChange={e => setFinanceRate(+e.target.value)} />
+                        <input type="number" step="0.1" value={financeRate} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setFinanceRate(v); }} />
                       </div>
                       <div>
                         <label>Term (months)</label>
-                        <input type="number" value={financeTerm} onChange={e => setFinanceTerm(+e.target.value)} />
+                        <input type="number" value={financeTerm} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setFinanceTerm(v); }} />
                       </div>
                     </div>
                     <div className="input-row">
                       <label>Down Payment (%)</label>
-                      <input type="number" value={financeDownPct} onChange={e => setFinanceDownPct(+e.target.value)} />
+                      <input type="number" value={financeDownPct} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setFinanceDownPct(v); }} />
                     </div>
                     <div className="result-row compact">
                       <span>Down Payment</span>
@@ -451,22 +451,22 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Heat Rate (BTU/kWh)</label>
-                    <input type="number" value={heatRate} onChange={e => setHeatRate(+e.target.value)} />
+                    <input type="number" value={heatRate} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHeatRate(v); }} />
                   </div>
                   <div>
                     <label>HHV (BTU/scf)</label>
-                    <input type="number" value={hhv} onChange={e => setHhv(+e.target.value)} />
+                    <input type="number" value={hhv} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHhv(v); }} />
                   </div>
                 </div>
 
                 <div className="input-row two-col">
                   <div>
                     <label>Gas Index ($/MCF)</label>
-                    <input type="number" step="0.01" value={wahaPrice} onChange={e => setWahaPrice(+e.target.value)} />
+                    <input type="number" step="0.01" value={wahaPrice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setWahaPrice(v); }} />
                   </div>
                   <div>
                     <label>Adder ($/MCF)</label>
-                    <input type="number" step="0.01" value={wahaAdder} onChange={e => setWahaAdder(+e.target.value)} />
+                    <input type="number" step="0.01" value={wahaAdder} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setWahaAdder(v); }} />
                   </div>
                 </div>
                 <div className="info-row" style={{color: '#4ade80', fontWeight: '600', fontSize: '0.8rem'}}>
@@ -480,7 +480,7 @@ function App() {
 
                 <div className="input-row" style={{marginTop: '12px'}}>
                   <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}></span></label>
-                  <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => setGeneratorLoadPct(+e.target.value)} />
+                  <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorLoadPct(v); }} />
                   <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Running below 100% extends generator life and reduces fuel burn</span>
                 </div>
 
@@ -509,7 +509,7 @@ function App() {
                   <div className="input-row two-col">
                     <div>
                       <label>Lifetime (hours)</label>
-                      <input type="number" value={generatorLifetimeHours} onChange={e => setGeneratorLifetimeHours(+e.target.value)} />
+                      <input type="number" value={generatorLifetimeHours} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorLifetimeHours(v); }} />
                     </div>
                     <div>
                       <label>Hours/Year</label>
@@ -519,21 +519,21 @@ function App() {
                   <div className="input-row two-col">
                     <div>
                       <label>Top Overhaul @ (hours)</label>
-                      <input type="number" value={topOverhaulHours} onChange={e => setTopOverhaulHours(+e.target.value)} />
+                      <input type="number" value={topOverhaulHours} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setTopOverhaulHours(v); }} />
                     </div>
                     <div>
                       <label>Cost ($)</label>
-                      <input type="number" value={topOverhaulCost} onChange={e => setTopOverhaulCost(+e.target.value)} />
+                      <input type="number" value={topOverhaulCost} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setTopOverhaulCost(v); }} />
                     </div>
                   </div>
                   <div className="input-row two-col">
                     <div>
                       <label>Major Overhaul @ (hours)</label>
-                      <input type="number" value={majorOverhaulHours} onChange={e => setMajorOverhaulHours(+e.target.value)} />
+                      <input type="number" value={majorOverhaulHours} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setMajorOverhaulHours(v); }} />
                     </div>
                     <div>
                       <label>Cost ($)</label>
-                      <input type="number" value={majorOverhaulCost} onChange={e => setMajorOverhaulCost(+e.target.value)} />
+                      <input type="number" value={majorOverhaulCost} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setMajorOverhaulCost(v); }} />
                     </div>
                   </div>
                   <div className="result-row compact" style={{marginTop: '8px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
@@ -773,11 +773,11 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Hashrate (TH/s)</label>
-                    <input type="number" value={hashratePerUnit} onChange={e => setHashratePerUnit(+e.target.value)} />
+                    <input type="number" value={hashratePerUnit} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHashratePerUnit(v); }} />
                   </div>
                   <div>
                     <label>Efficiency (J/TH)</label>
-                    <input type="number" step="0.1" value={efficiency} onChange={e => setEfficiency(+e.target.value)} />
+                    <input type="number" step="0.1" value={efficiency} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setEfficiency(v); }} />
                   </div>
                 </div>
 
@@ -788,7 +788,7 @@ function App() {
 
                 <div className="input-row" style={{marginTop: '12px'}}>
                   <label>ASIC Price ($/TH)</label>
-                  <input type="number" value={pricePerTh} onChange={e => setPricePerTh(+e.target.value)} />
+                  <input type="number" value={pricePerTh} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setPricePerTh(v); }} />
                 </div>
                 <div className="result-row compact">
                   <span>Price per Unit</span>
@@ -865,7 +865,7 @@ function App() {
               <div className="card-body">
                 <div className="input-row">
                   <label>Hashprice ($/PH/day) {hashpriceLoading ? <span style={{fontSize: '0.7rem', color: '#fbbf24', marginLeft: '8px'}}>Loading...</span> : <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #22c55e, #16a34a)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>}</label>
-                  <input type="number" value={hashprice} onChange={e => setHashprice(+e.target.value)} />
+                  <input type="number" value={hashprice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHashprice(v); }} />
                 </div>
                 <div className="input-row two-col">
                   <div>
@@ -879,7 +879,7 @@ function App() {
                 </div>
                 <div className="input-row">
                   <label>Other Opex ($/month)</label>
-                  <input type="number" value={otherOpex} onChange={e => setOtherOpex(+e.target.value)} />
+                  <input type="number" value={otherOpex} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setOtherOpex(v); }} />
                 </div>
 
                 <div className="result-row compact" style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '12px', paddingTop: '8px'}}>
@@ -1030,16 +1030,16 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>TH/s per unit</label>
-                    <input type="number" value={hashratePerUnit} onChange={e => setHashratePerUnit(+e.target.value)} />
+                    <input type="number" value={hashratePerUnit} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHashratePerUnit(v); }} />
                   </div>
                   <div>
                     <label>J/TH</label>
-                    <input type="number" step="0.1" value={efficiency} onChange={e => setEfficiency(+e.target.value)} />
+                    <input type="number" step="0.1" value={efficiency} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setEfficiency(v); }} />
                   </div>
                 </div>
                 <div className="input-row">
                   <label>ASIC Price ($/TH)</label>
-                  <input type="number" value={pricePerTh} onChange={e => setPricePerTh(+e.target.value)} />
+                  <input type="number" value={pricePerTh} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setPricePerTh(v); }} />
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px', paddingLeft: '4px'}}>
                   {minersPerContainer} miners/container × {containerCount} = <strong>{(containerCount * minersPerContainer).toLocaleString()}</strong> miners ({pdusPerContainer} PDUs × {outletsPerPdu} outlets cap) |
@@ -1065,7 +1065,7 @@ function App() {
                   </div>
                   <div>
                     <label>kW each</label>
-                    <input type="number" value={generatorSizeKw} onChange={e => setGeneratorSizeKw(+e.target.value)} />
+                    <input type="number" value={generatorSizeKw} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorSizeKw(v); }} />
                   </div>
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '4px', paddingLeft: '4px'}}>
@@ -1073,7 +1073,7 @@ function App() {
                 </div>
                 <div className="input-row" style={{marginBottom: '12px'}}>
                   <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}></span></label>
-                  <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => setGeneratorLoadPct(+e.target.value)} />
+                  <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorLoadPct(v); }} />
                 </div>
 
                 <div className="pill-toggle small">
@@ -1086,36 +1086,36 @@ function App() {
                 {generatorMode === 'rent' && (
                   <div className="input-row">
                     <label>$/generator/month</label>
-                    <input type="number" value={generatorRentMonthly} onChange={e => setGeneratorRentMonthly(+e.target.value)} />
+                    <input type="number" value={generatorRentMonthly} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorRentMonthly(v); }} />
                   </div>
                 )}
                 {generatorMode === 'buy' && (
                   <div className="input-row two-col">
                     <div>
                       <label>Buy Price ($/unit)</label>
-                      <input type="number" value={generatorBuyPrice} onChange={e => setGeneratorBuyPrice(+e.target.value)} />
+                      <input type="number" value={generatorBuyPrice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorBuyPrice(v); }} />
                     </div>
                     <div>
                       <label>Maint ($/unit/mo)</label>
-                      <input type="number" value={generatorBuyMaintenance} onChange={e => setGeneratorBuyMaintenance(+e.target.value)} />
+                      <input type="number" value={generatorBuyMaintenance} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorBuyMaintenance(v); }} />
                     </div>
                   </div>
                 )}
                 {generatorMode === 'rto' && (
                   <div className="input-row">
                     <label>RTO ($/generator/month)</label>
-                    <input type="number" value={generatorRtoMonthly} onChange={e => setGeneratorRtoMonthly(+e.target.value)} />
+                    <input type="number" value={generatorRtoMonthly} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setGeneratorRtoMonthly(v); }} />
                   </div>
                 )}
                 {generatorMode === 'finance' && (
                   <div className="input-row two-col">
                     <div>
                       <label>Rate (%)</label>
-                      <input type="number" step="0.1" value={financeRate} onChange={e => setFinanceRate(+e.target.value)} />
+                      <input type="number" step="0.1" value={financeRate} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setFinanceRate(v); }} />
                     </div>
                     <div>
                       <label>Term (mo)</label>
-                      <input type="number" value={financeTerm} onChange={e => setFinanceTerm(+e.target.value)} />
+                      <input type="number" value={financeTerm} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setFinanceTerm(v); }} />
                     </div>
                   </div>
                 )}
@@ -1138,7 +1138,7 @@ function App() {
                 <h3>Market & CAPEX</h3>
                 <div className="input-row">
                   <label>Hashprice: $/PH/day {hashpriceLoading ? <span style={{fontSize: '0.65rem', color: '#fbbf24'}}>Loading...</span> : <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '2px 8px', borderRadius: '4px', marginLeft: '4px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>}</label>
-                  <input type="number" min="1" step="0.5" value={hashprice} onChange={e => setHashprice(+e.target.value)} />
+                  <input type="number" min="1" step="0.5" value={hashprice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHashprice(v); }} />
                 </div>
                 <div className="input-row two-col">
                   <div>
@@ -1147,7 +1147,7 @@ function App() {
                   </div>
                   <div>
                     <label>Other Opex ($/mo)</label>
-                    <input type="number" value={otherOpex} onChange={e => setOtherOpex(+e.target.value)} />
+                    <input type="number" value={otherOpex} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setOtherOpex(v); }} />
                   </div>
                 </div>
 
