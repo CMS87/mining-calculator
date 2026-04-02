@@ -12,7 +12,8 @@ function App() {
   // ====== CONTAINER & FACILITY ======
   const [containerCount, setContainerCount] = useState(4)  // 4 × 53ft containers
   const containerMW = 1.4                                   // 1.4 MW per container (fixed)
-  const [containerCapex, setContainerCapex] = useState(360000)  // 4 containers × $90k
+  const [containerCostPerUnit, setContainerCostPerUnit] = useState(90000)  // $90k per container
+  const containerCapex = containerCostPerUnit * containerCount             // total auto-scales
 
   // ====== MINER SPECS (single set — no self/co split) ======
   const [selectedMinerPreset, setSelectedMinerPreset] = useState('s21pro234')
@@ -221,7 +222,7 @@ function App() {
       financeTotalPaid, financeTotalInterest, financePostOwnershipMonthly,
     }
   }, [
-    containerCapex, generatorLoadPct, financeDownPct, financeRate, financeTerm,
+    containerCostPerUnit, containerCount, generatorLoadPct, financeDownPct, financeRate, financeTerm,
     generatorBuyMaintenance, generatorBuyPrice, generatorCount,
     generatorLifetimeHours, generatorMode, generatorRentMonthly,
     generatorRtoEquityPct, generatorRtoMonthly, generatorRtoPostMaint,
@@ -806,7 +807,7 @@ function App() {
                 </div>
                 <div className="input-row">
                   <label>Cost per Container ($)</label>
-                  <input type="number" value={Math.round(containerCapex / containerCount)} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCapex(v * containerCount); }} />
+                  <input type="number" value={containerCostPerUnit} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCostPerUnit(v); }} />
                 </div>
 
                 <div className="result-row compact" style={{marginTop:'8px', borderTop:'1px solid rgba(148,163,184,0.2)', paddingTop:'8px'}}>
@@ -914,7 +915,7 @@ function App() {
             {/* CAPEX Summary */}
             <div className="simple-table" style={{marginTop: '20px'}}>
               <div className="table-row">
-                <span>Containers <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>{containerCount} × ${(containerCapex/containerCount/1000).toFixed(0)}k</span></span>
+                <span>Containers <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>{containerCount} × ${(containerCostPerUnit/1000).toFixed(0)}k</span></span>
                 <span>{formatCurrencyFull(containerCapex)}</span>
               </div>
               {gasResults.generatorCapex > 0 && (
@@ -1244,7 +1245,7 @@ function App() {
             <h2>CAPEX Summary</h2>
             <div className="simple-table">
               <div className="table-row">
-                <span>Container CAPEX ({containerCount} × ${(containerCapex/containerCount/1000).toFixed(0)}k)</span>
+                <span>Container CAPEX ({containerCount} × ${(containerCostPerUnit/1000).toFixed(0)}k)</span>
                 <span>{formatCurrencyFull(containerCapex)}</span>
               </div>
               {gasResults.generatorCapex > 0 && (
