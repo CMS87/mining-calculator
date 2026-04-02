@@ -347,10 +347,18 @@ function App() {
                     <label>Generator Count</label>
                     <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); setGeneratorCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setGeneratorCount(1); }} />
                     {(() => {
-                      const neededKwPerContainer = minersPerContainer * minerPowerKW
-                      const gensPerContainer = Math.ceil(neededKwPerContainer / (generatorSizeKw * generatorLoadPct))
-                      const suggestedCount = Math.max(gensPerContainer, 1) * containerCount
-                      return suggestedCount !== generatorCount
+                      const _miners = parseInt(minersPerContainerOverride) || 324
+                      const _eff = parseFloat(efficiency) || 15
+                      const _th = parseFloat(hashratePerUnit) || 234
+                      const _kw = (_eff * _th) / 1000
+                      const _genKw = parseFloat(generatorSizeKw) || 400
+                      const _load = parseFloat(generatorLoadPct) || 0.85
+                      const _containers = parseInt(containerCount) || 4
+                      const _genCount = parseInt(generatorCount) || 16
+                      const neededKwPerContainer = _miners * _kw
+                      const gensPerContainer = Math.ceil(neededKwPerContainer / (_genKw * _load))
+                      const suggestedCount = Math.max(gensPerContainer, 1) * _containers
+                      return suggestedCount !== _genCount
                         ? <span style={{fontSize:'0.7rem', color:'#fbbf24', marginTop:'4px', display:'block'}}>Suggested: {suggestedCount} ({Math.max(gensPerContainer,1)}/container)</span>
                         : null
                     })()}
