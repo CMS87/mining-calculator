@@ -837,20 +837,12 @@ function App() {
                 </div>
 
                 <div className="result-row compact" style={{marginTop:'8px', borderTop:'1px solid rgba(148,163,184,0.2)', paddingTop:'8px'}}>
-                  <span>Total Miner Slots</span>
-                  <span><strong>{(containerCount * minersPerContainer).toLocaleString()}</strong> ({minersPerContainer}/container)</span>
-                </div>
-                <div className="result-row compact">
                   <span>Net Available Power</span>
                   <span className="highlight">{gasResults.availableMw.toFixed(2)} MW @ {Math.round(generatorLoadPct*100)}% load</span>
                 </div>
                 <div className="result-row compact total">
-                  <span>Miners Active</span>
-                  <span className="highlight">{gasResults.miners.toLocaleString()} units
-                    <span style={{fontSize:'0.68rem', color:'#94a3b8', marginLeft:'6px'}}>
-                      {gasResults.miners < containerCount * minersPerContainer ? '(power limited)' : '(PDU limited)'}
-                    </span>
-                  </span>
+                  <span>Miners</span>
+                  <span className="highlight">{gasResults.miners.toLocaleString()} units</span>
                 </div>
                 <div className="result-row compact">
                   <span>Total Hashrate</span>
