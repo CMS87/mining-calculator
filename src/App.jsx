@@ -694,12 +694,12 @@ function App() {
                     <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
                   </tr>
                   <tr>
-                    <td className="row-label">Net Mining Profit/mo</td>
+                    <td className="row-label">Net Profit/mo <span style={{fontSize:'0.7rem',color:'#94a3b8'}}>(after gas + gen)</span></td>
                     {[
-                      gasResults.monthlyRevenue - (generatorRentMonthly * generatorCount),
-                      gasResults.monthlyRevenue - (gasResults.financeMonthlyPayment + generatorBuyMaintenance * generatorCount),
-                      gasResults.monthlyRevenue - (generatorRtoMonthly * generatorCount),
-                      gasResults.monthlyRevenue - (generatorBuyMaintenance * generatorCount),
+                      gasResults.monthlyRevenue - gasResults.gasMonthly - (generatorRentMonthly * generatorCount),
+                      gasResults.monthlyRevenue - gasResults.gasMonthly - (gasResults.financeMonthlyPayment + generatorBuyMaintenance * generatorCount),
+                      gasResults.monthlyRevenue - gasResults.gasMonthly - (generatorRtoMonthly * generatorCount),
+                      gasResults.monthlyRevenue - gasResults.gasMonthly - (generatorBuyMaintenance * generatorCount),
                     ].map((net, i) => (
                       <td key={i} style={{color: net >= 0 ? '#22c55e' : '#ef4444', fontWeight:'700'}}>
                         {formatCurrency(net)}
