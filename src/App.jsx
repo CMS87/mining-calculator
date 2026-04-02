@@ -345,12 +345,14 @@ function App() {
                     <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); setGeneratorCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setGeneratorCount(1); }} />
                     {(() => {
                       const neededKw = containerCount * minersPerContainer * minerPowerKW
-                      const rawCount = Math.ceil(neededKw / (generatorSizeKw * generatorLoadPct))
-                      // Round up to nearest multiple of containerCount (even distribution per container)
-                      const suggestedCount = Math.ceil(rawCount / containerCount) * containerCount
-                      const perContainer = suggestedCount / containerCount
+                      const suggestedCount = Math.ceil(neededKw / (generatorSizeKw * generatorLoadPct))
+                      const genPerContainer = suggestedCount / containerCount
+                      const containersPerGen = containerCount / suggestedCount
+                      const note = genPerContainer >= 1
+                        ? `${Math.round(genPerContainer * 10) / 10}/container`
+                        : `1 gen → ${(containersPerGen).toFixed(1)} containers`
                       return suggestedCount !== generatorCount
-                        ? <span style={{fontSize:'0.7rem', color:'#fbbf24', marginTop:'4px', display:'block'}}>Suggested: {suggestedCount} ({perContainer}/container)</span>
+                        ? <span style={{fontSize:'0.7rem', color:'#fbbf24', marginTop:'4px', display:'block'}}>Suggested: {suggestedCount} ({note})</span>
                         : null
                     })()}
                   </div>
