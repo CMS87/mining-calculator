@@ -694,7 +694,6 @@ function App() {
                     <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
                   </tr>
                   <tr>
-                  <tr>
                     <td className="row-label">You Own Generators After</td>
                     <td style={{color:'#ef4444'}}>Never</td>
                     <td>{financeTerm} months</td>
