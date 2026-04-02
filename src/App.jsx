@@ -760,7 +760,6 @@ function App() {
                     <option value="custom">Custom</option>
                   </select>
                 </div>
-
                 <div className="input-row two-col">
                   <div>
                     <label>Hashrate (TH/s)</label>
@@ -771,34 +770,13 @@ function App() {
                     <input type="number" step="0.1" value={efficiency} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setEfficiency(v); }} />
                   </div>
                 </div>
-
-                <div className="result-row compact">
-                  <span>Power per Unit</span>
-                  <span>{minerPowerKW.toFixed(2)} kW ({minerPowerW.toFixed(0)} W)</span>
-                </div>
-
-                <div className="input-row" style={{marginTop: '12px'}}>
+                <div className="input-row">
                   <label>ASIC Price ($/TH)</label>
                   <input type="number" value={pricePerTh} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setPricePerTh(v); }} />
                 </div>
                 <div className="result-row compact">
-                  <span>Price per Unit</span>
-                  <span>${pricePerTh}/TH × {hashratePerUnit} TH/s = <strong>{formatCurrencyFull(gasResults.asicPricePerUnit)}</strong></span>
-                </div>
-                <div style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '12px', paddingTop: '12px'}}>
-                  <div className="input-row">
-                    <label>Container CAPEX ($)</label>
-                    <input type="text" value={containerCapex.toLocaleString()} onChange={e => { const v = parseFloat(e.target.value.replace(/,/g,'')); if (!isNaN(v)) setContainerCapex(v); }} />
-                    <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>{containerCount} containers × ${(containerCapex/containerCount/1000).toFixed(0)}k each</span>
-                  </div>
-                  <div className="result-row compact" style={{marginTop:'4px'}}>
-                    <span>Miner CAPEX</span>
-                    <span>{formatCurrencyFull(gasResults.asicCapex)}</span>
-                  </div>
-                  <div className="result-row compact total">
-                    <span>Total Hardware CAPEX</span>
-                    <span className="highlight">{formatCurrencyFull(containerCapex + gasResults.asicCapex)}</span>
-                  </div>
+                  <span>Per Unit</span>
+                  <span>{minerPowerKW.toFixed(2)} kW &nbsp;·&nbsp; <strong>{formatCurrencyFull(gasResults.asicPricePerUnit)}</strong>/unit</span>
                 </div>
               </div>
             </div>
@@ -809,36 +787,28 @@ function App() {
                 <h3>Containers & Deployment</h3>
               </div>
               <div className="card-body">
-                <div className="input-row">
-                  <label>Containers (53ft)</label>
-                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCount(v); }} />
-                </div>
                 <div className="input-row two-col">
+                  <div>
+                    <label>Containers (53ft)</label>
+                    <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCount(v); }} />
+                  </div>
                   <div>
                     <label>Miners per Container</label>
                     <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setMinersPerContainerOverride(v); }} />
                   </div>
-                  <div style={{paddingTop: '22px'}}>
-                    <span style={{fontSize: '0.72rem', color: '#94a3b8'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu})</span>
-                    {minersPerContainerOverride > maxMinersPerContainer && <span style={{color:'#ef4444', fontSize:'0.72rem'}}> ⚠️ exceeds PDU cap</span>}
-                  </div>
                 </div>
-                <div className="result-row compact">
-                  <span>Container Capacity</span>
-                  <span>{containerCount} × {containerMW} MW = <strong>{facilityMW} MW</strong></span>
+                <div className="input-row">
+                  <label>Cost per Container ($)</label>
+                  <input type="number" value={Math.round(containerCapex / containerCount)} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCapex(v * containerCount); }} />
                 </div>
-                <div className="result-row compact">
+
+                <div className="result-row compact" style={{marginTop:'8px', borderTop:'1px solid rgba(148,163,184,0.2)', paddingTop:'8px'}}>
                   <span>Total Miner Slots</span>
                   <span><strong>{(containerCount * minersPerContainer).toLocaleString()}</strong> ({minersPerContainer}/container)</span>
                 </div>
-
-                <div className="result-row compact" style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '8px', paddingTop: '8px'}}>
-                  <span>Generator Fleet</span>
-                  <span>{generatorCount} × {generatorSizeKw} kW = {gasResults.fleetCapacityMw.toFixed(2)} MW</span>
-                </div>
                 <div className="result-row compact">
                   <span>Net Available Power</span>
-                  <span className="highlight">{gasResults.availableMw.toFixed(2)} MW</span>
+                  <span className="highlight">{gasResults.availableMw.toFixed(2)} MW @ {Math.round(generatorLoadPct*100)}% load</span>
                 </div>
                 <div className="result-row compact total">
                   <span>Miners Active</span>
@@ -851,14 +821,6 @@ function App() {
                 <div className="result-row compact">
                   <span>Total Hashrate</span>
                   <span className="highlight">{gasResults.phs.toFixed(2)} PH/s</span>
-                </div>
-                <div className="result-row compact">
-                  <span>Effective $/kWh</span>
-                  <span className="highlight">{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢</span>
-                </div>
-
-                <div style={{fontSize: '0.7rem', color: '#94a3b8', marginTop: '8px'}}>
-                  Phase 1: {facilityMW} MW capacity (can scale to 40 MW)
                 </div>
               </div>
             </div>
