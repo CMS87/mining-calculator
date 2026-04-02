@@ -1145,13 +1145,11 @@ function App() {
                   <div className="input-row">
                     <label>Container CAPEX ($)</label>
                     <input
-                      type="text"
-                      value={containerCapex.toLocaleString()}
-                      onChange={e => setContainerCapex(+e.target.value.replace(/,/g, ''))}
+                      type="number"
+                      value={Math.round(containerCapex / containerCount)}
+                      onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCapex(v * containerCount); }}
                     />
-                  </div>
-                  <div style={{fontSize: '0.7rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '8px', paddingLeft: '4px'}}>
-                    {containerCount} containers × ${(containerCapex/containerCount/1000).toFixed(0)}k each = ${(containerCapex/1000).toFixed(0)}k total
+                    <span style={{fontSize:'0.72rem', color:'#94a3b8'}}>per unit · {formatCurrencyFull(containerCapex)} total</span>
                   </div>
                   <div className="result-row compact">
                     <span>Generator CAPEX</span>
