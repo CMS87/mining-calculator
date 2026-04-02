@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import './App.css'
 
-// Ozona Stranded Gas to Bitcoin Calculator
+// Bedrock Development — Gas to Bitcoin Calculator
 // Adapted from Pecos Mining Calculator (AstroMiners)
 
 function App() {
@@ -38,7 +38,7 @@ function App() {
   // ====== GAS-TO-POWER ======
   const [heatRate, setHeatRate] = useState(11500)               // BTU/kWh (TGR400 spec)
   const [hhv, setHhv] = useState(1000)                          // BTU/scf
-  const [wahaPriceStr, setWahaPriceStr] = useState('0')         // ~$0 stranded gas
+  const [wahaPriceStr, setWahaPriceStr] = useState('-4.26')   // Waha index (Apr 2026)
   const wahaPrice = parseFloat(wahaPriceStr) || 0
   const [wahaAdderStr, setWahaAdderStr] = useState('0')         // ~$0
   const wahaAdder = parseFloat(wahaAdderStr) || 0
@@ -273,7 +273,7 @@ function App() {
     <div className="app">
       <header>
         <h1>Bedrock Development &mdash; Gas to Bitcoin Calculator</h1>
-        <p className="subtitle">Stranded Gas &rarr; Power &rarr; Bitcoin</p>
+        <p className="subtitle">Waha Gas &rarr; Power &rarr; Bitcoin</p>
       </header>
 
       {/* Mode Toggle */}
@@ -466,7 +466,7 @@ function App() {
 
                 <div className="input-row two-col">
                   <div>
-                    <label>Gas Index ($/MCF)</label>
+                    <label>Waha Index ($/MCF) <span style={{fontSize:"0.7rem",color:"#94a3b8"}}>(negative = you get paid for gas)</span></label>
                     <input type="number" step="0.01" value={wahaPriceStr} onChange={e => setWahaPriceStr(e.target.value)} />
                   </div>
                   <div>
@@ -475,7 +475,7 @@ function App() {
                   </div>
                 </div>
                 <div className="info-row" style={{color: '#4ade80', fontWeight: '600', fontSize: '0.8rem'}}>
-                  Gas cost: ~$0 (stranded)
+                  Waha Index: {wahaPriceStr}/MCF (Permian Basin)
                 </div>
 
                 <div className="result-row compact">
@@ -1140,7 +1140,7 @@ function App() {
                   <span className="highlight">{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢</span>
                 </div>
                 <div className="info-row" style={{color: '#4ade80', fontWeight: '600', fontSize: '0.8rem'}}>
-                  Gas cost: ~$0 (stranded)
+                  Waha Index: {wahaPriceStr}/MCF (Permian Basin)
                 </div>
               </div>
 
