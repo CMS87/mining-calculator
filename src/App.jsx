@@ -270,8 +270,8 @@ function App() {
       setGeneratorSizeKw(400); setHeatRate(11500)
       setGeneratorBuyPrice(185000); setGeneratorRtoMonthly(13500); setGeneratorRentMonthly(10500)
     } else if (val === 'cat3516') {
-      setGeneratorSizeKw(1600); setHeatRate(9800)
-      setGeneratorBuyPrice(450000); setGeneratorRtoMonthly(25000); setGeneratorRentMonthly(18000)
+      setGeneratorSizeKw(1500); setHeatRate(9800)
+      setGeneratorBuyPrice(850000); setGeneratorRtoMonthly(30000); setGeneratorRentMonthly(22000)
     }
   }
 
@@ -334,7 +334,7 @@ function App() {
                   <label>Generator Model</label>
                   <select className="preset-select" value={selectedGeneratorPreset} onChange={handleGeneratorPreset}>
                     <option value="ngen400">NGEN-400 / TGR400 (400kW, 11,500 BTU/kWh)</option>
-                    <option value="cat3516">CAT G3516 (1.6MW, 9,800 BTU/kWh)</option>
+                    <option value="cat3516">CAT G3516 (1.5MW, 9,800 BTU/kWh)</option>
                     <option value="custom">Custom</option>
                   </select>
                 </div>
@@ -1070,7 +1070,7 @@ function App() {
                   <label>Generator Model</label>
                   <select className="preset-select" value={selectedGeneratorPreset} onChange={handleGeneratorPreset}>
                     <option value="ngen400">TGR400 (400kW)</option>
-                    <option value="cat3516">CAT G3516 (1.6MW)</option>
+                    <option value="cat3516">CAT G3516 (1.5MW)</option>
                     <option value="custom">Custom</option>
                   </select>
                 </div>
