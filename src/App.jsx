@@ -318,7 +318,7 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Generator Count</label>
-                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setGeneratorCount(v); }} />
+                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setGeneratorCount(Math.max(1, v)); }} />
                   </div>
                   <div>
                     <label>Size per Generator (kW)</label>
@@ -1053,7 +1053,7 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Count</label>
-                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setGeneratorCount(v); }} />
+                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setGeneratorCount(Math.max(1, v)); }} />
                   </div>
                   <div>
                     <label>kW each</label>
