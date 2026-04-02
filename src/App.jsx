@@ -48,7 +48,7 @@ function App() {
   const [generatorLoadPct, setGeneratorLoadPct] = useState(0.80)  // 80% = Ed's preferred operating point
 
   // ====== GENERATORS (Taylor Power TGR400 defaults) ======
-  const [generatorCount, setGeneratorCount] = useState(12)
+  const [generatorCount, setGeneratorCount] = useState(16) // 4 containers × 4 gens
   const [generatorSizeKw, setGeneratorSizeKw] = useState(400)
   const [generatorMode, setGeneratorMode] = useState('finance')
   const [generatorRentMonthly, setGeneratorRentMonthly] = useState(10500)
@@ -72,6 +72,12 @@ function App() {
   const [otherOpex, setOtherOpex] = useState(0)
 
   // ====== REVENUE SHARE (no party splits yet — just net profit) ======
+
+  // Auto-sync generator count to containers × 4 (Ed's plan: 4 gens per container)
+  const gensPerContainer = 4
+  useEffect(() => {
+    setGeneratorCount(containerCount * gensPerContainer)
+  }, [containerCount])
 
   // Fetch live hashprice on mount (calculated from BTC price and network hashrate)
   useEffect(() => {
@@ -279,7 +285,7 @@ function App() {
     setContainerCount(4); setContainerCostPerUnit(90000)
     setMinersPerContainerOverride(324)
     setSelectedMinerPreset('s21pro234'); setHashratePerUnit(234); setEfficiency(15.0); setPricePerTh(8)
-    setGeneratorCount(16); setGeneratorSizeKw(400)
+    setGeneratorSizeKw(400)
     setSelectedGeneratorPreset('ngen400'); setGeneratorMode('finance')
     setGeneratorBuyPrice(185000); setGeneratorRtoMonthly(13500); setGeneratorRentMonthly(10500)
     setFinanceRate(5.0); setFinanceTerm(60); setFinanceDownPct(20)
