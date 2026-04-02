@@ -124,9 +124,12 @@ function App() {
     // Net available power at generator load %
     const availableMw = mwGross * cleanLoadPct
     const totalKw = availableMw * 1000
-    const miners = Math.max(Math.floor(totalKw / minerPowerKW), 0)
+    // Miners limited by BOTH power AND PDU slot cap
+    const minersByPower = Math.max(Math.floor(totalKw / minerPowerKW), 0)
+    const minersByPdu = minersPerContainer * containerCount
+    const miners = Math.min(minersByPower, minersByPdu)
     const phs = (miners * hashratePerUnit) / 1000
-    const effectivePhs = phs * (1 - poolFee)
+    const effectivePhs = phs * (1 - poolFee) * (1 - curtailment)
     const gasPrice = wahaPrice + wahaAdder
     const gasMonthly = mcfPerDay * gasPrice * (730 / 24)
 
@@ -222,7 +225,8 @@ function App() {
     generatorRtoEquityPct, generatorRtoMonthly, generatorRtoPostMaint,
     generatorRtoTerm, generatorSizeKw, hashratePerUnit, hashprice,
     heatRate, hhv, majorOverhaulCost, majorOverhaulHours,
-    minerPowerKW, efficiency, otherOpex, poolFee, pricePerTh,
+    minerPowerKW, efficiency, otherOpex, poolFee, curtailment, pricePerTh,
+    minersPerContainer, containerCount,
     topOverhaulCost, topOverhaulHours, wahaAdder, wahaPrice,
   ])
 
@@ -824,12 +828,8 @@ function App() {
                   <span>{containerCount} × {containerMW} MW = <strong>{facilityMW} MW</strong></span>
                 </div>
                 <div className="result-row compact">
-                  <span>Total Miners</span>
+                  <span>Total Miner Slots</span>
                   <span><strong>{(containerCount * minersPerContainer).toLocaleString()}</strong> ({minersPerContainer}/container)</span>
-                </div>
-                <div className="result-row compact">
-                  <span>Container Capacity (miners)</span>
-                  <span>{(containerCount * minersPerContainer).toLocaleString()} total</span>
                 </div>
 
                 <div className="result-row compact" style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '8px', paddingTop: '8px'}}>
@@ -841,8 +841,12 @@ function App() {
                   <span className="highlight">{gasResults.availableMw.toFixed(2)} MW</span>
                 </div>
                 <div className="result-row compact total">
-                  <span>Miners Powered</span>
-                  <span className="highlight">{gasResults.miners.toLocaleString()} units</span>
+                  <span>Miners Active</span>
+                  <span className="highlight">{gasResults.miners.toLocaleString()} units
+                    <span style={{fontSize:'0.68rem', color:'#94a3b8', marginLeft:'6px'}}>
+                      {gasResults.miners < containerCount * minersPerContainer ? '(power limited)' : '(PDU limited)'}
+                    </span>
+                  </span>
                 </div>
                 <div className="result-row compact">
                   <span>Total Hashrate</span>
@@ -941,7 +945,7 @@ function App() {
             {/* CAPEX Summary */}
             <div className="simple-table" style={{marginTop: '20px'}}>
               <div className="table-row">
-                <span>Container CAPEX ({containerCount} × $150k)</span>
+                <span>Container CAPEX ({containerCount} × ${(containerCapex/containerCount/1000).toFixed(0)}k)</span>
                 <span>{formatCurrencyFull(containerCapex)}</span>
               </div>
               {gasResults.generatorCapex > 0 && (
@@ -1253,7 +1257,7 @@ function App() {
             <h2>CAPEX Summary</h2>
             <div className="simple-table">
               <div className="table-row">
-                <span>Container CAPEX ({containerCount} × $150k)</span>
+                <span>Container CAPEX ({containerCount} × ${(containerCapex/containerCount/1000).toFixed(0)}k)</span>
                 <span>{formatCurrencyFull(containerCapex)}</span>
               </div>
               {gasResults.generatorCapex > 0 && (
