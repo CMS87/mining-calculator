@@ -31,8 +31,8 @@ function App() {
   const [minersPerContainerOverride, setMinersPerContainerOverride] = useState(324) // settable by user
 
   // Derived miner values
-  const minerPowerW = efficiency * hashratePerUnit               // Watts per miner
-  const minerPowerKW = minerPowerW / 1000                        // kW per miner
+  const minerPowerW = parseFloat(efficiency) * parseFloat(hashratePerUnit)  // Watts per miner
+  const minerPowerKW = minerPowerW / 1000                                   // kW per miner
   const minersPerContainer = Math.min(minersPerContainerOverride, maxMinersPerContainer)
   const facilityMW = (containerCount * containerMW).toFixed(1)
 
@@ -116,10 +116,10 @@ function App() {
 
   // ====== GAS-TO-POWER + MINING CALCULATIONS ======
   const gasResults = useMemo(() => {
-    const cleanLoadPct = Math.min(Math.max(generatorLoadPct, 0.1), 1.0)
+    const cleanLoadPct = Math.min(Math.max(parseFloat(generatorLoadPct) || 0.85, 0.1), 1.0)
 
     // Fleet capacity is the source of truth
-    const fleetCapacityMw = (generatorCount * generatorSizeKw) / 1000
+    const fleetCapacityMw = (parseFloat(generatorCount) || 0) * (parseFloat(generatorSizeKw) || 0) / 1000
     const mwGross = fleetCapacityMw
 
     // Calculate gas required for this fleet
