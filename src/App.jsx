@@ -15,6 +15,7 @@ function App() {
   const [containerCapex, setContainerCapex] = useState(360000)  // 4 containers × $90k
 
   // ====== MINER SPECS (single set — no self/co split) ======
+  const [selectedMinerPreset, setSelectedMinerPreset] = useState('s21pro234')
   const [hashratePerUnit, setHashratePerUnit] = useState(234)   // TH/s per unit (S21 Pro 234T)
   const [efficiency, setEfficiency] = useState(15.0)            // J/TH (3510W / 234TH)
   const [pricePerTh, setPricePerTh] = useState(8)              // $/TH
@@ -255,6 +256,7 @@ function App() {
       setEfficiency((p.kw * 1000) / p.th)
       setHashratePerUnit(p.th)
       setPricePerTh(p.pth)
+      setSelectedMinerPreset(e.target.value)
     }
   }
 
@@ -741,7 +743,7 @@ function App() {
               <div className="card-body">
                 <div className="input-row">
                   <label>Miner Model</label>
-                  <select className="preset-select" defaultValue="s21pro234" onChange={handleMinerPreset}>
+                  <select className="preset-select" value={selectedMinerPreset} onChange={handleMinerPreset}>
                     <optgroup label="Bitmain Antminer">
                       <option value="s21pro234">S21 Pro 234T (234 TH/s, 3.51kW, 15 J/TH) — NEW</option>
                       <option value="s21pro220">S21 Pro 220T (220 TH/s, 3.3kW, 15 J/TH)</option>
@@ -792,11 +794,11 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Containers (53ft)</label>
-                    <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCount(v); }} />
+                    <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setContainerCount(Math.max(1, v)); }} />
                   </div>
                   <div>
                     <label>Miners per Container</label>
-                    <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setMinersPerContainerOverride(v); }} />
+                    <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setMinersPerContainerOverride(Math.max(1, v)); }} />
                   </div>
                 </div>
                 <div className="input-row">
@@ -986,11 +988,11 @@ function App() {
                 <h3>Site & Mining</h3>
                 <div className="input-row">
                   <label>Containers (53ft, {containerMW} MW each)</label>
-                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCount(v); }} />
+                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setContainerCount(Math.max(1, v)); }} />
                 </div>
                 <div className="input-row" style={{marginTop: '-4px'}}>
                   <label>Miners per Container</label>
-                  <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setMinersPerContainerOverride(v); }} />
+                  <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setMinersPerContainerOverride(Math.max(1, v)); }} />
                   <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu} outlets){minersPerContainerOverride > maxMinersPerContainer ? ' ⚠️ exceeds PDU cap' : ''}</span>
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '12px', paddingLeft: '4px'}}>
@@ -998,7 +1000,7 @@ function App() {
                 </div>
                 <div className="input-row">
                   <label>Miner Model</label>
-                  <select className="preset-select" defaultValue="s21pro234" onChange={handleMinerPreset}>
+                  <select className="preset-select" value={selectedMinerPreset} onChange={handleMinerPreset}>
                     <optgroup label="Bitmain Antminer">
                       <option value="s21pro234">S21 Pro 234T (234 TH/s, 3.51kW)</option>
                       <option value="s21pro220">S21 Pro 220T (220 TH/s, 3.3kW)</option>
