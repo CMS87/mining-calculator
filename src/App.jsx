@@ -466,7 +466,7 @@ function App() {
 
                 <div className="input-row two-col">
                   <div>
-                    <label>Waha Index ($/MCF) <span style={{fontSize:"0.7rem",color:"#94a3b8"}}>(negative = you get paid for gas)</span></label>
+                    <label>Waha Index ($/MCF) <a href="https://www.oilpriceapi.com/live/waha-natural-gas-price" target="_blank" rel="noopener noreferrer" style={{fontSize:"0.7rem",color:"#fff",background:"linear-gradient(135deg,#3b82f6,#1d4ed8)",padding:"2px 8px",borderRadius:"4px",marginLeft:"4px",textDecoration:"none",fontWeight:"600"}}>Live ↗</a></label>
                     <input type="number" step="0.01" value={wahaPriceStr} onChange={e => setWahaPriceStr(e.target.value)} />
                   </div>
                   <div>
@@ -474,9 +474,7 @@ function App() {
                     <input type="number" step="0.01" value={wahaAdderStr} onChange={e => setWahaAdderStr(e.target.value)} />
                   </div>
                 </div>
-                <div className="info-row" style={{color: '#4ade80', fontWeight: '600', fontSize: '0.8rem'}}>
-                  Waha Index: {wahaPriceStr}/MCF (Permian Basin)
-                </div>
+                
 
                 <div className="result-row compact">
                   <span>Gas Price (all-in)</span>
@@ -1101,9 +1099,7 @@ function App() {
                   <span>Effective $/kWh</span>
                   <span className="highlight">{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢</span>
                 </div>
-                <div className="info-row" style={{color: '#4ade80', fontWeight: '600', fontSize: '0.8rem'}}>
-                  Waha Index: {wahaPriceStr}/MCF (Permian Basin)
-                </div>
+                
               </div>
 
               {/* Column 3: Market & CAPEX */}
