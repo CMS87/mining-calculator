@@ -16,6 +16,7 @@ function App() {
 
   // ====== MINER SPECS (single set — no self/co split) ======
   const [selectedMinerPreset, setSelectedMinerPreset] = useState('s21pro234')
+  const [selectedGeneratorPreset, setSelectedGeneratorPreset] = useState('ngen400')
   const [hashratePerUnit, setHashratePerUnit] = useState(234)   // TH/s per unit (S21 Pro 234T)
   const [efficiency, setEfficiency] = useState(15.0)            // J/TH (3510W / 234TH)
   const [pricePerTh, setPricePerTh] = useState(8)              // $/TH
@@ -262,10 +263,12 @@ function App() {
 
   // ====== GENERATOR PRESET HANDLER ======
   const handleGeneratorPreset = (e) => {
-    if (e.target.value === 'ngen400') {
+    const val = e.target.value
+    setSelectedGeneratorPreset(val)
+    if (val === 'ngen400') {
       setGeneratorSizeKw(400); setHeatRate(11500)
-      setGeneratorBuyPrice(171205); setGeneratorRtoMonthly(12500); setGeneratorRentMonthly(9500)
-    } else if (e.target.value === 'cat3516') {
+      setGeneratorBuyPrice(185000); setGeneratorRtoMonthly(13500); setGeneratorRentMonthly(10500)
+    } else if (val === 'cat3516') {
       setGeneratorSizeKw(1600); setHeatRate(9800)
       setGeneratorBuyPrice(450000); setGeneratorRtoMonthly(25000); setGeneratorRentMonthly(18000)
     }
@@ -310,7 +313,7 @@ function App() {
               <div className="card-body">
                 <div className="input-row">
                   <label>Generator Model</label>
-                  <select className="preset-select" defaultValue="ngen400" onChange={handleGeneratorPreset}>
+                  <select className="preset-select" value={selectedGeneratorPreset} onChange={handleGeneratorPreset}>
                     <option value="ngen400">NGEN-400 / TGR400 (400kW, 11,500 BTU/kWh)</option>
                     <option value="cat3516">CAT G3516 (1.6MW, 9,800 BTU/kWh)</option>
                     <option value="custom">Custom</option>
@@ -1046,7 +1049,7 @@ function App() {
                 <h3>Power Generation</h3>
                 <div className="input-row">
                   <label>Generator Model</label>
-                  <select className="preset-select" defaultValue="ngen400" onChange={handleGeneratorPreset}>
+                  <select className="preset-select" value={selectedGeneratorPreset} onChange={handleGeneratorPreset}>
                     <option value="ngen400">TGR400 (400kW)</option>
                     <option value="cat3516">CAT G3516 (1.6MW)</option>
                     <option value="custom">Custom</option>
