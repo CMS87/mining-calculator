@@ -8,6 +8,8 @@ function App() {
   // Tab mode: 'gas' (Gas→Power), 'mining' (Power→BTC), 'full' (Full Model)
   const [mode, setMode] = useState('gas')
   const [hashpriceLoading, setHashpriceLoading] = useState(true)
+  const [hashpriceUpdatedAt, setHashpriceUpdatedAt] = useState(null)
+  const [wahaUpdatedAt] = useState(new Date())
 
   // ====== CONTAINER & FACILITY ======
   const [containerCount, setContainerCount] = useState(4)  // 4 × 53ft containers
@@ -91,6 +93,7 @@ function App() {
           const networkHashratePH = networkHashrate / 1e15
           const calculatedHashprice = (blockReward * btcPrice * blocksPerDay) / networkHashratePH
           setHashprice(Math.round(calculatedHashprice * 10) / 10)
+          setHashpriceUpdatedAt(new Date())
         }
       } catch (err) {
         console.log('Using default hashprice, live fetch failed:', err.message)
@@ -498,7 +501,7 @@ function App() {
 
                 <div className="input-row two-col">
                   <div>
-                    <label>Waha Index ($/MCF) <a href="https://www.oilpriceapi.com/live/waha-natural-gas-price" target="_blank" rel="noopener noreferrer" style={{fontSize:"0.7rem",color:"#fff",background:"linear-gradient(135deg,#3b82f6,#1d4ed8)",padding:"2px 8px",borderRadius:"4px",marginLeft:"4px",textDecoration:"none",fontWeight:"600"}}>Live ↗</a></label>
+                    <label>Waha Index ($/MCF) <a href="https://www.oilpriceapi.com/live/waha-natural-gas-price" target="_blank" rel="noopener noreferrer" style={{fontSize:"0.7rem",color:"#fff",background:"linear-gradient(135deg,#3b82f6,#1d4ed8)",padding:"2px 8px",borderRadius:"4px",marginLeft:"4px",textDecoration:"none",fontWeight:"600"}}>Live ↗</a> <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'4px'}}>as of {wahaUpdatedAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></label>
                     <input type="number" step="0.01" value={wahaPriceStr} onChange={e => setWahaPriceStr(e.target.value)} />
                   </div>
                   <div>
@@ -843,7 +846,7 @@ function App() {
               </div>
               <div className="card-body">
                 <div className="input-row">
-                  <label>Hashprice ($/PH/day) {hashpriceLoading ? <span style={{fontSize: '0.7rem', color: '#fbbf24', marginLeft: '8px'}}>Loading...</span> : <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #22c55e, #16a34a)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>}</label>
+                  <label>Hashprice ($/PH/day) {hashpriceLoading ? <span style={{fontSize: '0.7rem', color: '#fbbf24', marginLeft: '8px'}}>Loading...</span> : <><a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #22c55e, #16a34a)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>{hashpriceUpdatedAt && <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'6px'}}>Updated {hashpriceUpdatedAt.toLocaleTimeString()}</span>}</>}</label>
                   <input type="number" value={hashprice} onChange={e => setHashprice(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setHashprice(0); }} />
                 </div>
                 <div className="input-row two-col">
