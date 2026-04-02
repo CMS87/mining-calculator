@@ -938,15 +938,41 @@ function App() {
 
           {/* Revenue Share */}
           <section className="comparison-section">
-            <h2>Revenue Share</h2>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', maxWidth: '600px', margin: '0 auto'}}>
-              <div style={{background: 'linear-gradient(135deg, rgba(34,197,94,0.2) 0%, rgba(15,23,42,0.9) 100%)', border: '2px solid rgba(34,197,94,0.5)', borderRadius: '12px', padding: '24px', textAlign: 'center'}}>
-                <div style={{fontSize: '2rem', fontWeight: '700', color: gasResults.netMonthly >= 0 ? '#22c55e' : '#ef4444'}}>{formatCurrency(gasResults.netMonthly)}</div>
-                <div style={{fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px'}}>Net Monthly Profit</div>
+            <h2>Monthly P&amp;L</h2>
+            <div className="simple-table">
+              <div className="table-row">
+                <span>BTC Mining Revenue</span>
+                <span className="green">{formatCurrencyFull(gasResults.monthlyRevenue)}</span>
               </div>
-              <div style={{background: 'linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(15,23,42,0.9) 100%)', border: '2px solid rgba(59,130,246,0.5)', borderRadius: '12px', padding: '24px', textAlign: 'center'}}>
-                <div style={{fontSize: '2rem', fontWeight: '700', color: gasResults.annualNet >= 0 ? '#3b82f6' : '#ef4444'}}>{formatCurrency(gasResults.annualNet)}</div>
-                <div style={{fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px'}}>Net Annual Profit</div>
+              {gasResults.gasMonthly < 0 && (
+                <div className="table-row">
+                  <span>Gas Income <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({gasResults.mcfPerDay.toFixed(0)} MCF/day × ${gasResults.gasPrice.toFixed(2)}/MCF)</span></span>
+                  <span className="green">+{formatCurrencyFull(Math.abs(gasResults.gasMonthly))}</span>
+                </div>
+              )}
+              {gasResults.gasMonthly > 0 && (
+                <div className="table-row">
+                  <span>Gas Cost <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({gasResults.mcfPerDay.toFixed(0)} MCF/day × ${gasResults.gasPrice.toFixed(2)}/MCF)</span></span>
+                  <span className="red">-{formatCurrencyFull(gasResults.gasMonthly)}</span>
+                </div>
+              )}
+              <div className="table-row">
+                <span>Generator Cost <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({generatorMode.toUpperCase()})</span></span>
+                <span className="red">-{formatCurrencyFull(gasResults.generatorMonthly)}</span>
+              </div>
+              {otherOpex > 0 && (
+                <div className="table-row">
+                  <span>Other Opex</span>
+                  <span className="red">-{formatCurrencyFull(otherOpex)}</span>
+                </div>
+              )}
+              <div className="table-row total">
+                <span>Net Monthly</span>
+                <span style={{color: gasResults.netMonthly >= 0 ? '#22c55e' : '#ef4444', fontWeight:'700', fontSize:'1.1rem'}}>{formatCurrencyFull(gasResults.netMonthly)}</span>
+              </div>
+              <div className="table-row">
+                <span>Net Annual</span>
+                <span style={{color: gasResults.annualNet >= 0 ? '#22c55e' : '#ef4444', fontWeight:'600'}}>{formatCurrencyFull(gasResults.annualNet)}</span>
               </div>
             </div>
           </section>
