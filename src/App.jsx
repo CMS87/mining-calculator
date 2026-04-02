@@ -1342,12 +1342,12 @@ function App() {
           {/* Sensitivity Analysis */}
           <section className="comparison-section">
             <h2>Sensitivity Analysis — Net Monthly Profit</h2>
-            <p className="section-intro">How net profit changes with gas price and hashprice</p>
+            <p className="section-intro">Waha gas price (rows) vs hashprice (columns). Negative gas = you get paid for gas — adds to profit.</p>
             <div className="sensitivity-table">
               <table>
                 <thead>
                   <tr>
-                    <th>Gas Price \ Hashprice</th>
+                    <th>Waha $/MCF \ Hashprice</th>
                     <th>$25/PH</th>
                     <th>$30/PH</th>
                     <th>$37/PH</th>
@@ -1356,15 +1356,16 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[0, 0.50, 1.00, 1.50, 2.00].map(gp => (
+                  {[-6.00, -4.00, -2.00, 0, 0.50, 1.00, 2.00].map(gp => (
                     <tr key={gp}>
-                      <td className="row-label">${gp.toFixed(2)}/MCF</td>
+                      <td className="row-label" style={{color: gp < 0 ? '#22c55e' : gp === 0 ? '#e2e8f0' : '#94a3b8'}}>
+                        {gp < 0 ? `${gp.toFixed(2)} 💰` : `$${gp.toFixed(2)}`}/MCF
+                      </td>
                       {[25, 30, 37, 45, 55].map(hp => {
                         const scenarioGasMonthly = gasResults.mcfPerDay * gp * (730 / 24)
                         const scenarioRevenue = gasResults.effectivePhs * hp * (730 / 24)
                         const scenarioNet = scenarioRevenue - scenarioGasMonthly - gasResults.generatorMonthly - otherOpex
-                        const isCurrentScenario = Math.abs(gp - gasResults.gasPrice) < 0.01 && Math.abs(hp - hashprice) < 0.5
-
+                        const isCurrentScenario = Math.abs(gp - gasResults.gasPrice) < 0.26 && Math.abs(hp - hashprice) < 0.5
                         return (
                           <td key={hp} className={`${scenarioNet < 0 ? 'negative' : ''} ${isCurrentScenario ? 'current' : ''}`}>
                             {formatCurrency(scenarioNet)}
