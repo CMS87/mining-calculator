@@ -324,7 +324,7 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Generator Count</label>
-                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setGeneratorCount(Math.max(1, v)); }} />
+                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); setGeneratorCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setGeneratorCount(1); }} />
                   </div>
                   <div>
                     <label>Size per Generator (kW)</label>
@@ -798,11 +798,11 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Containers (53ft)</label>
-                    <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setContainerCount(Math.max(1, v)); }} />
+                    <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
                   </div>
                   <div>
                     <label>Miners per Container</label>
-                    <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setMinersPerContainerOverride(Math.max(1, v)); }} />
+                    <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
                   </div>
                 </div>
                 <div className="input-row">
@@ -992,11 +992,11 @@ function App() {
                 <h3>Site & Mining</h3>
                 <div className="input-row">
                   <label>Containers (53ft, {containerMW} MW each)</label>
-                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setContainerCount(Math.max(1, v)); }} />
+                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
                 </div>
                 <div className="input-row" style={{marginTop: '-4px'}}>
                   <label>Miners per Container</label>
-                  <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setMinersPerContainerOverride(Math.max(1, v)); }} />
+                  <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
                   <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu} outlets){minersPerContainerOverride > maxMinersPerContainer ? ' ⚠️ exceeds PDU cap' : ''}</span>
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '12px', paddingLeft: '4px'}}>
@@ -1059,7 +1059,7 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Count</label>
-                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v)) setGeneratorCount(Math.max(1, v)); }} />
+                    <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); setGeneratorCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setGeneratorCount(1); }} />
                   </div>
                   <div>
                     <label>kW each</label>
