@@ -798,11 +798,11 @@ function App() {
                 <div className="input-row two-col">
                   <div>
                     <label>Containers (53ft)</label>
-                    <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
+                    <input type="number" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
                   </div>
                   <div>
                     <label>Miners per Container</label>
-                    <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
+                    <input type="number" value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
                   </div>
                 </div>
                 <div className="input-row">
@@ -992,11 +992,11 @@ function App() {
                 <h3>Site & Mining</h3>
                 <div className="input-row">
                   <label>Containers (53ft, {containerMW} MW each)</label>
-                  <input type="number" min="1" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
+                  <input type="number" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
                 </div>
                 <div className="input-row" style={{marginTop: '-4px'}}>
                   <label>Miners per Container</label>
-                  <input type="number" min="1" max={maxMinersPerContainer} value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
+                  <input type="number" value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
                   <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu} outlets){minersPerContainerOverride > maxMinersPerContainer ? ' ⚠️ exceeds PDU cap' : ''}</span>
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '12px', paddingLeft: '4px'}}>
@@ -1134,7 +1134,7 @@ function App() {
                 <h3>Market & CAPEX</h3>
                 <div className="input-row">
                   <label>Hashprice: $/PH/day {hashpriceLoading ? <span style={{fontSize: '0.65rem', color: '#fbbf24'}}>Loading...</span> : <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '2px 8px', borderRadius: '4px', marginLeft: '4px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>}</label>
-                  <input type="number" min="1" step="0.5" value={hashprice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHashprice(v); }} />
+                  <input type="number" step="0.5" value={hashprice} onChange={e => { const v = parseFloat(e.target.value); if (!isNaN(v)) setHashprice(v); }} />
                 </div>
                 <div className="input-row two-col">
                   <div>
