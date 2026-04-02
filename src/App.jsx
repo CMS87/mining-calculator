@@ -45,7 +45,7 @@ function App() {
   const wahaPrice = parseFloat(wahaPriceStr) || 0
   const [wahaAdderStr, setWahaAdderStr] = useState('0')         // ~$0
   const wahaAdder = parseFloat(wahaAdderStr) || 0
-  const [generatorLoadPct, setGeneratorLoadPct] = useState(0.80)  // 80% = Ed's preferred operating point
+  const [generatorLoadPct, setGeneratorLoadPct] = useState(0.85)  // 85% sustained operating point
 
   // ====== GENERATORS (Taylor Power TGR400 defaults) ======
   const [generatorCount, setGeneratorCount] = useState(16) // 4 containers × 4 gens
@@ -286,7 +286,7 @@ function App() {
     setGeneratorBuyMaintenance(1500); setGeneratorRtoPostMaint(1500)
     setHeatRate(11500); setHhv(1000)
     setWahaPriceStr('-4.26'); setWahaAdderStr('0')
-    setGeneratorLoadPct(0.80)
+    setGeneratorLoadPct(0.85)
     setPoolFee(0); setCurtailment(0); setOtherOpex(0)
   }
 
