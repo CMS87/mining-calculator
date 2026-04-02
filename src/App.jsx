@@ -716,8 +716,6 @@ function App() {
                     <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * financeTerm)}</td>
                   </tr>
                   <tr>
-                  </tr>
-                  <tr>
                     <td className="row-label">Total Interest Cost</td>
                     <td style={{color:'#94a3b8'}}>—</td>
                     <td style={{color:'#ef4444'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</td>
