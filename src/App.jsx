@@ -20,7 +20,7 @@ function App() {
   const [selectedGeneratorPreset, setSelectedGeneratorPreset] = useState('ngen400')
   const [hashratePerUnit, setHashratePerUnit] = useState(234)   // TH/s per unit (S21 Pro 234T)
   const [efficiency, setEfficiency] = useState(15.0)            // J/TH (3510W / 234TH)
-  const [pricePerTh, setPricePerTh] = useState(8)              // $/TH
+  const [pricePerTh, setPricePerTh] = useState(10)              // $/TH
 
   // ====== CONTAINER PHYSICAL CAPACITY ======
   const pdusPerContainer = 28                                    // 28 PDUs per container (confirmed from wiring docs + photos)
@@ -239,8 +239,8 @@ function App() {
   // ====== MINER PRESET HANDLER ======
   const handleMinerPreset = (e) => {
     const presets = {
-      s21pro234: { kw: 3.51, th: 234, pth: 8 },
-      s21pro220: { kw: 3.3,  th: 220, pth: 7 },
+      s21pro234: { kw: 3.51, th: 234, pth: 10 },
+      s21pro220: { kw: 3.3,  th: 220, pth: 9 },
       s21xp:    { kw: 3.645, th: 270, pth: 16 },
       s21:      { kw: 3.5,  th: 200, pth: 10 },
       t21:      { kw: 3.61, th: 190, pth: 9 },
