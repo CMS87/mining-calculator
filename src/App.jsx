@@ -944,23 +944,28 @@ function App() {
 
             {/* CAPEX Summary */}
             <div className="simple-table" style={{marginTop: '20px'}}>
-              <div className="table-row">
-                <span>Container CAPEX ({containerCount} × ${(containerCapex/containerCount/1000).toFixed(0)}k)</span>
-                <span>{formatCurrencyFull(containerCapex)}</span>
+              <div className="table-row" style={{alignItems:'center'}}>
+                <span>Container Cost <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({containerCount} containers)</span></span>
+                <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                  <span style={{fontSize:'0.8rem', color:'#94a3b8'}}>$</span>
+                  <input
+                    type="number"
+                    value={Math.round(containerCapex / containerCount)}
+                    onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCapex(v * containerCount); }}
+                    style={{width:'90px', padding:'4px 8px', borderRadius:'6px', border:'1px solid rgba(148,163,184,0.3)', background:'rgba(15,23,42,0.6)', color:'#e2e8f0', fontSize:'0.9rem', textAlign:'right'}}
+                  />
+                  <span style={{color:'#e2e8f0', fontWeight:'700'}}> = {formatCurrencyFull(containerCapex)}</span>
+                </div>
               </div>
               {gasResults.generatorCapex > 0 && (
                 <div className="table-row">
-                  <span>Generator CAPEX ({generatorMode === 'buy' ? 'Purchase' : `${financeDownPct}% Down`})</span>
+                  <span>Generator Upfront <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({generatorMode === 'buy' ? 'purchase' : `${financeDownPct}% down`})</span></span>
                   <span>{formatCurrencyFull(gasResults.generatorCapex)}</span>
                 </div>
               )}
               <div className="table-row">
-                <span>Miner CAPEX ({gasResults.miners.toLocaleString()} × {formatCurrencyFull(gasResults.asicPricePerUnit)})</span>
+                <span>Miners <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>{gasResults.miners.toLocaleString()} × {hashratePerUnit} TH × ${pricePerTh}/TH</span></span>
                 <span>{formatCurrencyFull(gasResults.asicCapex)}</span>
-              </div>
-              <div className="table-row total">
-                <span>Total CAPEX</span>
-                <span className="highlight">{formatCurrencyFull(gasResults.totalCapex)}</span>
               </div>
               <div className="table-row">
                 <span>Payback Period</span>
