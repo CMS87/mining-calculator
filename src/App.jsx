@@ -701,6 +701,15 @@ function App() {
                     <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * financeTerm)}</td>
                   </tr>
                   <tr>
+                  </tr>
+                  <tr>
+                    <td className="row-label">Total Interest Cost</td>
+                    <td style={{color:'#94a3b8'}}>—</td>
+                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</td>
+                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(gasResults.rtoPremium)}</td>
+                    <td style={{color:'#22c55e'}}>$0</td>
+                  </tr>
+                  <tr>
                     <td className="row-label">Asset Value at End</td>
                     <td style={{color:'#ef4444'}}>$0</td>
                     {[1,2,3].map((i) => {
