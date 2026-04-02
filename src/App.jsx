@@ -35,7 +35,7 @@ function App() {
 
   // ====== MARKET ======
   const [hashprice, setHashprice] = useState(39.5)              // $/PH/day
-  const [curtailment, setCurtailment] = useState(0.05)          // 5% curtailment
+  const [curtailment, setCurtailment] = useState(0)             // 0% curtailment default
 
   // ====== GAS-TO-POWER ======
   const [heatRate, setHeatRate] = useState(11500)               // BTU/kWh (TGR400 spec)
