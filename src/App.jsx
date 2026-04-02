@@ -701,7 +701,7 @@ function App() {
                     <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * financeTerm)}</td>
                   </tr>
                   <tr>
-                    <td className="row-label">Asset Value at End <span style={{fontSize:'0.7rem',color:'#94a3b8'}}>(straight-line, {gasResults.lifetimeYears.toFixed(1)}yr life)</span></td>
+                    <td className="row-label">Asset Value at End</td>
                     <td style={{color:'#ef4444'}}>$0</td>
                     {[1,2,3].map((i) => {
                       const residual = Math.max(1 - ((financeTerm/12) / gasResults.lifetimeYears), 0)
