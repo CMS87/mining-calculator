@@ -73,12 +73,6 @@ function App() {
 
   // ====== REVENUE SHARE (no party splits yet — just net profit) ======
 
-  // Auto-sync generator count to containers × 4 (Ed's plan: 4 gens per container)
-  const gensPerContainer = 4
-  useEffect(() => {
-    setGeneratorCount(containerCount * gensPerContainer)
-  }, [containerCount])
-
   // Fetch live hashprice on mount (calculated from BTC price and network hashrate)
   useEffect(() => {
     const fetchHashprice = async () => {
@@ -349,6 +343,13 @@ function App() {
                   <div>
                     <label>Generator Count</label>
                     <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); setGeneratorCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setGeneratorCount(1); }} />
+                    {(() => {
+                      const neededKw = (containerCount * minersPerContainer * minerPowerKW) / generatorLoadPct
+                      const suggestedCount = Math.ceil(neededKw / generatorSizeKw)
+                      return suggestedCount !== generatorCount
+                        ? <span style={{fontSize:'0.7rem', color:'#fbbf24', marginTop:'4px', display:'block'}}>Suggested: {suggestedCount} to power {containerCount} containers</span>
+                        : null
+                    })()}
                   </div>
                   <div>
                     <label>Size per Generator (kW)</label>
