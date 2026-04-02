@@ -279,7 +279,7 @@ function App() {
     setContainerCount(4); setContainerCostPerUnit(90000)
     setMinersPerContainerOverride(324)
     setSelectedMinerPreset('s21pro234'); setHashratePerUnit(234); setEfficiency(15.0); setPricePerTh(8)
-    setGeneratorSizeKw(400)
+    setGeneratorCount(16); setGeneratorSizeKw(400)
     setSelectedGeneratorPreset('ngen400'); setGeneratorMode('finance')
     setGeneratorBuyPrice(185000); setGeneratorRtoMonthly(13500); setGeneratorRentMonthly(10500)
     setFinanceRate(5.0); setFinanceTerm(60); setFinanceDownPct(20)
