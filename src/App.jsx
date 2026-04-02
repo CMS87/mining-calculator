@@ -275,11 +275,29 @@ function App() {
     }
   }
 
+  const resetToDefaults = () => {
+    setContainerCount(4); setContainerCostPerUnit(90000)
+    setMinersPerContainerOverride(324)
+    setSelectedMinerPreset('s21pro234'); setHashratePerUnit(234); setEfficiency(15.0); setPricePerTh(8)
+    setGeneratorCount(16); setGeneratorSizeKw(400)
+    setSelectedGeneratorPreset('ngen400'); setGeneratorMode('finance')
+    setGeneratorBuyPrice(185000); setGeneratorRtoMonthly(13500); setGeneratorRentMonthly(10500)
+    setFinanceRate(5.0); setFinanceTerm(60); setFinanceDownPct(20)
+    setGeneratorBuyMaintenance(1500); setGeneratorRtoPostMaint(1500)
+    setHeatRate(11500); setHhv(1000)
+    setWahaPriceStr('-4.26'); setWahaAdderStr('0')
+    setGeneratorLoadPct(0.80)
+    setPoolFee(0); setCurtailment(0); setOtherOpex(0)
+  }
+
   return (
     <div className="app">
       <header>
         <h1>Bedrock Development &mdash; Gas to Bitcoin Calculator</h1>
         <p className="subtitle">Waha Gas &rarr; Power &rarr; Bitcoin</p>
+        <button onClick={resetToDefaults} style={{marginTop:'12px', padding:'6px 16px', borderRadius:'6px', border:'1px solid rgba(148,163,184,0.4)', background:'rgba(15,23,42,0.6)', color:'#94a3b8', fontSize:'0.78rem', cursor:'pointer'}}>
+          ↺ Reset to defaults
+        </button>
       </header>
 
       {/* Mode Toggle */}
