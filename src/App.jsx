@@ -703,11 +703,15 @@ function App() {
                     <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * 60)}</td>
                   </tr>
                   <tr>
-                    <td className="row-label">Asset Value at End</td>
+                    <td className="row-label">Asset Value at End <span style={{fontSize:'0.7rem',color:'#94a3b8'}}>(straight-line, {gasResults.lifetimeYears.toFixed(1)}yr life)</span></td>
                     <td style={{color:'#ef4444'}}>$0</td>
-                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
-                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
-                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
+                    {[financeTerm/12, gasResults.rtoMonthsToOwn/12, 0].map((yearsToOwn, i) => {
+                      const yearsUsed = i === 2 ? 0 : yearsToOwn  // buy cash = owned day 1, use 5yr comparison
+                      const compYears = i === 2 ? 5 : Math.min(yearsToOwn + (i === 0 ? (60-financeTerm)/12 : 0), 5)
+                      const residual = Math.max(1 - (5 / gasResults.lifetimeYears), 0)
+                      const value = generatorBuyPrice * generatorCount * residual
+                      return <td key={i} style={{color:'#22c55e'}}>{formatCurrencyFull(value)} <span style={{fontSize:'0.7rem',color:'#94a3b8'}}>({Math.round(residual*100)}%)</span></td>
+                    })}
                   </tr>
                 </tbody>
               </table>
