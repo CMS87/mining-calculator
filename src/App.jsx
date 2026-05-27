@@ -314,6 +314,9 @@ function App() {
         <button className={mode === 'full' ? 'active' : ''} onClick={() => setMode('full')}>
           Full Model
         </button>
+        <button onClick={() => { window.location.href = `${import.meta.env.BASE_URL}bedrock-cashflow-calculator.html` }}>
+          Bedrock Cash Flow
+        </button>
       </section>
 
       {/* ============ GAS→POWER TAB ============ */}

@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bedrock Cash Flow Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d9e2ec;
+      --panel: #ffffff;
+      --band: #f3f6f9;
+      --blue: #174a7c;
+      --green: #138a64;
+      --orange: #bd6b00;
+      --red: #b91c1c;
+      --shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #eef3f8;
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      color: #12365d;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      border: 1px solid #b9c7d6;
+      background: #fff;
+      color: #12365d;
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: #174a7c;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      min-height: 92px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 1.25;
+    }
+
+    .kpi .value {
+      display: block;
+      margin-top: 7px;
+      color: #102a43;
+      font-size: 21px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .kpi .detail {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel h2 {
+      margin: 0;
+      padding: 12px 14px;
+      color: #12365d;
+      background: #dbeafe;
+      border-bottom: 1px solid #c7d7ea;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    .panel-body {
+      padding: 12px 14px 14px;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .input-grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+      color: #344256;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 9px;
+      color: var(--ink);
+      background: #fff;
+      font-size: 14px;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: #174a7c;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #344256;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 0 0;
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: #fff;
+    }
+
+    .metric .name {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric .amount {
+      display: block;
+      margin-top: 5px;
+      font-size: 20px;
+      font-weight: 800;
+      color: #12365d;
+      white-space: nowrap;
+    }
+
+    .metric .small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1080px;
+    }
+
+    th,
+    td {
+      padding: 8px 7px;
+      border-bottom: 1px solid #e5eaf0;
+      text-align: right;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+      position: sticky;
+      left: 0;
+      background: #fff;
+      z-index: 1;
+      min-width: 180px;
+    }
+
+    th {
+      background: #c9dcf2;
+      color: #102a43;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    th:first-child {
+      background: #c9dcf2;
+      z-index: 2;
+    }
+
+    tr.section td {
+      background: #8fb5df;
+      color: #0b2545;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      text-align: left;
+    }
+
+    tr.section td:first-child {
+      background: #8fb5df;
+    }
+
+    tr.total td {
+      background: #174a7c;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    tr.total td:first-child {
+      background: #174a7c;
+      color: #fff;
+    }
+
+    .neg {
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    .green {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .note {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      color: #334155;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .note b {
+      color: #12365d;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .app {
+        max-width: none;
+        padding: 10px;
+      }
+
+      .controls,
+      .header-actions {
+        display: none;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .panel,
+      .kpi,
+      .metric {
+        box-shadow: none;
+      }
+
+      .table-wrap {
+        overflow: visible;
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .kpis {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding: 14px;
+      }
+
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .kpis,
+      .summary-grid,
+      .notes,
+      .input-grid,
+      .input-grid.three {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>Bedrock / Ozona Cash Flow Calculator</h1>
+        <div class="subtitle">Available-cash payout model for the 4-container M50 pilot.</div>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="resetBtn">Reset</button>
+        <button type="button" id="printBtn">Print / Save PDF</button>
+      </div>
+    </header>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="layout">
+      <aside class="controls">
+        <div class="panel">
+          <h2>Deployment</h2>
+          <div class="panel-body">
+            <div class="input-grid">
+              <label>Total containers
+                <input data-field="containers" type="number" min="1" step="1">
+              </label>
+              <label>Payout lag months
+                <input data-field="payoutLag" type="number" min="0" step="1">
+              </label>
+            </div>
+            <div class="input-grid three" style="margin-top:10px">
+              <label>Month 1 boxes
+                <input data-field="month1Boxes" type="number" min="0" step="1">
+              </label>
+              <label>Month 2 boxes
+                <input data-field="month2Boxes" type="number" min="0" step="1">
+              </label>
+              <label>Month 3+ boxes
+                <input data-field="month3Boxes" type="number" min="0" step="1">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Mining Revenue</h2>
+          <div class="panel-body">
+            <div class="input-grid">
+              <label>Miners / container
+                <input data-field="minersPerContainer" type="number" min="1" step="1">
+              </label>
+              <label>TH/s per miner
+                <input data-field="thPerMiner" type="number" min="1" step="1">
+              </label>
+              <label>kW per miner
+                <input data-field="kwPerMiner" type="number" min="0" step="0.01">
+              </label>
+              <label>Parasitic kW / box
+                <input data-field="parasiticKw" type="number" min="0" step="1">
+              </label>
+              <label>Uptime %
+                <input data-field="uptimePct" type="number" min="0" max="100" step="0.1">
+              </label>
+              <label>Hashprice $/PH/day
+                <input data-field="hashprice" type="number" min="0" step="0.1">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Gas And Reserves</h2>
+          <div class="panel-body">
+            <div class="input-grid">
+              <label>Revenue days / month
+                <input data-field="revenueDays" type="number" min="1" step="0.01">
+              </label>
+              <label>Cost days / month
+                <input data-field="costDays" type="number" min="1" step="0.01">
+              </label>
+              <label>MCF/day / container
+                <input data-field="mcfPerBoxDay" type="number" min="0" step="0.1">
+              </label>
+              <label>Normal gas $/MCF
+                <input data-field="gasNormal" type="number" step="0.01">
+              </label>
+              <label>January gas $/MCF
+                <input data-field="gasJan" type="number" step="0.01">
+              </label>
+              <label>February gas $/MCF
+                <input data-field="gasFeb" type="number" step="0.01">
+              </label>
+              <label>March gas $/MCF
+                <input data-field="gasMar" type="number" step="0.01">
+              </label>
+              <label>Apr/May gas $/MCF
+                <input data-field="gasAprMay" type="number" step="0.01">
+              </label>
+              <label>Gen reserve $/kWh
+                <input data-field="genReservePerKwh" type="number" min="0" step="0.001">
+              </label>
+              <label>Miner reserve $/miner/mo
+                <input data-field="minerReservePerMiner" type="number" min="0" step="0.5">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Operating Costs</h2>
+          <div class="panel-body">
+            <div class="input-grid">
+              <label>Setup cost / new box
+                <input data-field="eqPurchasePerBox" type="number" min="0" step="100">
+              </label>
+              <label>Management / mo
+                <input data-field="managementMonthly" type="number" min="0" step="100">
+              </label>
+              <label>Engineering / mo
+                <input data-field="engineeringMonthly" type="number" min="0" step="100">
+              </label>
+              <label>Commissioning tech / mo
+                <input data-field="commissioningTechMonthly" type="number" min="0" step="100">
+              </label>
+              <label>Ops tech / mo
+                <input data-field="opsTechMonthly" type="number" min="0" step="100">
+              </label>
+              <label>Software fee %
+                <input data-field="softwarePct" type="number" min="0" step="0.1">
+              </label>
+              <label>Pool fee %
+                <input data-field="poolPct" type="number" min="0" step="0.1">
+              </label>
+            </div>
+            <label class="check-row"><input data-field="includeSoftware" type="checkbox"> Include software fee</label>
+            <label class="check-row"><input data-field="includePool" type="checkbox"> Include pool fee</label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Equipment Payout Target</h2>
+          <div class="panel-body">
+            <div class="input-grid">
+              <label>Data center $/box/mo
+                <input data-field="dataPayoutPerBox" type="number" min="0" step="1">
+              </label>
+              <label>Generator $/box/mo
+                <input data-field="generatorPayoutPerBox" type="number" min="0" step="1">
+              </label>
+              <label>Transformer $/box/mo
+                <input data-field="transformerPayoutPerBox" type="number" min="0" step="1">
+              </label>
+              <label>Mining rigs $/box/mo
+                <input data-field="rigPayoutPerBox" type="number" min="0" step="1">
+              </label>
+            </div>
+            <div class="hint">Actual payout is capped by cash available after operating costs and reserves.</div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="results">
+        <div class="panel">
+          <h2>Run-Rate Snapshot</h2>
+          <div class="panel-body">
+            <div class="summary-grid" id="summary"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Monthly Waterfall</h2>
+          <div class="table-wrap">
+            <table id="waterfall"></table>
+          </div>
+        </div>
+
+        <div class="notes" id="notes"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const months = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
+
+    const defaults = {
+      containers: 4,
+      month1Boxes: 1,
+      month2Boxes: 2,
+      month3Boxes: 4,
+      payoutLag: 3,
+      minersPerContainer: 300,
+      thPerMiner: 120,
+      kwPerMiner: 3.5,
+      parasiticKw: 50,
+      uptimePct: 95,
+      hashprice: 36,
+      revenueDays: 30,
+      costDays: 30.42,
+      mcfPerBoxDay: 245.3,
+      gasNormal: 0.5,
+      gasJan: 1.25,
+      gasFeb: 1,
+      gasMar: 0.7,
+      gasAprMay: 0.6,
+      genReservePerKwh: 0.005,
+      minerReservePerMiner: 7,
+      eqPurchasePerBox: 26385,
+      managementMonthly: 12500,
+      engineeringMonthly: 10417,
+      commissioningTechMonthly: 8333,
+      opsTechMonthly: 16667,
+      softwarePct: 2,
+      poolPct: 2,
+      includeSoftware: true,
+      includePool: true,
+      dataPayoutPerBox: 2201,
+      generatorPayoutPerBox: 18256,
+      transformerPayoutPerBox: 1204,
+      rigPayoutPerBox: 4661
+    };
+
+    let state = { ...defaults };
+
+    const money = (value) => {
+      const rounded = Math.round(value);
+      if (rounded < 0) return `($${Math.abs(rounded).toLocaleString()})`;
+      return `$${rounded.toLocaleString()}`;
+    };
+
+    const compactMoney = (value) => {
+      const abs = Math.abs(value);
+      const sign = value < 0 ? '-' : '';
+      if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(2)}M`;
+      if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(0)}k`;
+      return `${sign}$${abs.toFixed(0)}`;
+    };
+
+    const pct = (value) => `${value.toFixed(1)}%`;
+
+    const getNumber = (name) => {
+      const value = Number(state[name]);
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const clampBoxes = (value) => Math.max(0, Math.min(getNumber('containers'), Math.round(value)));
+
+    const boxesForMonth = (index) => {
+      if (index === 0) return 0;
+      if (index === 1) return clampBoxes(getNumber('month1Boxes'));
+      if (index === 2) return clampBoxes(getNumber('month2Boxes'));
+      return clampBoxes(getNumber('month3Boxes'));
+    };
+
+    const gasPriceForMonth = (month, index) => {
+      if (month === 'Jan') return getNumber('gasJan');
+      if (month === 'Feb') return getNumber('gasFeb');
+      if (month === 'Mar') return getNumber('gasMar');
+      if (month === 'Apr' || index === 12) return getNumber('gasAprMay');
+      return getNumber('gasNormal');
+    };
+
+    const commissioningMonth = (index) => index >= 2 && index <= 5;
+    const operationalTechMonth = (index) => index >= 6;
+
+    const calculate = (overrideHashprice) => {
+      const rows = [];
+      const targetPerBox =
+        getNumber('dataPayoutPerBox') +
+        getNumber('generatorPayoutPerBox') +
+        getNumber('transformerPayoutPerBox') +
+        getNumber('rigPayoutPerBox');
+
+      let previousBoxes = 0;
+      let cumulativeCash = 0;
+
+      for (let i = 0; i < months.length; i += 1) {
+        const boxes = boxesForMonth(i);
+        const newBoxes = Math.max(boxes - previousBoxes, 0);
+        previousBoxes = boxes;
+
+        const miners = boxes * getNumber('minersPerContainer');
+        const loadKwPerBox = (getNumber('minersPerContainer') * getNumber('kwPerMiner')) + getNumber('parasiticKw');
+        const totalLoadKw = boxes * loadKwPerBox;
+        const grossPh = miners * getNumber('thPerMiner') / 1000;
+        const effectivePh = grossPh * (getNumber('uptimePct') / 100);
+        const revenue = effectivePh * (overrideHashprice ?? getNumber('hashprice')) * getNumber('revenueDays');
+
+        const gas = boxes * getNumber('mcfPerBoxDay') * gasPriceForMonth(months[i], i) * getNumber('costDays');
+        const setup = newBoxes * getNumber('eqPurchasePerBox');
+        const genReserve = totalLoadKw * 24 * getNumber('costDays') * getNumber('genReservePerKwh');
+        const minerReserve = miners * getNumber('minerReservePerMiner');
+        const management = commissioningMonth(i) ? getNumber('managementMonthly') : 0;
+        const engineering = commissioningMonth(i) ? getNumber('engineeringMonthly') : 0;
+        const technicians = commissioningMonth(i)
+          ? getNumber('commissioningTechMonthly')
+          : operationalTechMonth(i) ? getNumber('opsTechMonthly') : 0;
+        const software = state.includeSoftware ? revenue * (getNumber('softwarePct') / 100) : 0;
+        const pool = state.includePool ? revenue * (getNumber('poolPct') / 100) : 0;
+
+        const totalBeforePayout = gas + setup + genReserve + minerReserve + management + engineering + technicians + software + pool;
+        const available = revenue - totalBeforePayout;
+        const targetBoxes = i - getNumber('payoutLag') >= 0 ? boxesForMonth(i - getNumber('payoutLag')) : 0;
+        const targetPayout = targetBoxes * targetPerBox;
+        const actualPayout = Math.min(Math.max(available, 0), targetPayout);
+        const shortfall = Math.max(targetPayout - actualPayout, 0);
+        const cashLeft = available - actualPayout;
+        cumulativeCash += cashLeft;
+
+        const categoryShare = targetPerBox > 0 ? actualPayout / targetPerBox : 0;
+
+        rows.push({
+          month: months[i],
+          boxes,
+          miners,
+          totalLoadKw,
+          revenue,
+          gas,
+          setup,
+          genReserve,
+          minerReserve,
+          management,
+          engineering,
+          technicians,
+          software,
+          pool,
+          totalBeforePayout,
+          available,
+          targetPayout,
+          actualPayout,
+          shortfall,
+          cashLeft,
+          cumulativeCash,
+          dataPayout: getNumber('dataPayoutPerBox') * categoryShare,
+          generatorPayout: getNumber('generatorPayoutPerBox') * categoryShare,
+          transformerPayout: getNumber('transformerPayoutPerBox') * categoryShare,
+          rigPayout: getNumber('rigPayoutPerBox') * categoryShare
+        });
+      }
+
+      return rows;
+    };
+
+    const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0);
+
+    const normalRunRateRow = (rows) => rows.find((row, index) => index >= 6 && row.boxes === getNumber('containers')) || rows[rows.length - 1];
+
+    const breakEvenHashprice = () => {
+      let low = 0;
+      let high = 150;
+      for (let i = 0; i < 40; i += 1) {
+        const mid = (low + high) / 2;
+        const rows = calculate(mid);
+        const row = normalRunRateRow(rows);
+        if (row.available >= row.targetPayout) high = mid;
+        else low = mid;
+      }
+      return high;
+    };
+
+    const renderKpis = (rows) => {
+      const run = normalRunRateRow(rows);
+      const energyKwh = run.totalLoadKw * 24 * getNumber('costDays');
+      const costBeforePayoutKwh = energyKwh > 0 ? run.totalBeforePayout / energyKwh : 0;
+      const costAfterActualPayoutKwh = energyKwh > 0 ? (run.totalBeforePayout + run.actualPayout) / energyKwh : 0;
+      const reserveRunRate = run.genReserve + run.minerReserve;
+
+      const items = [
+        ['Run-rate revenue', compactMoney(run.revenue), `${run.boxes} boxes / ${run.miners.toLocaleString()} miners`],
+        ['Run-rate reserves', compactMoney(reserveRunRate), `${compactMoney(run.genReserve)} gen + ${compactMoney(run.minerReserve)} miners`],
+        ['Cash before payout', compactMoney(run.available), `${money(run.shortfall)} shortfall at target`],
+        ['Actual payout YR1', compactMoney(sum(rows, 'actualPayout')), `${money(sum(rows, 'shortfall'))} target shortfall`],
+        ['Cost before payout', `$${costBeforePayoutKwh.toFixed(3)}/kWh`, 'Gas, fees, labor, reserves'],
+        ['All-in actual paid', `$${costAfterActualPayoutKwh.toFixed(3)}/kWh`, `Normal run-rate month`]
+      ];
+
+      document.getElementById('kpis').innerHTML = items.map(([label, value, detail]) => `
+        <div class="kpi">
+          <span class="label">${label}</span>
+          <span class="value">${value}</span>
+          <span class="detail">${detail}</span>
+        </div>
+      `).join('');
+    };
+
+    const renderSummary = (rows) => {
+      const run = normalRunRateRow(rows);
+      const effectivePh = run.miners * getNumber('thPerMiner') / 1000 * getNumber('uptimePct') / 100;
+      const breakeven = breakEvenHashprice();
+      const totalTarget = sum(rows, 'targetPayout');
+      const payoutCoverage = totalTarget > 0 ? sum(rows, 'actualPayout') / totalTarget * 100 : 0;
+
+      const items = [
+        ['Effective PH/s', effectivePh.toFixed(1), `${getNumber('uptimePct')}% uptime`],
+        ['Target payout YR1', money(totalTarget), `${pct(payoutCoverage)} covered`],
+        ['Working cash YR1', money(rows[rows.length - 1].cumulativeCash), 'Before any shortfall catch-up'],
+        ['Hashprice to cover target', `$${breakeven.toFixed(1)}/PH/day`, 'Normal run-rate month']
+      ];
+
+      document.getElementById('summary').innerHTML = items.map(([name, amount, small]) => `
+        <div class="metric">
+          <span class="name">${name}</span>
+          <span class="amount">${amount}</span>
+          <span class="small">${small}</span>
+        </div>
+      `).join('');
+    };
+
+    const cell = (value) => {
+      const className = value < 0 ? ' class="neg"' : '';
+      return `<td${className}>${money(value)}</td>`;
+    };
+
+    const row = (label, values, opts = {}) => {
+      const classes = [opts.section ? 'section' : '', opts.total ? 'total' : ''].filter(Boolean).join(' ');
+      if (opts.section) return `<tr class="${classes}"><td colspan="${months.length + 2}">${label}</td></tr>`;
+      return `<tr class="${classes}"><td>${label}</td>${values.map(value => {
+        if (typeof value === 'number') return cell(value);
+        return `<td>${value}</td>`;
+      }).join('')}</tr>`;
+    };
+
+    const renderTable = (rows) => {
+      const header = `
+        <tr>
+          <th></th>
+          ${months.map(month => `<th>${month}</th>`).join('')}
+          <th>YR1 Total</th>
+        </tr>
+      `;
+
+      const numeric = (key) => [...rows.map(r => r[key]), sum(rows, key)];
+
+      const html = [
+        header,
+        row('Operating Ramp', [], { section: true }),
+        row('Boxes Online', [...rows.map(r => r.boxes || '-'), `${sum(rows, 'boxes')} box-mo`]),
+        row('Miners Online', [...rows.map(r => r.miners ? r.miners.toLocaleString() : '-'), '']),
+        row('Total Load', [...rows.map(r => r.totalLoadKw ? `${(r.totalLoadKw / 1000).toFixed(1)} MW` : '-'), '']),
+        row('Income', [], { section: true }),
+        row('Mining - Bitcoin', numeric('revenue')),
+        row('Total Income', numeric('revenue'), { total: true }),
+        row('Operating Costs Before Equipment Payout', [], { section: true }),
+        row('Gas - Mining', numeric('gas')),
+        row('Eq Purch - Mining', numeric('setup')),
+        row('Gen Maint. Reserve', numeric('genReserve')),
+        row('Miner Repair Reserve', numeric('minerReserve')),
+        row('Management', numeric('management')),
+        row('Engineering', numeric('engineering')),
+        row('Technicians', numeric('technicians')),
+        row('Software Fee', numeric('software')),
+        row('Pool Fee', numeric('pool')),
+        row('Total Costs Before Payout', numeric('totalBeforePayout'), { total: true }),
+        row('Available Cash Waterfall', [], { section: true }),
+        row('Cash Available for Equip. Payout', numeric('available'), { total: true }),
+        row('Target Equip. Payout Cap', numeric('targetPayout')),
+        row('Actual Equip. Payout', numeric('actualPayout'), { total: true }),
+        row('Shortfall vs Target', numeric('shortfall')),
+        row('Current-Month Cash Left', numeric('cashLeft')),
+        row('Cumulative Working Cash', [...rows.map(r => r.cumulativeCash), rows[rows.length - 1].cumulativeCash]),
+        row('Actual Equipment Payout Allocation', [], { section: true }),
+        row('Data Center', numeric('dataPayout')),
+        row('Generator', numeric('generatorPayout')),
+        row('Transformer', numeric('transformerPayout')),
+        row('Mining Rigs', numeric('rigPayout'))
+      ].join('');
+
+      document.getElementById('waterfall').innerHTML = html;
+    };
+
+    const renderNotes = () => {
+      document.getElementById('notes').innerHTML = `
+        <div class="note"><b>Payout logic:</b> equipment reimbursement is limited to cash left after gas, setup purchases, SG&A, generator reserve, and miner repair/replacement reserve.</div>
+        <div class="note"><b>Pool/software:</b> if the hashprice input is already net of pool fees, uncheck Pool Fee to avoid double counting. Software fee should stay off unless the cost is confirmed.</div>
+        <div class="note"><b>Default reserve:</b> generator reserve follows Ed's $0.005/kWh answer. Miner reserve defaults to $7/miner/month, or $2,100 per operating container.</div>
+      `;
+    };
+
+    const render = () => {
+      const rows = calculate();
+      renderKpis(rows);
+      renderSummary(rows);
+      renderTable(rows);
+      renderNotes();
+    };
+
+    const syncInputs = () => {
+      document.querySelectorAll('[data-field]').forEach((input) => {
+        const field = input.dataset.field;
+        if (input.type === 'checkbox') input.checked = Boolean(state[field]);
+        else input.value = state[field];
+      });
+    };
+
+    document.querySelectorAll('[data-field]').forEach((input) => {
+      input.addEventListener('input', () => {
+        const field = input.dataset.field;
+        if (input.type === 'checkbox') state[field] = input.checked;
+        else state[field] = Number(input.value);
+        render();
+      });
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      state = { ...defaults };
+      syncInputs();
+      render();
+    });
+
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+    syncInputs();
+    render();
+  </script>
+</body>
+</html>
