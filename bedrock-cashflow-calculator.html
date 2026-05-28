@@ -408,7 +408,7 @@
     <header>
       <div>
         <h1>Bedrock / Ozona Cash Flow Calculator</h1>
-        <div class="subtitle">Available-cash payout model for the 4-container M50 pilot.</div>
+        <div class="subtitle">Available-cash payout model for the 4-container M50 pilot, including operating and lifecycle reserves.</div>
       </div>
       <div class="header-actions">
         <button type="button" id="resetBtn">Reset</button>
@@ -502,8 +502,11 @@
               <label>Gen reserve $/kWh
                 <input data-field="genReservePerKwh" type="number" min="0" step="0.001">
               </label>
-              <label>Miner reserve $/miner/mo
-                <input data-field="minerReservePerMiner" type="number" min="0" step="0.5">
+              <label>Miner repair $/miner/mo
+                <input data-field="minerRepairReservePerMiner" type="number" min="0" step="0.5">
+              </label>
+              <label>Miner replacement $/miner/mo
+                <input data-field="minerReplacementReservePerMiner" type="number" min="0" step="0.5">
               </label>
             </div>
           </div>
@@ -606,7 +609,8 @@
       gasMar: 0.7,
       gasAprMay: 0.6,
       genReservePerKwh: 0.005,
-      minerReservePerMiner: 7,
+      minerRepairReservePerMiner: 7,
+      minerReplacementReservePerMiner: 16.67,
       eqPurchasePerBox: 26385,
       managementMonthly: 12500,
       engineeringMonthly: 10417,
@@ -691,7 +695,8 @@
         const gas = boxes * getNumber('mcfPerBoxDay') * gasPriceForMonth(months[i], i) * getNumber('costDays');
         const setup = newBoxes * getNumber('eqPurchasePerBox');
         const genReserve = totalLoadKw * 24 * getNumber('costDays') * getNumber('genReservePerKwh');
-        const minerReserve = miners * getNumber('minerReservePerMiner');
+        const minerRepairReserve = miners * getNumber('minerRepairReservePerMiner');
+        const minerReplacementReserve = miners * getNumber('minerReplacementReservePerMiner');
         const management = commissioningMonth(i) ? getNumber('managementMonthly') : 0;
         const engineering = commissioningMonth(i) ? getNumber('engineeringMonthly') : 0;
         const technicians = commissioningMonth(i)
@@ -700,7 +705,7 @@
         const software = state.includeSoftware ? revenue * (getNumber('softwarePct') / 100) : 0;
         const pool = state.includePool ? revenue * (getNumber('poolPct') / 100) : 0;
 
-        const totalBeforePayout = gas + setup + genReserve + minerReserve + management + engineering + technicians + software + pool;
+        const totalBeforePayout = gas + setup + genReserve + minerRepairReserve + minerReplacementReserve + management + engineering + technicians + software + pool;
         const available = revenue - totalBeforePayout;
         const targetBoxes = i - getNumber('payoutLag') >= 0 ? boxesForMonth(i - getNumber('payoutLag')) : 0;
         const targetPayout = targetBoxes * targetPerBox;
@@ -720,7 +725,8 @@
           gas,
           setup,
           genReserve,
-          minerReserve,
+          minerRepairReserve,
+          minerReplacementReserve,
           management,
           engineering,
           technicians,
@@ -765,11 +771,11 @@
       const energyKwh = run.totalLoadKw * 24 * getNumber('costDays');
       const costBeforePayoutKwh = energyKwh > 0 ? run.totalBeforePayout / energyKwh : 0;
       const costAfterActualPayoutKwh = energyKwh > 0 ? (run.totalBeforePayout + run.actualPayout) / energyKwh : 0;
-      const reserveRunRate = run.genReserve + run.minerReserve;
+      const reserveRunRate = run.genReserve + run.minerRepairReserve + run.minerReplacementReserve;
 
       const items = [
         ['Run-rate revenue', compactMoney(run.revenue), `${run.boxes} boxes / ${run.miners.toLocaleString()} miners`],
-        ['Run-rate reserves', compactMoney(reserveRunRate), `${compactMoney(run.genReserve)} gen + ${compactMoney(run.minerReserve)} miners`],
+        ['Run-rate reserves', compactMoney(reserveRunRate), `${compactMoney(run.genReserve)} gen + ${compactMoney(run.minerRepairReserve)} repair + ${compactMoney(run.minerReplacementReserve)} fleet`],
         ['Cash before payout', compactMoney(run.available), `${money(run.shortfall)} shortfall at target`],
         ['Actual payout YR1', compactMoney(sum(rows, 'actualPayout')), `${money(sum(rows, 'shortfall'))} target shortfall`],
         ['Cost before payout', `$${costBeforePayoutKwh.toFixed(3)}/kWh`, 'Gas, fees, labor, reserves'],
@@ -836,7 +842,7 @@
       const html = [
         header,
         row('Operating Ramp', [], { section: true }),
-        row('Boxes Online', [...rows.map(r => r.boxes || '-'), `${sum(rows, 'boxes')} box-mo`]),
+        row('Boxes Online', [...rows.map(r => r.boxes ? String(r.boxes) : '-'), `${sum(rows, 'boxes')} box-mo`]),
         row('Miners Online', [...rows.map(r => r.miners ? r.miners.toLocaleString() : '-'), '']),
         row('Total Load', [...rows.map(r => r.totalLoadKw ? `${(r.totalLoadKw / 1000).toFixed(1)} MW` : '-'), '']),
         row('Income', [], { section: true }),
@@ -846,7 +852,8 @@
         row('Gas - Mining', numeric('gas')),
         row('Eq Purch - Mining', numeric('setup')),
         row('Gen Maint. Reserve', numeric('genReserve')),
-        row('Miner Repair Reserve', numeric('minerReserve')),
+        row('Miner Repair Reserve', numeric('minerRepairReserve')),
+        row('Miner Fleet Replacement Reserve', numeric('minerReplacementReserve')),
         row('Management', numeric('management')),
         row('Engineering', numeric('engineering')),
         row('Technicians', numeric('technicians')),
@@ -872,9 +879,9 @@
 
     const renderNotes = () => {
       document.getElementById('notes').innerHTML = `
-        <div class="note"><b>Payout logic:</b> equipment reimbursement is limited to cash left after gas, setup purchases, SG&A, generator reserve, and miner repair/replacement reserve.</div>
+        <div class="note"><b>Payout logic:</b> equipment reimbursement is limited to cash left after gas, setup purchases, SG&A, generator reserve, miner repair reserve, and miner fleet replacement reserve.</div>
         <div class="note"><b>Pool/software:</b> if the hashprice input is already net of pool fees, uncheck Pool Fee to avoid double counting. Software fee should stay off unless the cost is confirmed.</div>
-        <div class="note"><b>Default reserve:</b> generator reserve follows Ed's $0.005/kWh answer. Miner reserve defaults to $7/miner/month, or $2,100 per operating container.</div>
+        <div class="note"><b>Default reserves:</b> generator reserve follows Ed's $0.005/kWh answer. Miner repair defaults to $7/miner/month. Miner replacement defaults to $16.67/miner/month, equal to $600 recovered over 36 months.</div>
       `;
     };
 
