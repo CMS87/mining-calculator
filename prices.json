@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-03T23:25:39.928Z",
+  "fetchedAt": "2026-10-03T23:29:34.802Z",
   "indexes": {
     "waha": {
       "key": "waha",
@@ -8,8 +8,9 @@
       "unit": "USD/MMBtu",
       "source": "NGI daily index via OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
-      "status": "unavailable",
-      "reason": "OILPRICEAPI_KEY not set"
+      "status": "ok",
+      "price": 1.67,
+      "asOf": "2026-10-02"
     },
     "henryHub": {
       "key": "henryHub",
@@ -29,8 +30,9 @@
       "unit": "USD/MMBtu",
       "source": "NYMEX via OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/natural-gas-futures",
-      "status": "unavailable",
-      "reason": "OILPRICEAPI_KEY not set"
+      "status": "ok",
+      "price": 3.01,
+      "asOf": "2026-10-03"
     },
     "wahaBasis": {
       "key": "wahaBasis",
@@ -40,7 +42,7 @@
       "source": "OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
       "status": "unavailable",
-      "reason": "OILPRICEAPI_KEY not set"
+      "reason": "HTTP 400 for WAHA_HH"
     }
   }
 }
