@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-03T23:29:34.802Z",
+  "fetchedAt": "2026-10-03T23:33:30.450Z",
   "indexes": {
     "waha": {
       "key": "waha",
@@ -33,16 +33,6 @@
       "status": "ok",
       "price": 3.01,
       "asOf": "2026-10-03"
-    },
-    "wahaBasis": {
-      "key": "wahaBasis",
-      "label": "Waha − Henry Hub basis",
-      "kind": "spread",
-      "unit": "USD/MMBtu",
-      "source": "OilPriceAPI",
-      "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
-      "status": "unavailable",
-      "reason": "HTTP 400 for WAHA_HH"
     }
   }
 }
