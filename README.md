@@ -25,10 +25,10 @@ push to `main`, on weekday afternoons (cron) and on demand: it fetches the gas
 index snapshot, runs the tests, builds, and pushes `dist/` to `gh-pages`.
 
 **Live gas indexes** (`public/prices.json`, written by `scripts/fetch-prices.mjs`):
-Henry Hub spot comes from EIA via FRED with no key. Waha, the Waha−Henry Hub
-basis and the NYMEX front month come from [OilPriceAPI](https://www.oilpriceapi.com)
-and need the repository secret `OILPRICEAPI_KEY` (free tier, 50 requests/day;
-the workflow uses 3). Without the secret those indexes show as unavailable and
+Henry Hub spot comes from EIA via FRED with no key. Waha and the NYMEX front
+month come from [OilPriceAPI](https://www.oilpriceapi.com) and need the
+repository secret `OILPRICEAPI_KEY` (free tier, 50 requests/day; the workflow
+uses 2). Without the secret those indexes show as unavailable and
 the pages fall back to Henry Hub.
 
 Manual deploy from a laptop: `npm run build`, then push the contents of `dist/`

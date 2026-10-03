@@ -51,15 +51,14 @@ test('with a key, the first code that answers wins and HTTP errors fall through 
     assert.equal(opts.headers.Authorization, 'Token k');
     if (url.endsWith('by_code=NATURAL_GAS')) return { ok: false, status: 404, json: async () => ({}) };
     if (url.includes('by_code=NATURAL_GAS_USD')) return { ok: true, json: async () => ({ data: { price: 3.21, created_at: '2026-10-03T12:00:00Z' } }) };
-    if (url.includes('NATURAL_GAS_WAHA')) return { ok: true, json: async () => ({ data: { price: 1.67, created_at: '2026-10-02T20:30:00Z' } }) };
-    if (url.includes('WAHA_HH')) return { ok: false, status: 500, json: async () => ({}) };
+    if (url.includes('NATURAL_GAS_WAHA')) return { ok: false, status: 500, json: async () => ({}) };
     return { ok: true, text: async () => 'observation_date,DHHNGSP\n2026-09-29,3.18\n' };
   };
   const byKey = Object.fromEntries((await fetchAll({ OILPRICEAPI_KEY: 'k' }, fakeFetch)).map(e => [e.key, e]));
-  assert.equal(byKey.waha.price, 1.67);
   assert.equal(byKey.nymexHH.price, 3.21);
-  assert.equal(byKey.wahaBasis.status, 'unavailable');
-  assert.equal(byKey.wahaBasis.reason, 'HTTP 500 for WAHA_HH');
+  assert.equal(byKey.waha.status, 'unavailable');
+  assert.equal(byKey.waha.reason, 'HTTP 500 for NATURAL_GAS_WAHA');
+  assert.equal(byKey.henryHub.price, 3.18);
 });
 
 test('a network error becomes an unavailable entry, never a throw', async () => {
@@ -70,11 +69,10 @@ test('a network error becomes an unavailable entry, never a throw', async () => 
 test('price-feed: picks Waha, then Henry Hub, converts $/MMBtu to $/MCF by HHV', () => {
   const snapshot = buildSnapshot([
     entry(INDEXES[0], null, 'OILPRICEAPI_KEY not set'),
-    entry(INDEXES[1], { price: 3.18, asOf: '2026-09-29' }),
-    entry(INDEXES[3], { price: -1.5, asOf: '2026-10-02' })
+    entry(INDEXES[1], { price: 3.18, asOf: '2026-09-29' })
   ], new Date('2026-10-03T00:00:00Z'));
   assert.equal(snapshot.fetchedAt, '2026-10-03T00:00:00.000Z');
-  assert.deepEqual(priceIndexes(snapshot).map(i => i.key), ['henryHub']);   // spread excluded
+  assert.deepEqual(priceIndexes(snapshot).map(i => i.key), ['henryHub']);   // unavailable excluded
   assert.equal(pickDefault(snapshot).key, 'henryHub');
   assert.equal(pickDefault(null), null);
   const withWaha = buildSnapshot([entry(INDEXES[0], { price: 1.67, asOf: '2026-10-02' }), entry(INDEXES[1], { price: 3.18, asOf: '2026-09-29' })]);

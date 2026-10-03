@@ -28,12 +28,9 @@ export const INDEXES = [
     key: 'nymexHH', label: 'NYMEX Henry Hub front month', kind: 'price', provider: 'oilpriceapi',
     codes: ['NATURAL_GAS', 'NATURAL_GAS_USD'], source: 'NYMEX via OilPriceAPI',
     sourceUrl: 'https://www.oilpriceapi.com/live/natural-gas-futures'
-  },
-  {
-    key: 'wahaBasis', label: 'Waha − Henry Hub basis', kind: 'spread', provider: 'oilpriceapi',
-    codes: ['WAHA_HH'], source: 'OilPriceAPI',
-    sourceUrl: 'https://www.oilpriceapi.com/live/waha-natural-gas-price'
   }
+  // No Waha−Henry Hub basis entry: the API's WAHA_HH code answers HTTP 400, and
+  // subtracting the two prices above would mix dates (EIA spot lags a week).
 ];
 
 const FETCH_TIMEOUT_MS = 15000;
