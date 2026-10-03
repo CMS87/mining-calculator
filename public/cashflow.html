@@ -44,6 +44,7 @@
     label { display: grid; gap: 4px; color: #344256; font-size: 12px; font-weight: 700; }
     input[type="number"] { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 9px; color: var(--ink); background: #fff; font-size: 14px; }
     input.invalid { border-color: var(--red); background: #fff5f5; }
+    select { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 9px; color: var(--ink); background: #fff; font-size: 13px; }
     .hint { margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.35; }
     .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
     table { width: 100%; border-collapse: collapse; min-width: 1240px; }
@@ -140,11 +141,15 @@
         <div class="panel">
           <h2>Gas &amp; Power</h2>
           <div class="panel-body">
+            <div class="input-grid">
+              <label style="grid-column: 1 / -1">Gas index<select id="gasIndex"><option value="custom">Custom</option></select></label>
+            </div>
             <div class="input-grid three">
               <label>Heat rate BTU/kWh<input data-field="heatRate" type="number" min="1" step="100"></label>
               <label>HHV BTU/scf<input data-field="hhv" type="number" min="1" step="10"></label>
               <label>Gas $/MCF<input data-field="gasPrice" type="number" step="0.01"></label>
             </div>
+            <div class="hint" id="gasIndexNote">Loading live indexes…</div>
             <div class="hint" id="gasHint"></div>
           </div>
         </div>
@@ -189,6 +194,7 @@
 
   <script type="module">
     import { defaults, calculate, summarize, sum, mcfPerBoxDay } from './cashflow-model.js';
+    import { loadPrices, priceIndexes, pickDefault, mmbtuToMcf, describe } from './price-feed.js';
 
     let state = { ...defaults };
 
@@ -334,11 +340,44 @@
         render();
       });
     });
-    document.getElementById('resetBtn').addEventListener('click', () => { state = { ...defaults }; syncInputs(); render(); });
     document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+    // Gas index selector: fills the $/MCF field from the build-time snapshot (prices.json).
+    const gasIndexSelect = document.getElementById('gasIndex');
+    const gasIndexNote = document.getElementById('gasIndexNote');
+    const gasPriceInput = document.querySelector('[data-field="gasPrice"]');
+    let gasSnapshot = null;
+    const applyGasIndex = (index) => {
+      state.gasPrice = Number(mmbtuToMcf(index.price, state.hhv).toFixed(2));
+      gasPriceInput.value = state.gasPrice;
+      gasPriceInput.classList.remove('invalid');
+      gasIndexSelect.value = index.key;
+      gasIndexNote.textContent = `${describe(index)} → $${state.gasPrice.toFixed(2)}/MCF at ${state.hhv} BTU/scf.`;
+      render();
+    };
+    const useDefaultGasIndex = () => {
+      const index = pickDefault(gasSnapshot);
+      if (index) { applyGasIndex(index); return; }
+      gasIndexSelect.value = 'custom';
+      gasIndexNote.textContent = priceIndexes(gasSnapshot).length ? 'Custom price.' : 'No live index in this build — enter a price.';
+    };
+    gasIndexSelect.addEventListener('change', () => {
+      const index = priceIndexes(gasSnapshot).find(i => i.key === gasIndexSelect.value);
+      if (index) applyGasIndex(index); else gasIndexNote.textContent = 'Custom price.';
+    });
+    gasPriceInput.addEventListener('input', () => { gasIndexSelect.value = 'custom'; gasIndexNote.textContent = 'Custom price.'; });
+    document.getElementById('resetBtn').addEventListener('click', () => { state = { ...defaults }; syncInputs(); render(); useDefaultGasIndex(); });
 
     syncInputs();
     render();
+    loadPrices('./').then((snapshot) => {
+      gasSnapshot = snapshot;
+      gasIndexSelect.innerHTML = [
+        ...priceIndexes(snapshot).map(i => `<option value="${i.key}">${i.label} — $${i.price.toFixed(2)}/MMBtu (${i.asOf})</option>`),
+        '<option value="custom">Custom</option>'
+      ].join('');
+      useDefaultGasIndex();
+    });
   </script>
 </body>
 </html>

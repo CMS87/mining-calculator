@@ -9,7 +9,9 @@ function App() {
   const [mode, setMode] = useState('gas')
   const [hashpriceLoading, setHashpriceLoading] = useState(true)
   const [hashpriceUpdatedAt, setHashpriceUpdatedAt] = useState(null)
-  const [wahaUpdatedAt] = useState(new Date())
+  // Gas index snapshot (prices.json, written at build time) + which index fills the price field
+  const [gasFeed, setGasFeed] = useState(null)
+  const [gasIndexKey, setGasIndexKey] = useState('custom')
 
   // ====== CONTAINER & FACILITY ======
   const [containerCount, setContainerCount] = useState(4)  // 4 × 53ft containers
@@ -43,7 +45,7 @@ function App() {
   // ====== GAS-TO-POWER ======
   const [heatRate, setHeatRate] = useState(11500)               // BTU/kWh (TGR400 spec)
   const [hhv, setHhv] = useState(1000)                          // BTU/scf
-  const [wahaPriceStr, setWahaPriceStr] = useState('-4.26')   // Waha index (Apr 2026)
+  const [wahaPriceStr, setWahaPriceStr] = useState('0.50')    // replaced by the live index when prices.json loads
   const wahaPrice = parseFloat(wahaPriceStr) || 0
   const [wahaAdderStr, setWahaAdderStr] = useState('0')         // ~$0
   const wahaAdder = parseFloat(wahaAdderStr) || 0
@@ -103,6 +105,26 @@ function App() {
     }
     fetchHashprice()
   }, [])
+
+  // Fill the gas price from the live index snapshot (Waha first, then Henry Hub).
+  // The helper module lives in public/ so cashflow.html can share it; hence the URL import.
+  const applyGasIndex = (feed, index) => {
+    setGasIndexKey(index.key)
+    setWahaPriceStr(feed.mmbtuToMcf(index.price, parseFloat(hhv) || 1000).toFixed(2))
+  }
+  useEffect(() => {
+    const base = import.meta.env.BASE_URL
+    import(/* @vite-ignore */ `${base}price-feed.js`)
+      .then(async (feed) => {
+        const snapshot = await feed.loadPrices(base)
+        setGasFeed({ feed, snapshot })
+        const index = feed.pickDefault(snapshot)
+        if (index) applyGasIndex(feed, index)
+      })
+      .catch(err => console.log('Gas index feed unavailable:', err.message))
+  }, [])
+  const gasIndexes = gasFeed ? gasFeed.feed.priceIndexes(gasFeed.snapshot) : []
+  const selectedGasIndex = gasIndexes.find(i => i.key === gasIndexKey) || null
 
   const formatCurrency = (val) => {
     const abs = Math.abs(val)
@@ -288,7 +310,9 @@ function App() {
     setFinanceRate(5.0); setFinanceTerm(60); setFinanceDownPct(20)
     setGeneratorBuyMaintenance(1500); setGeneratorRtoPostMaint(1500)
     setHeatRate(11500); setHhv(1000)
-    setWahaPriceStr('-4.26'); setWahaAdderStr('0')
+    setWahaAdderStr('0')
+    const index = gasFeed ? gasFeed.feed.pickDefault(gasFeed.snapshot) : null
+    if (index) applyGasIndex(gasFeed.feed, index); else { setGasIndexKey('custom'); setWahaPriceStr('0.50') }
     setGeneratorLoadPct(0.85)
     setPoolFee(0); setCurtailment(0); setOtherOpex(0)
   }
@@ -510,10 +534,24 @@ function App() {
                   </div>
                 </div>
 
+                <div className="input-row">
+                  <label>Gas Index</label>
+                  <select className="preset-select" value={gasIndexKey} onChange={e => {
+                    const index = gasIndexes.find(i => i.key === e.target.value)
+                    if (index) applyGasIndex(gasFeed.feed, index); else setGasIndexKey('custom')
+                  }}>
+                    {gasIndexes.map(i => <option key={i.key} value={i.key}>{i.label} — ${i.price.toFixed(2)}/MMBtu ({i.asOf})</option>)}
+                    <option value="custom">Custom</option>
+                  </select>
+                  {gasFeed && gasIndexes.length === 0 && <span style={{fontSize:'0.7rem', color:'#fbbf24'}}>No live index in this build — enter a price.</span>}
+                </div>
+
                 <div className="input-row two-col">
                   <div>
-                    <label>Gas Price ($/MCF) <a href="https://www.oilpriceapi.com/live/waha-natural-gas-price" target="_blank" rel="noopener noreferrer" style={{fontSize:"0.7rem",color:"#fff",background:"linear-gradient(135deg,#3b82f6,#1d4ed8)",padding:"2px 8px",borderRadius:"4px",marginLeft:"4px",textDecoration:"none",fontWeight:"600"}}>Waha live ↗</a> <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'4px'}}>as of {wahaUpdatedAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></label>
-                    <input type="number" step="0.01" value={wahaPriceStr} onChange={e => setWahaPriceStr(e.target.value)} />
+                    <label>Gas Price ($/MCF) {selectedGasIndex
+                      ? <><a href={selectedGasIndex.sourceUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:"0.7rem",color:"#fff",background:"linear-gradient(135deg,#3b82f6,#1d4ed8)",padding:"2px 8px",borderRadius:"4px",marginLeft:"4px",textDecoration:"none",fontWeight:"600"}}>source ↗</a> <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'4px'}}>as of {selectedGasIndex.asOf}, converted at {hhv} BTU/scf</span></>
+                      : <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'4px'}}>custom</span>}</label>
+                    <input type="number" step="0.01" value={wahaPriceStr} onChange={e => { setWahaPriceStr(e.target.value); setGasIndexKey('custom') }} />
                   </div>
                   <div>
                     <label>Adder ($/MCF)</label>
