@@ -48,7 +48,7 @@ test('without a key, Henry Hub still loads and the OilPriceAPI indexes degrade w
 
 test('with a key, the first code that answers wins and HTTP errors fall through to the next code', async () => {
   const fakeFetch = async (url, opts) => {
-    assert.equal(opts.headers.Authorization, 'Token k');
+    if (url.includes('oilpriceapi')) assert.equal(opts.headers.Authorization, 'Token k');
     if (url.endsWith('by_code=NATURAL_GAS')) return { ok: false, status: 404, json: async () => ({}) };
     if (url.includes('by_code=NATURAL_GAS_USD')) return { ok: true, json: async () => ({ data: { price: 3.21, created_at: '2026-10-03T12:00:00Z' } }) };
     if (url.includes('NATURAL_GAS_WAHA')) return { ok: false, status: 500, json: async () => ({}) };
