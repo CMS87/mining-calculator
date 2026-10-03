@@ -1,0 +1,46 @@
+{
+  "fetchedAt": "2026-10-03T23:25:39.928Z",
+  "indexes": {
+    "waha": {
+      "key": "waha",
+      "label": "Waha (West Texas)",
+      "kind": "price",
+      "unit": "USD/MMBtu",
+      "source": "NGI daily index via OilPriceAPI",
+      "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
+      "status": "unavailable",
+      "reason": "OILPRICEAPI_KEY not set"
+    },
+    "henryHub": {
+      "key": "henryHub",
+      "label": "Henry Hub spot (EIA)",
+      "kind": "price",
+      "unit": "USD/MMBtu",
+      "source": "EIA daily spot via FRED",
+      "sourceUrl": "https://fred.stlouisfed.org/series/DHHNGSP",
+      "status": "ok",
+      "price": 3.18,
+      "asOf": "2026-09-29"
+    },
+    "nymexHH": {
+      "key": "nymexHH",
+      "label": "NYMEX Henry Hub front month",
+      "kind": "price",
+      "unit": "USD/MMBtu",
+      "source": "NYMEX via OilPriceAPI",
+      "sourceUrl": "https://www.oilpriceapi.com/live/natural-gas-futures",
+      "status": "unavailable",
+      "reason": "OILPRICEAPI_KEY not set"
+    },
+    "wahaBasis": {
+      "key": "wahaBasis",
+      "label": "Waha − Henry Hub basis",
+      "kind": "spread",
+      "unit": "USD/MMBtu",
+      "source": "OilPriceAPI",
+      "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
+      "status": "unavailable",
+      "reason": "OILPRICEAPI_KEY not set"
+    }
+  }
+}
