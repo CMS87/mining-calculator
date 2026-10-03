@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import './App.css'
 
-// Bedrock Development — Gas to Bitcoin Calculator
+// Gas to Bitcoin Calculator
 // Adapted from Pecos Mining Calculator (AstroMiners)
 
 function App() {
@@ -296,8 +296,8 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>Bedrock Development &mdash; Gas to Bitcoin Calculator</h1>
-        <p className="subtitle">Waha Gas &rarr; Power &rarr; Bitcoin</p>
+        <h1>Gas to Bitcoin Calculator</h1>
+        <p className="subtitle">Gas &rarr; Power &rarr; Bitcoin</p>
         <button onClick={resetToDefaults} style={{marginTop:'12px', padding:'6px 16px', borderRadius:'6px', border:'1px solid rgba(148,163,184,0.4)', background:'rgba(15,23,42,0.6)', color:'#94a3b8', fontSize:'0.78rem', cursor:'pointer'}}>
           ↺ Reset to defaults
         </button>
@@ -314,8 +314,8 @@ function App() {
         <button className={mode === 'full' ? 'active' : ''} onClick={() => setMode('full')}>
           Full Model
         </button>
-        <button onClick={() => { window.location.href = `${import.meta.env.BASE_URL}bedrock-cashflow-calculator.html` }}>
-          Bedrock Cash Flow
+        <button onClick={() => { window.location.href = `${import.meta.env.BASE_URL}cashflow.html` }}>
+          36-Month Cash Flow
         </button>
       </section>
 
@@ -512,7 +512,7 @@ function App() {
 
                 <div className="input-row two-col">
                   <div>
-                    <label>Waha Index ($/MCF) <a href="https://www.oilpriceapi.com/live/waha-natural-gas-price" target="_blank" rel="noopener noreferrer" style={{fontSize:"0.7rem",color:"#fff",background:"linear-gradient(135deg,#3b82f6,#1d4ed8)",padding:"2px 8px",borderRadius:"4px",marginLeft:"4px",textDecoration:"none",fontWeight:"600"}}>Live ↗</a> <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'4px'}}>as of {wahaUpdatedAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></label>
+                    <label>Gas Price ($/MCF) <a href="https://www.oilpriceapi.com/live/waha-natural-gas-price" target="_blank" rel="noopener noreferrer" style={{fontSize:"0.7rem",color:"#fff",background:"linear-gradient(135deg,#3b82f6,#1d4ed8)",padding:"2px 8px",borderRadius:"4px",marginLeft:"4px",textDecoration:"none",fontWeight:"600"}}>Waha live ↗</a> <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'4px'}}>as of {wahaUpdatedAt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></label>
                     <input type="number" step="0.01" value={wahaPriceStr} onChange={e => setWahaPriceStr(e.target.value)} />
                   </div>
                   <div>
@@ -954,7 +954,7 @@ function App() {
             </div>
           </section>
 
-          {/* Revenue Share */}
+          {/* Monthly P&L */}
           <section className="comparison-section">
             <h2>Monthly P&amp;L</h2>
             <div className="simple-table">
@@ -1224,9 +1224,9 @@ function App() {
             </div>
           </section>
 
-          {/* Revenue Share */}
+          {/* Monthly P&L */}
           <section className="comparison-section">
-            <h2>Revenue Share</h2>
+            <h2>Monthly P&amp;L</h2>
             <div className="simple-table">
               <div className="table-row">
                 <span>Gross BTC Revenue</span>
@@ -1333,12 +1333,12 @@ function App() {
           {/* Sensitivity Analysis */}
           <section className="comparison-section">
             <h2>Sensitivity Analysis — Net Monthly Profit</h2>
-            <p className="section-intro">Waha gas price (rows) vs hashprice (columns). Negative gas = you get paid for gas — adds to profit.</p>
+            <p className="section-intro">Gas price (rows) vs hashprice (columns). Negative gas = you get paid for gas — adds to profit.</p>
             <div className="sensitivity-table">
               <table>
                 <thead>
                   <tr>
-                    <th>Waha $/MCF \ Hashprice</th>
+                    <th>Gas $/MCF \ Hashprice</th>
                     <th>$25/PH</th>
                     <th>$30/PH</th>
                     <th>$37/PH</th>
@@ -1380,7 +1380,6 @@ function App() {
 
       <footer>
         <p>Projections based on current market assumptions. Actual results will vary with BTC price, network difficulty, and operational factors.</p>
-        <p className="company">Bedrock Development</p>
       </footer>
     </div>
   )

@@ -1,12 +1,12 @@
-# Pecos Mining Calculator
+# Gas to Bitcoin Calculator
 
-A Bitcoin mining profitability calculator for the Pecos 15 MW facility. Compare Co-Mining (hosting) and Self-Mining business models with interactive deal structure analysis.
+Models a gas → power → Bitcoin mining operation: generator fleet economics, mining output, and a straight 36-month cash flow for one company that owns the containers, generators and miners (`public/cashflow.html`).
 
 ![Mining Calculator](https://img.shields.io/badge/React-18.2.0-blue) ![Vite](https://img.shields.io/badge/Vite-5.0.8-purple)
 
 ## 🚀 Live Demo
 
-GitHub Pages (FenixCompute): `https://fenixcompute.github.io/mining-calculator/`
+GitHub Pages: `https://cms87.github.io/mining-calculator/` (served from the `gh-pages` branch)
 
 ## 📋 Features
 
@@ -18,7 +18,7 @@ GitHub Pages (FenixCompute): `https://fenixcompute.github.io/mining-calculator/`
 
 ## 🛠️ Deployment Options
 
-### Option 1: GitHub Pages (Recommended for FenixCompute)
+### Option 1: GitHub Pages
 
 1. Go to **Settings → Pages**
 2. Under "Build and deployment": **Source = GitHub Actions**
@@ -60,7 +60,7 @@ Note: Cloudflare Pages expects root hosting. If you use Cloudflare, remove the
 
 ```bash
 # Clone the repository
-git clone https://github.com/FenixCompute/mining-calculator.git
+git clone https://github.com/CMS87/mining-calculator.git
 cd mining-calculator
 
 # Install dependencies
