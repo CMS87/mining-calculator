@@ -10,19 +10,24 @@
       color-scheme: light;
       --ink: #172033; --muted: #64748b; --line: #d9e2ec; --panel: #fff;
       --blue: #174a7c; --green: #138a64; --red: #b91c1c;
-      --shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
     }
-    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: var(--ink); background: #eef3f8; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--ink); background: #eef3f8; }
     .app { max-width: 1440px; margin: 0 auto; padding: 24px; }
     header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: end; margin-bottom: 18px; }
     h1 { margin: 0; color: #12365d; font-size: 28px; }
     .subtitle { margin-top: 6px; color: var(--muted); font-size: 14px; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     button, a.button {
       border: 1px solid #b9c7d6; background: #fff; color: #12365d; border-radius: 6px;
-      padding: 9px 12px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 13px;
+      padding: 9px 12px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 13px; display: inline-block;
     }
     button:hover, a.button:hover { border-color: var(--blue); }
+    a.button.primary, button.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    a.button.primary:hover { background: #12365d; }
+    .from-model { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; background: #dbeafe; border: 1px solid #c7d7ea; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; color: #12365d; }
+    .from-model.warn { background: #fdf3e1; border-color: #f1d9a6; color: #7c4a03; }
+    .from-model b { font-weight: 800; }
     .steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
     .step { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #334155; }
     .step b { display: block; color: #12365d; font-size: 12px; margin-bottom: 3px; }
@@ -33,7 +38,7 @@
     .kpi .value { display: block; margin-top: 7px; color: #102a43; font-size: 21px; font-weight: 800; white-space: nowrap; }
     .kpi .value.neg { color: var(--red); }
     .kpi .detail { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.25; }
-    .layout { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 14px; align-items: start; }
+    .layout { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 14px; align-items: start; }
     .controls, .results { display: grid; gap: 12px; }
     .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); overflow: hidden; }
     .panel h2 { margin: 0; padding: 12px 14px; color: #12365d; background: #dbeafe; border-bottom: 1px solid #c7d7ea; font-size: 14px; }
@@ -44,8 +49,10 @@
     label { display: grid; gap: 4px; color: #344256; font-size: 12px; font-weight: 700; }
     input[type="number"] { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 9px; color: var(--ink); background: #fff; font-size: 14px; }
     input.invalid { border-color: var(--red); background: #fff5f5; }
-    select { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 9px; color: var(--ink); background: #fff; font-size: 13px; }
     .hint { margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .facts { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 13px; }
+    .facts dt { color: var(--muted); }
+    .facts dd { margin: 0; text-align: right; font-weight: 700; color: #102a43; white-space: nowrap; }
     .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
     table { width: 100%; border-collapse: collapse; min-width: 1240px; }
     th, td { padding: 8px 7px; border-bottom: 1px solid #e5eaf0; text-align: right; white-space: nowrap; font-size: 12px; }
@@ -62,10 +69,11 @@
     .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
     .note { background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 11px; color: #334155; font-size: 12px; line-height: 1.4; }
     .note b { color: #12365d; }
+    .bottom-nav { text-align: center; margin-top: 8px; }
     @media print {
       body { background: #fff; }
       .app { max-width: none; padding: 10px; }
-      .controls, .header-actions { display: none; }
+      .header-actions, .bottom-nav { display: none; }
       .layout { display: block; }
       .panel, .kpi { box-shadow: none; }
       .table-wrap { overflow: visible; }
@@ -86,21 +94,23 @@
   <main class="app">
     <header>
       <div>
-        <h1>Gas to Bitcoin — 36-Month Cash Flow</h1>
-        <div class="subtitle">One company owns the containers, generators and miners. Revenue minus operating costs minus equipment. Nothing is shared.</div>
+        <h1>36-Month Cash Flow</h1>
+        <div class="subtitle">One company owns the containers, generators and miners. Revenue minus running costs minus equipment, month by month.</div>
       </div>
       <div class="header-actions">
-        <a class="button" id="backLink" href="./">← Calculator</a>
+        <a class="button primary" href="./">← Back to the model</a>
         <button type="button" id="resetBtn">Reset</button>
         <button type="button" id="printBtn">Print / Save PDF</button>
       </div>
     </header>
 
+    <div class="from-model" id="fromModel"></div>
+
     <section class="steps">
       <div class="step"><b>1 · Revenue</b><span>Hashrate × uptime × hashprice × days</span></div>
-      <div class="step"><b>2 · − Operating costs</b><span>Gas, pool fee, maintenance, repairs, staff</span></div>
-      <div class="step"><b>3 · = Operating cash flow</b><span>What the site earns each month</span></div>
-      <div class="step"><b>4 · − Equipment (capex)</b><span>Paid the month each container goes live</span></div>
+      <div class="step"><b>2 · − Running costs</b><span>Gas, generators, repairs, staff, pool fee</span></div>
+      <div class="step"><b>3 · = Operating cash</b><span>What the site earns each month</span></div>
+      <div class="step"><b>4 · − Equipment</b><span>Paid the month each container goes live</span></div>
       <div class="step"><b>5 · = Net cash → cumulative</b><span>Payback is when cumulative turns positive</span></div>
     </section>
 
@@ -109,94 +119,60 @@
     <section class="layout">
       <aside class="controls">
         <div class="panel">
+          <h2>From the model</h2>
+          <div class="panel-body">
+            <dl class="facts" id="facts"></dl>
+            <div class="hint">These come from the model page. To change them, go back to the model and press “36-Month Cash Flow” again.</div>
+          </div>
+        </div>
+
+        <div class="panel">
           <h2>Deployment</h2>
           <div class="panel-body">
-            <div class="input-grid">
-              <label>Total containers<input data-field="containers" type="number" min="1" step="1"></label>
-              <label>Miners / container<input data-field="minersPerContainer" type="number" min="1" step="1"></label>
-            </div>
             <div class="input-grid three">
               <label>Online month 1<input data-field="month1Boxes" type="number" min="0" step="1"></label>
               <label>Online month 2<input data-field="month2Boxes" type="number" min="0" step="1"></label>
               <label>Online month 3+<input data-field="month3Boxes" type="number" min="0" step="1"></label>
             </div>
-            <div class="hint">Containers stay online once deployed, so the ramp only grows. Each container's equipment is bought the month it goes live.</div>
+            <div class="hint" id="rampHint"></div>
           </div>
         </div>
 
         <div class="panel">
-          <h2>Mining Revenue</h2>
+          <h2>Running costs and setup</h2>
           <div class="panel-body">
             <div class="input-grid">
-              <label>TH/s per miner<input data-field="thPerMiner" type="number" min="1" step="1"></label>
-              <label>kW per miner<input data-field="kwPerMiner" type="number" min="0" step="0.01"></label>
-              <label>Parasitic kW / container<input data-field="parasiticKw" type="number" min="0" step="1"></label>
-              <label>Uptime %<input data-field="uptimePct" type="number" min="0" max="100" step="0.1"></label>
-              <label>Hashprice $/PH/day<input data-field="hashprice" type="number" min="0" step="0.1"></label>
-              <label>Days / month<input data-field="daysPerMonth" type="number" min="1" step="0.01"></label>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h2>Gas &amp; Power</h2>
-          <div class="panel-body">
-            <div class="input-grid">
-              <label style="grid-column: 1 / -1">Gas index<select id="gasIndex"><option value="custom">Custom</option></select></label>
-            </div>
-            <div class="input-grid three">
-              <label>Heat rate BTU/kWh<input data-field="heatRate" type="number" min="1" step="100"></label>
-              <label>HHV BTU/scf<input data-field="hhv" type="number" min="1" step="10"></label>
-              <label>Gas $/MCF<input data-field="gasPrice" type="number" step="0.01"></label>
-            </div>
-            <div class="hint" id="gasIndexNote">Loading live indexes…</div>
-            <div class="hint" id="gasHint"></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h2>Operating Costs</h2>
-          <div class="panel-body">
-            <div class="input-grid">
-              <label>Pool fee %<input data-field="poolPct" type="number" min="0" step="0.1"></label>
-              <label>Gen maintenance $/kWh<input data-field="genMaintPerKwh" type="number" min="0" step="0.001"></label>
-              <label>Miner repairs $/miner/mo<input data-field="minerRepairPerMiner" type="number" min="0" step="0.5"></label>
-              <label>Staff &amp; overhead $/mo<input data-field="staffMonthly" type="number" min="0" step="100"></label>
-              <label>Generator rent $/container/mo<input data-field="generatorRentPerBox" type="number" min="0" step="100"></label>
-            </div>
-            <div class="hint">Rent is for the case where generators are leased instead of bought; leave at 0 when they are owned.</div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h2>Equipment (Capex)</h2>
-          <div class="panel-body">
-            <div class="input-grid">
-              <label>Container &amp; electrical $/container<input data-field="containerCapexPerBox" type="number" min="0" step="1000"></label>
-              <label>Generators $/container<input data-field="generatorCapexPerBox" type="number" min="0" step="1000"></label>
-              <label>Miner price $/TH<input data-field="minerPricePerTh" type="number" min="0" step="0.5"></label>
+              <label>Staff &amp; overhead $/month<input data-field="staffMonthly" type="number" min="0" step="100"></label>
+              <label>Miner repairs $/miner/month<input data-field="minerRepairPerMiner" type="number" min="0" step="0.5"></label>
               <label>Setup &amp; commissioning $/container<input data-field="setupPerBox" type="number" min="0" step="100"></label>
             </div>
-            <div class="hint" id="capexHint"></div>
+            <div class="hint">Gas, generator payments, miner prices and the pool fee are taken from the model.</div>
           </div>
         </div>
       </aside>
 
       <section class="results">
         <div class="panel">
-          <h2>Monthly Cash Flow — months 1–12, then years 2 and 3</h2>
+          <h2>Monthly cash flow — months 1–12, then years 2 and 3</h2>
           <div class="table-wrap"><table id="cashflow"></table></div>
         </div>
         <div class="notes" id="notes"></div>
+        <div class="bottom-nav"><a class="button primary" href="./">← Back to the model</a></div>
       </section>
     </section>
   </main>
 
   <script type="module">
-    import { defaults, calculate, summarize, sum, mcfPerBoxDay } from './cashflow-model.js';
-    import { loadPrices, priceIndexes, pickDefault, mmbtuToMcf, describe } from './price-feed.js';
+    import {
+      HANDOFF_KEY, defaultModel, defaultOwn, modelFromHandoff, calculate, summarize, sum, generatorPayment
+    } from './cashflow-model.js';
 
-    let state = { ...defaults };
+    const loadModel = () => {
+      try { return modelFromHandoff(JSON.parse(localStorage.getItem(HANDOFF_KEY) || 'null')) ?? defaultModel; }
+      catch { return defaultModel; }
+    };
+    const model = loadModel();
+    let own = { ...defaultOwn, month3Boxes: model.containers };
 
     const money = (value) => {
       const rounded = Math.round(value);
@@ -209,23 +185,49 @@
       if (abs >= 1e3) return `${sign}$${(abs / 1e3).toFixed(0)}k`;
       return `${sign}$${abs.toFixed(0)}`;
     };
+    const num = (v, digits = 0) => Number(v).toLocaleString(undefined, { maximumFractionDigits: digits });
+
+    const renderFromModel = () => {
+      const box = document.getElementById('fromModel');
+      if (model.fromModel) {
+        const when = model.savedAt ? new Date(model.savedAt).toLocaleString() : '';
+        box.className = 'from-model';
+        box.innerHTML = `<span><b>Numbers from the model</b> (saved ${when}): ${model.containers} containers · ${num(model.minersPerContainer * model.containers)} miners · hashprice $${num(model.hashprice, 1)}/PH/day · gas $${num(model.gasPricePerMcf, 2)}/MCF (${model.gasIndexLabel}) · generators ${model.generatorLabel}.</span><a class="button" href="./">Change in the model</a>`;
+      } else {
+        box.className = 'from-model warn';
+        box.innerHTML = `<span><b>Not from the model.</b> This page was opened directly, so it shows the default site. Open the model and press “36-Month Cash Flow” to use your numbers.</span><a class="button" href="./">Open the model</a>`;
+      }
+      const term = model.generatorTermMonths;
+      const generatorLine = term === null
+        ? `${money(model.generatorMonthly)}/mo`
+        : `${money(model.generatorMonthly)}/mo for ${term} mo, then ${money(model.generatorMonthlyAfter)}/mo`;
+      document.getElementById('facts').innerHTML = [
+        ['Containers', `${model.containers}`],
+        ['Miners per container', `${num(model.minersPerContainer)} (${model.minerLabel})`],
+        ['Uptime', `${num(model.uptimePct, 1)}%`],
+        ['Hashprice', `$${num(model.hashprice, 1)}/PH/day`],
+        ['Pool fee', `${num(model.poolPct, 1)}%`],
+        ['Gas', `${num(model.mcfPerDay)} MCF/day at $${num(model.gasPricePerMcf, 2)}`],
+        ['Generators', model.generatorLabel],
+        ['Generator upfront', money(model.generatorUpfront)],
+        ['Generator payments', generatorLine],
+        ['Container & electrical', `${money(model.containerPrice)} each`],
+        ['Miner price', `$${num(model.minerPricePerTh, 2)}/TH`],
+        ...(model.otherOpexMonthly ? [['Other opex (model)', `${money(model.otherOpexMonthly)}/mo`]] : [])
+      ].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+    };
 
     // Column plan: 12 single months, then one column per later year, then the 36-month total.
     const columns = (rows) => {
       const cols = rows.slice(0, 12).map(row => ({ label: `M${row.month}`, rows: [row] }));
-      for (let start = 12; start < rows.length; start += 12) {
-        cols.push({ label: `Year ${start / 12 + 1}`, rows: rows.slice(start, start + 12), year: true });
-      }
+      for (let start = 12; start < rows.length; start += 12) cols.push({ label: `Year ${start / 12 + 1}`, rows: rows.slice(start, start + 12), year: true });
       cols.push({ label: 'Total 36 mo', rows, year: true });
       return cols;
     };
-
     const cell = (value, extra = '') => {
       const cls = [value < 0 ? 'neg' : '', extra].filter(Boolean).join(' ');
       return `<td${cls ? ` class="${cls}"` : ''}>${money(value)}</td>`;
     };
-
-    // `pick` turns a column's rows into one number: a sum for money, the last value for counts.
     const line = (label, cols, pick, opts = {}) => {
       const cls = [opts.total ? 'total' : '', opts.sub ? 'sub' : ''].filter(Boolean).join(' ');
       const cells = cols.map(col => {
@@ -235,10 +237,9 @@
       }).join('');
       return `<tr${cls ? ` class="${cls}"` : ''}><td>${label}</td>${cells}</tr>`;
     };
-    // Label in its own sticky first cell so it stays visible when the table scrolls sideways.
     const section = (label, cols) => `<tr class="section"><td>${label}</td><td colspan="${cols.length}"></td></tr>`;
-    const sumOf = (key) => (rows) => sum(rows, key);
-    const lastOf = (key, fmt) => (rows) => fmt(rows[rows.length - 1][key]);
+    const sumOf = (pick) => (rows) => sum(rows, pick);
+    const lastOf = (pick, fmt) => (rows) => fmt(pick(rows[rows.length - 1]));
     const count = (value) => value ? value.toLocaleString() : '-';
 
     const renderTable = (rows) => {
@@ -247,43 +248,42 @@
       document.getElementById('cashflow').innerHTML = [
         header,
         section('Operation (end of period)', cols),
-        line('Containers online', cols, lastOf('boxes', count)),
-        line('Miners online', cols, lastOf('miners', count)),
-        line('Hashrate (PH/s, after uptime)', cols, lastOf('ph', v => v ? v.toFixed(1) : '-')),
+        line('Containers online', cols, lastOf(r => r.boxes, count)),
+        line('Miners online', cols, lastOf(r => r.miners, count)),
+        line('Hashrate (PH/s, after uptime)', cols, lastOf(r => r.ph, v => v ? v.toFixed(1) : '-')),
         section('1 · Revenue', cols),
-        line('Bitcoin mining revenue', cols, sumOf('revenue'), { total: true }),
-        section('2 · Operating costs', cols),
-        line('Gas', cols, sumOf('gas'), { sub: true }),
-        line('Pool fee', cols, sumOf('pool'), { sub: true }),
-        line('Generator maintenance', cols, sumOf('genMaint'), { sub: true }),
-        line('Miner repairs', cols, sumOf('minerRepair'), { sub: true }),
-        line('Generator rent', cols, sumOf('genRent'), { sub: true }),
-        line('Staff & overhead', cols, sumOf('staff'), { sub: true }),
-        line('Total operating costs', cols, sumOf('opexTotal'), { total: true }),
-        section('3 · Operating cash flow (revenue − costs)', cols),
-        line('Operating cash flow', cols, sumOf('operatingCash'), { total: true }),
-        section('4 · Equipment (capex, paid when a container goes live)', cols),
-        line('Containers & electrical', cols, sumOf('capexContainers'), { sub: true }),
-        line('Generators', cols, sumOf('capexGenerators'), { sub: true }),
-        line('Miners', cols, sumOf('capexMiners'), { sub: true }),
-        line('Setup & commissioning', cols, sumOf('capexSetup'), { sub: true }),
-        line('Total equipment', cols, sumOf('capexTotal'), { total: true }),
+        line('Bitcoin mining revenue', cols, sumOf(r => r.revenue), { total: true }),
+        section('2 · Running costs', cols),
+        line('Gas', cols, sumOf(r => r.gas), { sub: true }),
+        line(`Generators (${model.generatorMode})`, cols, sumOf(r => r.generators), { sub: true }),
+        line('Miner repairs', cols, sumOf(r => r.repairs), { sub: true }),
+        line('Staff & overhead', cols, sumOf(r => r.staff), { sub: true }),
+        line('Pool fee', cols, sumOf(r => r.pool), { sub: true }),
+        line('Total running costs', cols, sumOf(r => r.costs), { total: true }),
+        section('3 · Operating cash (revenue − running costs)', cols),
+        line('Operating cash', cols, sumOf(r => r.operatingCash), { total: true }),
+        section('4 · Equipment (paid when a container goes live)', cols),
+        line('Containers & electrical', cols, sumOf(r => r.equipment.containers), { sub: true }),
+        line('Generators upfront', cols, sumOf(r => r.equipment.generators), { sub: true }),
+        line('Miners', cols, sumOf(r => r.equipment.miners), { sub: true }),
+        line('Setup & commissioning', cols, sumOf(r => r.equipment.setup), { sub: true }),
+        line('Total equipment', cols, sumOf(r => r.equipment.total), { total: true }),
         section('5 · Net cash', cols),
-        line('Net cash flow (operating − equipment)', cols, sumOf('netCash'), { total: true }),
-        line('Cumulative cash (end of period)', cols, lastOf('cumulative', v => v), { total: true })
+        line('Net cash (operating − equipment)', cols, sumOf(r => r.netCash), { total: true }),
+        line('Cumulative cash (end of period)', cols, lastOf(r => r.cumulative, v => v), { total: true })
       ].join('');
     };
 
-    const renderKpis = (rows, s) => {
-      const payback = s.purchasedBoxes === 0 ? 'n/a' : s.paybackMonth === null ? 'Beyond 36 mo' : `Month ${s.paybackMonth}`;
+    const renderKpis = (s) => {
+      const payback = s.boxesBought === 0 ? 'n/a' : s.paybackMonth === null ? 'Beyond 36 mo' : `Month ${s.paybackMonth}`;
       const breakeven = s.breakevenHashprice === null ? 'n/a' : `$${s.breakevenHashprice.toFixed(1)}/PH/day`;
       const items = [
-        ['Total equipment', compact(s.totalCapex), `${s.purchasedBoxes} containers bought`],
+        ['Total equipment', compact(s.equipment), `${s.boxesBought} containers bought`],
         ['Run-rate revenue / mo', compact(s.run.revenue), `${s.run.miners.toLocaleString()} miners · ${s.run.ph.toFixed(1)} PH/s`],
-        ['Run-rate operating cash / mo', compact(s.run.operatingCash), `after ${compact(s.run.opexTotal)} operating costs`],
+        ['Run-rate operating cash / mo', compact(s.run.operatingCash), `after ${compact(s.run.costs)} running costs`],
         ['Payback', payback, 'cumulative cash turns positive'],
         ['Cash after 36 months', compact(s.horizonNet), `year 1: ${compact(s.year1Net)}`],
-        ['Operating breakeven hashprice', breakeven, `excl. equipment · power ${(s.powerCostPerKwh * 100).toFixed(2)}¢ · operating ${(s.operatingCostPerKwh * 100).toFixed(2)}¢/kWh`]
+        ['Operating breakeven hashprice', breakeven, `excl. equipment · power ${(s.powerCostPerKwh * 100).toFixed(2)}¢/kWh`]
       ];
       document.getElementById('kpis').innerHTML = items.map(([label, value, detail]) => `
         <div class="kpi"><span class="label">${label}</span>
@@ -291,93 +291,44 @@
           <span class="detail">${detail}</span></div>`).join('');
     };
 
-    const renderHints = (s) => {
-      const mcf = mcfPerBoxDay(state);
-      const loadKw = state.minersPerContainer * state.kwPerMiner + state.parasiticKw;
-      document.getElementById('gasHint').textContent =
-        `${loadKw.toFixed(0)} kW per container → ${mcf.toFixed(1)} MCF/day → ${money(mcf * state.gasPrice * state.daysPerMonth)} per container per month.`;
-      const perBox = state.containerCapexPerBox + state.generatorCapexPerBox
-        + state.minersPerContainer * state.thPerMiner * state.minerPricePerTh + state.setupPerBox;
-      const capacityNote = s.purchasedBoxes < state.containers ? ` (ramp deploys ${s.purchasedBoxes} of ${state.containers})` : '';
-      document.getElementById('capexHint').textContent =
-        `${money(perBox)} per container → ${money(s.totalCapex)} for ${s.purchasedBoxes}${capacityNote}.`;
-    };
-
     const renderNotes = () => {
       document.getElementById('notes').innerHTML = `
-        <div class="note"><b>Gas:</b> gas burned is derived from the electrical load and the generator heat rate (kWh × BTU/kWh ÷ HHV), so changing miners or generators moves the gas bill automatically.</div>
-        <div class="note"><b>Pool fee:</b> if the hashprice you enter is already net of pool fees, set the pool fee to 0 to avoid double counting.</div>
-        <div class="note"><b>Reserves:</b> generator maintenance and miner repairs are set aside as cash every month. Miner replacement is not reserved; the miners column under equipment is the full purchase price.</div>`;
+        <div class="note"><b>Equipment:</b> each container buys its share of the generators (if the model buys or finances them), its miners, the container and electrical, and setup, the month it goes live.</div>
+        <div class="note"><b>Generators:</b> the monthly line follows the model's mode: rent or maintenance every month; RTO and finance pay the term amount for the term, then the post-term amount.</div>
+        <div class="note"><b>Payback:</b> the first month, after equipment has been bought, in which cumulative cash is zero or better and stays there. Breakeven hashprice excludes equipment.</div>`;
     };
 
     const render = () => {
-      const rows = calculate(state);
-      const s = summarize(state, rows);
-      renderKpis(rows, s);
+      const rows = calculate(model, own);
+      const s = summarize(model, own, rows);
+      renderKpis(s);
       renderTable(rows);
-      renderHints(s);
+      document.getElementById('rampHint').textContent =
+        `Containers online by month, up to the model's ${model.containers}. They stay online once deployed; each one's equipment is bought the month it goes live.`;
       renderNotes();
     };
 
     const syncInputs = () => {
-      document.querySelectorAll('[data-field]').forEach((input) => {
-        input.value = state[input.dataset.field];
-        input.classList.remove('invalid');
-      });
+      document.querySelectorAll('[data-field]').forEach((input) => { input.value = own[input.dataset.field]; input.classList.remove('invalid'); });
     };
-
-    // An empty or out-of-range field is marked and ignored: the last good value
-    // stays in the model until the field is valid again.
+    // An empty or out-of-range field is marked and ignored: the last good value stays until it is valid again.
     document.querySelectorAll('[data-field]').forEach((input) => {
       input.addEventListener('input', () => {
         const value = input.valueAsNumber;
         const min = input.min === '' ? -Infinity : Number(input.min);
-        const max = input.max === '' ? Infinity : Number(input.max);
-        const valid = Number.isFinite(value) && value >= min && value <= max;
+        const valid = Number.isFinite(value) && value >= min;
         input.classList.toggle('invalid', !valid);
         if (!valid) return;
-        state[input.dataset.field] = value;
+        own[input.dataset.field] = value;
         render();
       });
     });
+    document.getElementById('resetBtn').addEventListener('click', () => { own = { ...defaultOwn, month3Boxes: model.containers }; syncInputs(); render(); });
     document.getElementById('printBtn').addEventListener('click', () => window.print());
 
-    // Gas index selector: fills the $/MCF field from the build-time snapshot (prices.json).
-    const gasIndexSelect = document.getElementById('gasIndex');
-    const gasIndexNote = document.getElementById('gasIndexNote');
-    const gasPriceInput = document.querySelector('[data-field="gasPrice"]');
-    let gasSnapshot = null;
-    const applyGasIndex = (index) => {
-      state.gasPrice = Number(mmbtuToMcf(index.price, state.hhv).toFixed(2));
-      gasPriceInput.value = state.gasPrice;
-      gasPriceInput.classList.remove('invalid');
-      gasIndexSelect.value = index.key;
-      gasIndexNote.textContent = `${describe(index)} → $${state.gasPrice.toFixed(2)}/MCF at ${state.hhv} BTU/scf.`;
-      render();
-    };
-    const useDefaultGasIndex = () => {
-      const index = pickDefault(gasSnapshot);
-      if (index) { applyGasIndex(index); return; }
-      gasIndexSelect.value = 'custom';
-      gasIndexNote.textContent = priceIndexes(gasSnapshot).length ? 'Custom price.' : 'No live index in this build — enter a price.';
-    };
-    gasIndexSelect.addEventListener('change', () => {
-      const index = priceIndexes(gasSnapshot).find(i => i.key === gasIndexSelect.value);
-      if (index) applyGasIndex(index); else gasIndexNote.textContent = 'Custom price.';
-    });
-    gasPriceInput.addEventListener('input', () => { gasIndexSelect.value = 'custom'; gasIndexNote.textContent = 'Custom price.'; });
-    document.getElementById('resetBtn').addEventListener('click', () => { state = { ...defaults }; syncInputs(); render(); useDefaultGasIndex(); });
-
+    renderFromModel();
     syncInputs();
     render();
-    loadPrices('./').then((snapshot) => {
-      gasSnapshot = snapshot;
-      gasIndexSelect.innerHTML = [
-        ...priceIndexes(snapshot).map(i => `<option value="${i.key}">${i.label} — $${i.price.toFixed(2)}/MMBtu (${i.asOf})</option>`),
-        '<option value="custom">Custom</option>'
-      ].join('');
-      useDefaultGasIndex();
-    });
   </script>
 </body>
 </html>

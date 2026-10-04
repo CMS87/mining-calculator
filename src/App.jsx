@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import './App.css'
 
 // Gas to Bitcoin Calculator
@@ -12,6 +12,7 @@ function App() {
   // Gas index snapshot (prices.json, written at build time) + which index fills the price field
   const [gasFeed, setGasFeed] = useState(null)
   const [gasIndexKey, setGasIndexKey] = useState('custom')
+  const restoredRef = useRef(false)   // inputs restored from the cash-flow hand-off: keep their gas price
 
   // ====== CONTAINER & FACILITY ======
   const [containerCount, setContainerCount] = useState(4)  // 4 × 53ft containers
@@ -119,12 +120,75 @@ function App() {
         const snapshot = await feed.loadPrices(base)
         setGasFeed({ feed, snapshot })
         const index = feed.pickDefault(snapshot)
-        if (index) applyGasIndex(feed, index)
+        if (index && !restoredRef.current) applyGasIndex(feed, index)
       })
       .catch(err => console.log('Gas index feed unavailable:', err.message))
   }, [])
   const gasIndexes = gasFeed ? gasFeed.feed.priceIndexes(gasFeed.snapshot) : []
   const selectedGasIndex = gasIndexes.find(i => i.key === gasIndexKey) || null
+
+  // Hand-off with the cash-flow page. The model's inputs and the derived numbers the
+  // cash flow needs are saved in localStorage when the user goes there, so both pages
+  // use the same numbers, and the inputs are restored when the user comes back.
+  const HANDOFF_KEY = 'gas-to-btc-model'
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(HANDOFF_KEY) || 'null')
+      const i = saved?.inputs
+      if (!i) return
+      restoredRef.current = true
+      setContainerCount(i.containerCount); setContainerCostPerUnit(i.containerCostPerUnit)
+      setMinersPerContainerOverride(i.minersPerContainerOverride)
+      setSelectedMinerPreset(i.selectedMinerPreset); setHashratePerUnit(i.hashratePerUnit); setEfficiency(i.efficiency); setPricePerTh(i.pricePerTh)
+      setSelectedGeneratorPreset(i.selectedGeneratorPreset); setGeneratorCount(i.generatorCount); setGeneratorSizeKw(i.generatorSizeKw)
+      setGeneratorMode(i.generatorMode); setGeneratorRentMonthly(i.generatorRentMonthly); setGeneratorBuyPrice(i.generatorBuyPrice)
+      setGeneratorBuyMaintenance(i.generatorBuyMaintenance); setGeneratorRtoMonthly(i.generatorRtoMonthly); setGeneratorRtoEquityPct(i.generatorRtoEquityPct)
+      setGeneratorRtoPostMaint(i.generatorRtoPostMaint); setFinanceRate(i.financeRate); setFinanceTerm(i.financeTerm); setFinanceDownPct(i.financeDownPct)
+      setHeatRate(i.heatRate); setHhv(i.hhv); setWahaPriceStr(i.wahaPriceStr); setWahaAdderStr(i.wahaAdderStr); setGasIndexKey(i.gasIndexKey ?? 'custom')
+      setGeneratorLoadPct(i.generatorLoadPct); setPoolFee(i.poolFee); setCurtailment(i.curtailment); setOtherOpex(i.otherOpex)
+    } catch (err) {
+      console.log('Saved model not restored:', err.message)
+    }
+  }, [])
+  const openCashflow = () => {
+    const generatorTerms = {
+      rent: { upfront: 0, monthly: gasResults.generatorMonthly, termMonths: null, monthlyAfter: gasResults.generatorMonthly },
+      buy: { upfront: gasResults.generatorCapex, monthly: gasResults.generatorMonthly, termMonths: null, monthlyAfter: gasResults.generatorMonthly },
+      rto: { upfront: 0, monthly: gasResults.generatorMonthly, termMonths: gasResults.rtoMonthsToOwn, monthlyAfter: gasResults.rtoPostOwnershipMonthly },
+      finance: { upfront: gasResults.generatorCapex, monthly: gasResults.generatorMonthly, termMonths: parseInt(financeTerm) || 0, monthlyAfter: gasResults.financePostOwnershipMonthly }
+    }[generatorMode]
+    const payload = {
+      savedAt: new Date().toISOString(),
+      inputs: {
+        containerCount, containerCostPerUnit, minersPerContainerOverride, selectedMinerPreset, hashratePerUnit, efficiency, pricePerTh,
+        selectedGeneratorPreset, generatorCount, generatorSizeKw, generatorMode, generatorRentMonthly, generatorBuyPrice, generatorBuyMaintenance,
+        generatorRtoMonthly, generatorRtoEquityPct, generatorRtoPostMaint, financeRate, financeTerm, financeDownPct,
+        heatRate, hhv, wahaPriceStr, wahaAdderStr, gasIndexKey, generatorLoadPct, poolFee, curtailment, otherOpex
+      },
+      model: {
+        containers: parseInt(containerCount) || 0,
+        minersPerContainer: (parseInt(containerCount) || 0) > 0 ? gasResults.miners / (parseInt(containerCount) || 1) : 0,
+        minerLabel: selectedMinerPreset === 'custom' ? 'Custom miner' : `${hashratePerUnit} TH/s · ${minerPowerKW.toFixed(2)} kW`,
+        thPerMiner: parseFloat(hashratePerUnit) || 0,
+        kwPerMiner: minerPowerKW,
+        uptimePct: (1 - curtailment) * 100,
+        hashprice: parseFloat(hashprice) || 0,
+        poolPct: poolFee * 100,
+        gasPricePerMcf: gasResults.gasPrice,
+        gasIndexLabel: selectedGasIndex ? `${selectedGasIndex.label} (${selectedGasIndex.asOf})` : 'custom',
+        mcfPerDay: gasResults.mcfPerDay,
+        loadKw: gasResults.loadKw,
+        otherOpexMonthly: parseFloat(otherOpex) || 0,
+        containerPrice: parseFloat(containerCostPerUnit) || 0,
+        minerPricePerTh: parseFloat(pricePerTh) || 0,
+        generatorMode, generatorCount: parseInt(generatorCount) || 0, generatorLabel: `${generatorCount} × ${generatorSizeKw} kW, ${generatorMode}`,
+        generatorUpfront: generatorTerms.upfront, generatorMonthly: generatorTerms.monthly,
+        generatorTermMonths: generatorTerms.termMonths, generatorMonthlyAfter: generatorTerms.monthlyAfter
+      }
+    }
+    try { localStorage.setItem(HANDOFF_KEY, JSON.stringify(payload)) } catch (err) { console.log('Model not saved:', err.message) }
+    window.location.href = `${import.meta.env.BASE_URL}cashflow.html`
+  }
 
   const formatCurrency = (val) => {
     const abs = Math.abs(val)
@@ -144,11 +208,6 @@ function App() {
     const fleetCapacityMw = (parseFloat(generatorCount) || 0) * (parseFloat(generatorSizeKw) || 0) / 1000
     const mwGross = fleetCapacityMw
 
-    // Calculate gas required for this fleet
-    const kwhPerDay = mwGross * 1000 * 24
-    const btuPerDay = kwhPerDay * heatRate
-    const mcfPerDay = btuPerDay / (hhv * 1000)
-
     // Net available power at generator load %
     const availableMw = mwGross * cleanLoadPct
     const totalKw = availableMw * 1000
@@ -156,6 +215,12 @@ function App() {
     const minersByPower = Math.max(Math.floor(totalKw / minerPowerKW), 0)
     const minersByPdu = minersPerContainer * containerCount
     const miners = Math.min(minersByPower, minersByPdu)
+
+    // Gas is burned for the load the miners actually draw, not for generator nameplate
+    const loadKw = miners * minerPowerKW
+    const kwhPerDay = loadKw * 24
+    const btuPerDay = kwhPerDay * heatRate
+    const mcfPerDay = btuPerDay / (hhv * 1000)
     const phs = (miners * hashratePerUnit) / 1000
     const effectivePhs = phs * (1 - poolFee) * (1 - curtailment)
     const gasPrice = wahaPrice + wahaAdder
@@ -207,8 +272,8 @@ function App() {
     const totalOpex = gasMonthly + generatorMonthly + otherOpex
     const netMonthly = monthlyRevenue - totalOpex
 
-    // Effective $/kWh from gas-to-power
-    const kwhPerMonth = availableMw * 730 * 1000
+    // Effective $/kWh from gas-to-power, per kWh actually delivered to miners
+    const kwhPerMonth = loadKw * 730
     const powerCostPerKwh = kwhPerMonth > 0 ? (gasMonthly + generatorMonthly) / kwhPerMonth : 0
 
     // Breakeven hashprice
@@ -235,7 +300,7 @@ function App() {
     const annualOverhaulCost = lifetimeYears > 0 ? totalOverhaulCost / lifetimeYears : 0
 
     return {
-      mcfPerDay, mwGross, availableMw, fleetCapacityMw, miners, phs, effectivePhs,
+      mcfPerDay, mwGross, availableMw, loadKw, fleetCapacityMw, miners, phs, effectivePhs,
       gasPrice, gasMonthly, generatorMonthly, generatorCapex, asicCapex, asicPricePerUnit,
       totalCapex, generatorEquityBuilt, monthlyRevenue, totalOpex, netMonthly,
       powerCostPerKwh, breakevenHashprice, annualRevenue, annualOpex, annualNet,
@@ -322,7 +387,7 @@ function App() {
       <header>
         <h1>Gas to Bitcoin Calculator</h1>
         <p className="subtitle">Gas &rarr; Power &rarr; Bitcoin</p>
-        <button onClick={resetToDefaults} style={{marginTop:'12px', padding:'6px 16px', borderRadius:'6px', border:'1px solid rgba(148,163,184,0.4)', background:'rgba(15,23,42,0.6)', color:'#94a3b8', fontSize:'0.78rem', cursor:'pointer'}}>
+        <button onClick={resetToDefaults} style={{marginTop:'12px', padding:'6px 16px', borderRadius:'6px', border:'1px solid #b9c7d6', background:'#fff', color:'#12365d', fontSize:'0.78rem', cursor:'pointer'}}>
           ↺ Reset to defaults
         </button>
       </header>
@@ -338,8 +403,8 @@ function App() {
         <button className={mode === 'full' ? 'active' : ''} onClick={() => setMode('full')}>
           Full Model
         </button>
-        <button onClick={() => { window.location.href = `${import.meta.env.BASE_URL}cashflow.html` }}>
-          36-Month Cash Flow
+        <button onClick={openCashflow}>
+          36-Month Cash Flow &rarr;
         </button>
       </section>
 
@@ -386,7 +451,7 @@ function App() {
                       const gensPerContainer = Math.ceil(neededKwPerContainer / (_genKw * _load))
                       const suggestedCount = Math.max(gensPerContainer, 1) * _containers
                       return suggestedCount !== _genCount
-                        ? <span style={{fontSize:'0.7rem', color:'#fbbf24', marginTop:'4px', display:'block'}}>Suggested: {suggestedCount} ({Math.max(gensPerContainer,1)}/container)</span>
+                        ? <span style={{fontSize:'0.7rem', color:'#b45309', marginTop:'4px', display:'block'}}>Suggested: {suggestedCount} ({Math.max(gensPerContainer,1)}/container)</span>
                         : null
                     })()}
                   </div>
@@ -501,7 +566,7 @@ function App() {
                     </div>
                     <div className="result-row compact">
                       <span>Total Interest</span>
-                      <span style={{color: '#ef4444'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</span>
+                      <span style={{color: '#b91c1c'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</span>
                     </div>
                     <div className="result-row compact">
                       <span>Post-Loan Cost</span>
@@ -543,7 +608,7 @@ function App() {
                     {gasIndexes.map(i => <option key={i.key} value={i.key}>{i.label} — ${i.price.toFixed(2)}/MMBtu ({i.asOf})</option>)}
                     <option value="custom">Custom</option>
                   </select>
-                  {gasFeed && gasIndexes.length === 0 && <span style={{fontSize:'0.7rem', color:'#fbbf24'}}>No live index in this build — enter a price.</span>}
+                  {gasFeed && gasIndexes.length === 0 && <span style={{fontSize:'0.7rem', color:'#b45309'}}>No live index in this build — enter a price.</span>}
                 </div>
 
                 <div className="input-row two-col">
@@ -566,12 +631,12 @@ function App() {
                 </div>
 
                 <div className="input-row" style={{marginTop: '12px'}}>
-                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}></span></label>
+                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#138a64'}}></span></label>
                   <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => setGeneratorLoadPct(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setGeneratorLoadPct(0); }} />
-                  <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Running below 100% extends generator life and reduces fuel burn</span>
+                  <span style={{fontSize:'0.7rem', color:'#64748b'}}>Running below 100% extends generator life and reduces fuel burn</span>
                 </div>
 
-                <div className="result-row compact" style={{marginTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                <div className="result-row compact" style={{marginTop: '12px', borderTop: '1px solid rgba(100,116,139,0.25)', paddingTop: '8px'}}>
                   <span>Gas Required</span>
                   <span className="highlight">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
                 </div>
@@ -623,7 +688,7 @@ function App() {
                       <input type="number" value={majorOverhaulCost} onChange={e => setMajorOverhaulCost(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setMajorOverhaulCost(0); }} />
                     </div>
                   </div>
-                  <div className="result-row compact" style={{marginTop: '8px', borderTop: '1px solid rgba(148,163,184,0.2)', paddingTop: '8px'}}>
+                  <div className="result-row compact" style={{marginTop: '8px', borderTop: '1px solid rgba(100,116,139,0.25)', paddingTop: '8px'}}>
                     <span>Lifetime</span>
                     <span>{gasResults.lifetimeYears.toFixed(1)} years</span>
                   </div>
@@ -688,8 +753,8 @@ function App() {
 
             <div className="simple-table" style={{marginTop: '20px'}}>
               <div className="table-row">
-                <span>Power Output</span>
-                <span>{gasResults.availableMw.toFixed(2)} MW × 730h = {(gasResults.availableMw * 730).toFixed(0).toLocaleString()} MWh/month</span>
+                <span>Miner Load</span>
+                <span>{(gasResults.loadKw / 1000).toFixed(2)} MW × 730h = {(gasResults.loadKw * 730 / 1000).toFixed(0).toLocaleString()} MWh/month ({gasResults.mwGross > 0 ? Math.round(gasResults.loadKw / 10 / gasResults.mwGross) : 0}% of nameplate)</span>
               </div>
               <div className="table-row">
                 <span>Gas Consumption</span>
@@ -710,7 +775,7 @@ function App() {
               </div>
               <div className="table-row total">
                 <span>Effective Power Cost</span>
-                <span className="highlight">{formatCurrencyFull(gasResults.gasMonthly + gasResults.generatorMonthly)} ÷ {(gasResults.availableMw * 730 * 1000).toLocaleString()} kWh = <strong>{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢/kWh</strong></span>
+                <span className="highlight">{formatCurrencyFull(gasResults.gasMonthly + gasResults.generatorMonthly)} ÷ {(gasResults.loadKw * 730).toLocaleString()} kWh = <strong>{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢/kWh</strong></span>
               </div>
             </div>
 
@@ -733,53 +798,53 @@ function App() {
                 <tbody>
                   <tr>
                     <td className="row-label">Upfront Cash Needed</td>
-                    <td style={{color:'#22c55e'}}>$0</td>
+                    <td style={{color:'#138a64'}}>$0</td>
                     <td>{formatCurrencyFull(gasResults.financeDownPayment)}</td>
-                    <td style={{color:'#22c55e'}}>$0</td>
-                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
+                    <td style={{color:'#138a64'}}>$0</td>
+                    <td style={{color:'#b91c1c'}}>{formatCurrencyFull(generatorBuyPrice * generatorCount)}</td>
                   </tr>
                   <tr>
                     <td className="row-label">Monthly Generator Cost</td>
                     <td>{formatCurrencyFull(generatorRentMonthly * generatorCount)}</td>
                     <td>{formatCurrencyFull(gasResults.financeMonthlyPayment + generatorBuyMaintenance * generatorCount)}</td>
                     <td>{formatCurrencyFull(generatorRtoMonthly * generatorCount)}</td>
-                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
+                    <td style={{color:'#138a64'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
                   </tr>
                   <tr>
                     <td className="row-label">You Own Generators After</td>
-                    <td style={{color:'#ef4444'}}>Never</td>
+                    <td style={{color:'#b91c1c'}}>Never</td>
                     <td>{financeTerm} months</td>
                     <td>{gasResults.rtoMonthsToOwn} months</td>
-                    <td style={{color:'#22c55e'}}>Day 1</td>
+                    <td style={{color:'#138a64'}}>Day 1</td>
                   </tr>
                   <tr>
                     <td className="row-label">Post-Ownership Cost/mo</td>
-                    <td style={{color:'#ef4444'}}>Same forever</td>
-                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}</td>
-                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}</td>
-                    <td style={{color:'#22c55e'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
+                    <td style={{color:'#b91c1c'}}>Same forever</td>
+                    <td style={{color:'#138a64'}}>{formatCurrencyFull(gasResults.financePostOwnershipMonthly)}</td>
+                    <td style={{color:'#138a64'}}>{formatCurrencyFull(gasResults.rtoPostOwnershipMonthly)}</td>
+                    <td style={{color:'#138a64'}}>{formatCurrencyFull(generatorBuyMaintenance * generatorCount)}</td>
                   </tr>
                   <tr>
-                    <td className="row-label">Total Paid — {Math.round(financeTerm/12)} Years <span style={{fontSize:'0.7rem',color:'#94a3b8'}}>(loan term)</span></td>
-                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(generatorRentMonthly * generatorCount * financeTerm)}</td>
+                    <td className="row-label">Total Paid — {Math.round(financeTerm/12)} Years <span style={{fontSize:'0.7rem',color:'#64748b'}}>(loan term)</span></td>
+                    <td style={{color:'#b91c1c'}}>{formatCurrencyFull(generatorRentMonthly * generatorCount * financeTerm)}</td>
                     <td>{formatCurrencyFull(gasResults.financeTotalPaid)}</td>
                     <td>{formatCurrencyFull(generatorRtoMonthly * generatorCount * Math.min(financeTerm, gasResults.rtoMonthsToOwn) + gasResults.rtoPostOwnershipMonthly * Math.max(0, financeTerm - gasResults.rtoMonthsToOwn))}</td>
                     <td>{formatCurrencyFull(generatorBuyPrice * generatorCount + generatorBuyMaintenance * generatorCount * financeTerm)}</td>
                   </tr>
                   <tr>
                     <td className="row-label">Total Interest Cost</td>
-                    <td style={{color:'#94a3b8'}}>—</td>
-                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</td>
-                    <td style={{color:'#ef4444'}}>{formatCurrencyFull(gasResults.rtoPremium)}</td>
-                    <td style={{color:'#22c55e'}}>$0</td>
+                    <td style={{color:'#64748b'}}>—</td>
+                    <td style={{color:'#b91c1c'}}>{formatCurrencyFull(gasResults.financeTotalInterest)}</td>
+                    <td style={{color:'#b91c1c'}}>{formatCurrencyFull(gasResults.rtoPremium)}</td>
+                    <td style={{color:'#138a64'}}>$0</td>
                   </tr>
                   <tr>
                     <td className="row-label">Asset Value at End</td>
-                    <td style={{color:'#ef4444'}}>$0</td>
+                    <td style={{color:'#b91c1c'}}>$0</td>
                     {[1,2,3].map((i) => {
                       const residual = Math.max(1 - ((financeTerm/12) / gasResults.lifetimeYears), 0)
                       const value = generatorBuyPrice * generatorCount * residual
-                      return <td key={i} style={{color:'#22c55e'}}>{formatCurrencyFull(value)} <span style={{fontSize:'0.7rem',color:'#94a3b8'}}>({Math.round(residual*100)}%)</span></td>
+                      return <td key={i} style={{color:'#138a64'}}>{formatCurrencyFull(value)} <span style={{fontSize:'0.7rem',color:'#64748b'}}>({Math.round(residual*100)}%)</span></td>
                     })}
                   </tr>
                 </tbody>
@@ -873,7 +938,7 @@ function App() {
                   <input type="number" value={containerCostPerUnit} onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCostPerUnit(v); }} />
                 </div>
 
-                <div className="result-row compact" style={{marginTop:'8px', borderTop:'1px solid rgba(148,163,184,0.2)', paddingTop:'8px'}}>
+                <div className="result-row compact" style={{marginTop:'8px', borderTop:'1px solid rgba(100,116,139,0.25)', paddingTop:'8px'}}>
                   <span>Net Available Power</span>
                   <span className="highlight">{gasResults.availableMw.toFixed(2)} MW @ {Math.round(generatorLoadPct*100)}% load</span>
                 </div>
@@ -895,7 +960,7 @@ function App() {
               </div>
               <div className="card-body">
                 <div className="input-row">
-                  <label>Hashprice ($/PH/day) {hashpriceLoading ? <span style={{fontSize: '0.7rem', color: '#fbbf24', marginLeft: '8px'}}>Loading...</span> : <><a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #22c55e, #16a34a)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>{hashpriceUpdatedAt && <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'6px'}}>Updated {hashpriceUpdatedAt.toLocaleTimeString()}</span>}</>}</label>
+                  <label>Hashprice ($/PH/day) {hashpriceLoading ? <span style={{fontSize: '0.7rem', color: '#b45309', marginLeft: '8px'}}>Loading...</span> : <><a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.7rem', color: '#fff', background: 'linear-gradient(135deg, #138a64, #0f7a57)', padding: '3px 10px', borderRadius: '4px', marginLeft: '8px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>{hashpriceUpdatedAt && <span style={{fontSize:'0.65rem',color:'#64748b',marginLeft:'6px'}}>Updated {hashpriceUpdatedAt.toLocaleTimeString()}</span>}</>}</label>
                   <input type="number" value={hashprice} onChange={e => setHashprice(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setHashprice(0); }} />
                 </div>
                 <div className="input-row two-col">
@@ -913,7 +978,7 @@ function App() {
                   <input type="number" value={otherOpex} onChange={e => { setOtherOpex(e.target.value === "" ? 0 : (parseFloat(e.target.value) ?? 0)); }} />
                 </div>
 
-                <div className="result-row compact" style={{borderTop: '1px solid rgba(148,163,184,0.2)', marginTop: '12px', paddingTop: '8px'}}>
+                <div className="result-row compact" style={{borderTop: '1px solid rgba(100,116,139,0.25)', marginTop: '12px', paddingTop: '8px'}}>
                   <span>Monthly Revenue (gross)</span>
                   <span className="green">{formatCurrencyFull(gasResults.monthlyRevenue)}</span>
                 </div>
@@ -923,7 +988,7 @@ function App() {
                 </div>
                 <div className="result-row compact total">
                   <span>Net Operating Income</span>
-                  <span style={{color: gasResults.netMonthly >= 0 ? '#22c55e' : '#ef4444', fontWeight: '700'}}>
+                  <span style={{color: gasResults.netMonthly >= 0 ? '#138a64' : '#b91c1c', fontWeight: '700'}}>
                     {formatCurrencyFull(gasResults.netMonthly)}
                   </span>
                 </div>
@@ -961,7 +1026,7 @@ function App() {
               </div>
               <div className="stat-card highlight-card">
                 <span className="stat-label">Net Operating</span>
-                <span className="stat-value" style={{color: gasResults.netMonthly >= 0 ? '#22c55e' : '#ef4444'}}>
+                <span className="stat-value" style={{color: gasResults.netMonthly >= 0 ? '#138a64' : '#b91c1c'}}>
                   {formatCurrency(gasResults.netMonthly)}
                 </span>
               </div>
@@ -970,17 +1035,17 @@ function App() {
             {/* CAPEX Summary */}
             <div className="simple-table" style={{marginTop: '20px'}}>
               <div className="table-row">
-                <span>Containers <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>{containerCount} × ${(containerCostPerUnit/1000).toFixed(0)}k</span></span>
+                <span>Containers <span style={{fontSize:'0.75rem', color:'#64748b'}}>{containerCount} × ${(containerCostPerUnit/1000).toFixed(0)}k</span></span>
                 <span>{formatCurrencyFull(containerCapex)}</span>
               </div>
               {gasResults.generatorCapex > 0 && (
                 <div className="table-row">
-                  <span>Generator Upfront <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({generatorMode === 'buy' ? 'purchase' : `${financeDownPct}% down`})</span></span>
+                  <span>Generator Upfront <span style={{fontSize:'0.75rem', color:'#64748b'}}>({generatorMode === 'buy' ? 'purchase' : `${financeDownPct}% down`})</span></span>
                   <span>{formatCurrencyFull(gasResults.generatorCapex)}</span>
                 </div>
               )}
               <div className="table-row">
-                <span>Miners <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>{gasResults.miners.toLocaleString()} × {hashratePerUnit} TH × ${pricePerTh}/TH</span></span>
+                <span>Miners <span style={{fontSize:'0.75rem', color:'#64748b'}}>{gasResults.miners.toLocaleString()} × {hashratePerUnit} TH × ${pricePerTh}/TH</span></span>
                 <span>{formatCurrencyFull(gasResults.asicCapex)}</span>
               </div>
               <div className="table-row">
@@ -1002,18 +1067,18 @@ function App() {
               </div>
               {gasResults.gasMonthly < 0 && (
                 <div className="table-row">
-                  <span>Gas Income <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({gasResults.mcfPerDay.toFixed(0)} MCF/day × ${gasResults.gasPrice.toFixed(2)}/MCF)</span></span>
+                  <span>Gas Income <span style={{fontSize:'0.75rem', color:'#64748b'}}>({gasResults.mcfPerDay.toFixed(0)} MCF/day × ${gasResults.gasPrice.toFixed(2)}/MCF)</span></span>
                   <span className="green">+{formatCurrencyFull(Math.abs(gasResults.gasMonthly))}</span>
                 </div>
               )}
               {gasResults.gasMonthly > 0 && (
                 <div className="table-row">
-                  <span>Gas Cost <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({gasResults.mcfPerDay.toFixed(0)} MCF/day × ${gasResults.gasPrice.toFixed(2)}/MCF)</span></span>
+                  <span>Gas Cost <span style={{fontSize:'0.75rem', color:'#64748b'}}>({gasResults.mcfPerDay.toFixed(0)} MCF/day × ${gasResults.gasPrice.toFixed(2)}/MCF)</span></span>
                   <span className="red">-{formatCurrencyFull(gasResults.gasMonthly)}</span>
                 </div>
               )}
               <div className="table-row">
-                <span>Generator Cost <span style={{fontSize:'0.75rem', color:'#94a3b8'}}>({generatorMode.toUpperCase()})</span></span>
+                <span>Generator Cost <span style={{fontSize:'0.75rem', color:'#64748b'}}>({generatorMode.toUpperCase()})</span></span>
                 <span className="red">-{formatCurrencyFull(gasResults.generatorMonthly)}</span>
               </div>
               {otherOpex > 0 && (
@@ -1024,11 +1089,11 @@ function App() {
               )}
               <div className="table-row total">
                 <span>Net Monthly</span>
-                <span style={{color: gasResults.netMonthly >= 0 ? '#22c55e' : '#ef4444', fontWeight:'700', fontSize:'1.1rem'}}>{formatCurrencyFull(gasResults.netMonthly)}</span>
+                <span style={{color: gasResults.netMonthly >= 0 ? '#138a64' : '#b91c1c', fontWeight:'700', fontSize:'1.1rem'}}>{formatCurrencyFull(gasResults.netMonthly)}</span>
               </div>
               <div className="table-row">
                 <span>Net Annual</span>
-                <span style={{color: gasResults.annualNet >= 0 ? '#22c55e' : '#ef4444', fontWeight:'600'}}>{formatCurrencyFull(gasResults.annualNet)}</span>
+                <span style={{color: gasResults.annualNet >= 0 ? '#138a64' : '#b91c1c', fontWeight:'600'}}>{formatCurrencyFull(gasResults.annualNet)}</span>
               </div>
             </div>
           </section>
@@ -1052,9 +1117,9 @@ function App() {
                 <div className="input-row" style={{marginTop: '-4px'}}>
                   <label>Miners per Container</label>
                   <input type="number" value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
-                  <span style={{fontSize:'0.7rem', color:'#94a3b8'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu} outlets){minersPerContainerOverride > maxMinersPerContainer ? ' ⚠️ exceeds PDU cap' : ''}</span>
+                  <span style={{fontSize:'0.7rem', color:'#64748b'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu} outlets){minersPerContainerOverride > maxMinersPerContainer ? ' ⚠️ exceeds PDU cap' : ''}</span>
                 </div>
-                <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '12px', paddingLeft: '4px'}}>
+                <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '-8px', marginBottom: '12px', paddingLeft: '4px'}}>
                   {containerCount} × {containerMW} MW = <strong>{facilityMW} MW</strong> capacity (can scale to 40 MW)
                 </div>
                 <div className="input-row">
@@ -1094,7 +1159,7 @@ function App() {
                   <label>ASIC Price ($/TH)</label>
                   <input type="number" value={pricePerTh} onChange={e => setPricePerTh(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setPricePerTh(0); }} />
                 </div>
-                <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px', paddingLeft: '4px'}}>
+                <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '4px', paddingLeft: '4px'}}>
                   {minersPerContainer} miners/container × {containerCount} = <strong>{(containerCount * minersPerContainer).toLocaleString()}</strong> miners ({pdusPerContainer} PDUs × {outletsPerPdu} outlets cap) |
                   Powered: <strong>{gasResults.miners.toLocaleString()}</strong> miners = {gasResults.phs.toFixed(1)} PH/s
                 </div>
@@ -1121,11 +1186,11 @@ function App() {
                     <input type="number" value={generatorSizeKw} onChange={e => setGeneratorSizeKw(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setGeneratorSizeKw(0); }} />
                   </div>
                 </div>
-                <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px', marginBottom: '4px', paddingLeft: '4px'}}>
+                <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '-8px', marginBottom: '4px', paddingLeft: '4px'}}>
                   Fleet: <strong>{gasResults.fleetCapacityMw.toFixed(2)} MW</strong> × {Math.round(generatorLoadPct * 100)}% load = <strong>{gasResults.availableMw.toFixed(2)} MW</strong> to miners
                 </div>
                 <div className="input-row" style={{marginBottom: '12px'}}>
-                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#4ade80'}}></span></label>
+                  <label>Generator Load: <strong>{Math.round(generatorLoadPct * 100)}%</strong> <span style={{fontSize:'0.7rem', color:'#138a64'}}></span></label>
                   <input type="range" min="0.5" max="1" step="0.01" value={generatorLoadPct} onChange={e => setGeneratorLoadPct(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setGeneratorLoadPct(0); }} />
                 </div>
 
@@ -1188,7 +1253,7 @@ function App() {
               <div className="control-group">
                 <h3>Market & CAPEX</h3>
                 <div className="input-row">
-                  <label>Hashprice: $/PH/day {hashpriceLoading ? <span style={{fontSize: '0.65rem', color: '#fbbf24'}}>Loading...</span> : <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '2px 8px', borderRadius: '4px', marginLeft: '4px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>}</label>
+                  <label>Hashprice: $/PH/day {hashpriceLoading ? <span style={{fontSize: '0.65rem', color: '#b45309'}}>Loading...</span> : <a href="https://data.hashrateindex.com/network-data/bitcoin-hashprice-index" target="_blank" rel="noopener noreferrer" style={{fontSize: '0.65rem', color: '#fff', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', padding: '2px 8px', borderRadius: '4px', marginLeft: '4px', textDecoration: 'none', fontWeight: '600'}}>Live ↗</a>}</label>
                   <input type="number" step="0.5" value={hashprice} onChange={e => setHashprice(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setHashprice(0); }} />
                 </div>
                 <div className="input-row two-col">
@@ -1202,7 +1267,7 @@ function App() {
                   </div>
                 </div>
 
-                <div style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(148,163,184,0.2)'}}>
+                <div style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(100,116,139,0.25)'}}>
                   <div className="input-row">
                     <label>Container CAPEX ($)</label>
                     <input
@@ -1210,7 +1275,7 @@ function App() {
                       value={Math.round(containerCapex / containerCount)}
                       onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) setContainerCapex(v * containerCount); }}
                     />
-                    <span style={{fontSize:'0.72rem', color:'#94a3b8'}}>per unit · {formatCurrencyFull(containerCapex)} total</span>
+                    <span style={{fontSize:'0.72rem', color:'#64748b'}}>per unit · {formatCurrencyFull(containerCapex)} total</span>
                   </div>
                   <div className="result-row compact">
                     <span>Generator CAPEX</span>
@@ -1255,7 +1320,7 @@ function App() {
               </div>
               <div className="stat-card highlight-card">
                 <span className="stat-label">Net Operating</span>
-                <span className="stat-value" style={{color: gasResults.netMonthly >= 0 ? '#22c55e' : '#ef4444'}}>
+                <span className="stat-value" style={{color: gasResults.netMonthly >= 0 ? '#138a64' : '#b91c1c'}}>
                   {formatCurrency(gasResults.netMonthly)}/mo
                 </span>
               </div>
@@ -1288,7 +1353,7 @@ function App() {
               )}
               <div className="table-row total">
                 <span>Net Profit</span>
-                <span style={{color: gasResults.netMonthly >= 0 ? '#22c55e' : '#ef4444', fontWeight: '700', fontSize: '1.1rem'}}>
+                <span style={{color: gasResults.netMonthly >= 0 ? '#138a64' : '#b91c1c', fontWeight: '700', fontSize: '1.1rem'}}>
                   {formatCurrencyFull(gasResults.netMonthly)}
                 </span>
               </div>
@@ -1352,7 +1417,7 @@ function App() {
               )}
               <div className="table-row total">
                 <span>Annual Net Operating Income</span>
-                <span className="highlight" style={{color: gasResults.annualNet >= 0 ? '#22c55e' : '#ef4444'}}>
+                <span className="highlight" style={{color: gasResults.annualNet >= 0 ? '#138a64' : '#b91c1c'}}>
                   {formatCurrency(gasResults.annualNet)}
                 </span>
               </div>
@@ -1387,7 +1452,7 @@ function App() {
                 <tbody>
                   {[-6.00, -4.00, -2.00, 0, 0.50, 1.00, 2.00].map(gp => (
                     <tr key={gp}>
-                      <td className="row-label" style={{color: gp < 0 ? '#22c55e' : gp === 0 ? '#e2e8f0' : '#94a3b8'}}>
+                      <td className="row-label" style={{color: gp < 0 ? '#138a64' : gp === 0 ? '#172033' : '#64748b'}}>
                         {gp < 0 ? `${gp.toFixed(2)} 💰` : `$${gp.toFixed(2)}`}/MCF
                       </td>
                       {[25, 30, 37, 45, 55].map(hp => {

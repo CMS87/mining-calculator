@@ -10,11 +10,13 @@ GitHub Pages: `https://cms87.github.io/mining-calculator/` (served from the `gh-
 
 ## 📋 Features
 
-- **Business Model Comparison**: Compare Co-Mining (hosting) vs Self-Mining models
-- **Interactive Controls**: Adjust hashprice, energy costs, curtailment, and ASIC specs
-- **Deal Structure Analysis**: Configure investor/operator splits with ROI and payback calculations
-- **Model Mixing**: Blend Co-Mining and Self-Mining to find optimal capital/return balance
-- **Sensitivity Analysis**: See how returns vary with different market conditions
+- **Gas → Power**: generator fleet (rent / buy / RTO / finance), gas burned for the load actually drawn, cost per kWh.
+- **Power → BTC**: miner presets, containers, revenue, equipment, payback.
+- **Full Model**: everything on one screen plus a gas price × hashprice sensitivity table.
+- **36-Month Cash Flow** (`public/cashflow.html`): takes the model's numbers through a localStorage hand-off, adds the deployment ramp, running costs and setup; pure model in `public/cashflow-model.js` with tests (`npm test`).
+- **Live inputs**: gas indexes (Waha, Henry Hub, NYMEX) from a build-time snapshot; hashprice from BTC price and network hashrate.
+
+See `USER_GUIDE.md` for how to read both pages.
 
 ## 🛠️ Deployment Options
 

@@ -1,127 +1,123 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  HORIZON_MONTHS, defaults, calculate, summarize, mcfPerBoxDay, boxesForMonth, paybackMonth, sum
+  HORIZON_MONTHS, DAYS_PER_MONTH, defaultModel, defaultOwn, modelFromHandoff, boxesForMonth,
+  generatorPayment, calculate, summarize, paybackMonth, sum
 } from '../public/cashflow-model.js';
 
-const close = (actual, expected, tolerance = 0.5) =>
-  assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} ≠ ${expected} (±${tolerance})`);
+const close = (actual, expected, tol = 0.5) =>
+  assert.ok(Math.abs(actual - expected) <= tol, `${actual} ≠ ${expected} (±${tol})`);
 
-test('gas per box follows load × heat rate ÷ HHV', () => {
-  // 324 × 3.51 + 50 = 1187.24 kW → ×24 ×11500 ÷ 1e6 = 327.68 MCF/day
-  close(mcfPerBoxDay(defaults), 327.68, 0.01);
-  assert.equal(mcfPerBoxDay({ ...defaults, hhv: 0 }), 0);
+test('handoff: the model payload maps onto the page model; a missing payload gives null', () => {
+  const payload = {
+    savedAt: '2026-10-04T12:00:00Z',
+    model: { containers: 3, minersPerContainer: 300, hashprice: 41.2, gasPricePerMcf: -0.5, generatorMode: 'rto', generatorTermMonths: 28, generatorMonthly: 216000, generatorMonthlyAfter: 24000 }
+  };
+  const m = modelFromHandoff(payload);
+  assert.equal(m.fromModel, true);
+  assert.equal(m.containers, 3);
+  assert.equal(m.hashprice, 41.2);
+  assert.equal(m.gasPricePerMcf, -0.5);
+  assert.equal(m.generatorTermMonths, 28);
+  assert.equal(m.thPerMiner, defaultModel.thPerMiner);          // untouched keys keep defaults
+  assert.equal(modelFromHandoff(null), null);
+  assert.equal(modelFromHandoff({ model: {} }), null);
+  assert.equal(modelFromHandoff({ model: { containers: 2, generatorTermMonths: null } }).generatorTermMonths, null);
 });
 
-test('ramp is clamped to the container count and never negative', () => {
-  const inputs = { ...defaults, containers: 3, month1Boxes: -2, month2Boxes: 9, month3Boxes: 2.4 };
-  assert.equal(boxesForMonth(inputs, 1), 0);
-  assert.equal(boxesForMonth(inputs, 2), 3);
-  assert.equal(boxesForMonth(inputs, 7), 2);
+test('ramp is clamped to the model containers and never negative', () => {
+  const model = { ...defaultModel, containers: 3 };
+  const own = { ...defaultOwn, month1Boxes: -2, month2Boxes: 9, month3Boxes: 2.4 };
+  assert.equal(boxesForMonth(model, own, 1), 0);
+  assert.equal(boxesForMonth(model, own, 2), 3);
+  assert.equal(boxesForMonth(model, own, 7), 2);
 });
 
-test('containers stay online: a shrinking ramp buys each container once', () => {
-  const rows = calculate({ ...defaults, month1Boxes: 4, month2Boxes: 2, month3Boxes: 4 });
-  assert.deepEqual(rows.slice(0, 3).map(r => r.boxes), [4, 4, 4]);
-  assert.equal(sum(rows, 'newBoxes'), 4);
-  assert.equal(summarize(defaults, rows).purchasedBoxes, 4);
+test('generator payment follows the term: during, then after; no term means always the same', () => {
+  const rto = { ...defaultModel, generatorMonthly: 216000, generatorTermMonths: 28, generatorMonthlyAfter: 24000 };
+  assert.equal(generatorPayment(rto, 1), 216000);
+  assert.equal(generatorPayment(rto, 28), 216000);
+  assert.equal(generatorPayment(rto, 29), 24000);
+  assert.equal(generatorPayment(defaultModel, 36), defaultModel.generatorMonthly);
 });
 
-test('month 1 with one box: every line is revenue − costs − capex, by hand', () => {
-  const inputs = { ...defaults, daysPerMonth: 30, hashprice: 40, gasPrice: 1, staffMonthly: 10000 };
-  const [m1] = calculate(inputs);
+test('month 1 with one box: every line by hand', () => {
+  const model = { ...defaultModel, hashprice: 40, gasPricePerMcf: 1, poolPct: 2, uptimePct: 95 };
+  const own = { ...defaultOwn, staffMonthly: 10000 };
+  const [m1] = calculate(model, own);
   assert.equal(m1.boxes, 1);
   assert.equal(m1.miners, 324);
-  const ph = (324 * 234 / 1000) * 0.95;                        // 72.0252
-  close(m1.revenue, ph * 40 * 30, 0.01);                       // 86,430.24
-  close(m1.gas, 327.68 * 1 * 30, 0.5);                         // 9,830
-  close(m1.pool, m1.revenue * 0.02, 0.01);
-  close(m1.genMaint, 1187.24 * 24 * 30 * 0.005, 0.01);         // 4,274.06
-  assert.equal(m1.minerRepair, 324 * 7);
-  assert.equal(m1.genRent, 0);
+  const ph = (324 * 234 / 1000) * 0.95;                                  // 72.0252
+  close(m1.revenue, ph * 40 * DAYS_PER_MONTH, 0.01);
+  close(m1.gas, 1254.5 / 4 * 1 * DAYS_PER_MONTH, 0.01);                 // one quarter of the site's gas
+  close(m1.generators, 24000 / 4, 0.001);                                // one quarter of the fleet's upkeep
+  assert.equal(m1.repairs, 324 * 7);
   assert.equal(m1.staff, 10000);
-  close(m1.opexTotal, m1.gas + m1.pool + m1.genMaint + m1.minerRepair + m1.staff, 0.001);
-  close(m1.operatingCash, m1.revenue - m1.opexTotal, 0.001);
-  assert.equal(m1.capexContainers, 90000);
-  assert.equal(m1.capexGenerators, 740000);
-  assert.equal(m1.capexMiners, 324 * 234 * 10);
-  assert.equal(m1.capexSetup, 26385);
-  close(m1.netCash, m1.operatingCash - m1.capexTotal, 0.001);
+  close(m1.pool, m1.revenue * 0.02, 0.01);
+  close(m1.costs, m1.gas + m1.generators + m1.repairs + m1.staff + m1.pool, 0.001);
+  close(m1.operatingCash, m1.revenue - m1.costs, 0.001);
+  assert.equal(m1.equipment.containers, 90000);
+  assert.equal(m1.equipment.generators, 2960000 / 4);
+  assert.equal(m1.equipment.miners, 324 * 234 * 10);
+  assert.equal(m1.equipment.setup, 26385);
+  close(m1.netCash, m1.operatingCash - m1.equipment.total, 0.001);
   assert.equal(m1.cumulative, m1.netCash);
 });
 
-test('capex is charged only for boxes that are new that month', () => {
-  const rows = calculate(defaults);
-  assert.deepEqual(rows.slice(0, 4).map(r => r.newBoxes), [1, 1, 2, 0]);
-  assert.equal(rows[3].capexTotal, 0);
-  assert.equal(sum(rows, 'capexTotal'), 4 * (90000 + 740000 + 324 * 234 * 10 + 26385));
-  assert.equal(rows.length, HORIZON_MONTHS);
+test('rent/RTO/finance: no upfront when the model says so; term payment then post-term', () => {
+  const finance = { ...defaultModel, generatorUpfront: 592000, generatorMonthly: 60000, generatorTermMonths: 24, generatorMonthlyAfter: 24000 };
+  const rows = calculate(finance, { ...defaultOwn, month1Boxes: 4 });
+  assert.equal(rows[0].equipment.generators, 592000);
+  assert.equal(rows[23].generators, 60000);
+  assert.equal(rows[24].generators, 24000);
+  const rent = { ...defaultModel, generatorUpfront: 0, generatorMonthly: 168000, generatorTermMonths: null, generatorMonthlyAfter: 168000 };
+  const rentRows = calculate(rent, defaultOwn);
+  assert.equal(sum(rentRows, r => r.equipment.generators), 0);
+  assert.equal(rentRows[35].generators, 168000);
 });
 
-test('percent inputs are clamped to 0–100', () => {
-  const [over] = calculate({ ...defaults, uptimePct: 150, poolPct: -5 });
-  const [full] = calculate({ ...defaults, uptimePct: 100, poolPct: 0 });
-  close(over.revenue, full.revenue, 0.001);
-  assert.equal(over.pool, 0);
+test('ramp never shrinks and equipment is bought once per container', () => {
+  const rows = calculate(defaultModel, { ...defaultOwn, month1Boxes: 4, month2Boxes: 2, month3Boxes: 4 });
+  assert.deepEqual(rows.slice(0, 3).map(r => r.boxes), [4, 4, 4]);
+  assert.equal(sum(rows, r => r.newBoxes), 4);
+  const normal = calculate(defaultModel, defaultOwn);
+  assert.deepEqual(normal.slice(0, 4).map(r => r.newBoxes), [1, 1, 2, 0]);
+  close(sum(normal, r => r.equipment.total), 4 * (90000 + 740000 + 758160 + 26385), 0.01);
+  assert.equal(normal.length, HORIZON_MONTHS);
 });
 
-test('cumulative cash is the running sum of net cash', () => {
-  const rows = calculate(defaults);
+test('cumulative is the running sum of net cash', () => {
   let running = 0;
-  for (const row of rows) {
-    running += row.netCash;
-    close(row.cumulative, running, 0.001);
+  for (const r of calculate(defaultModel, defaultOwn)) {
+    running += r.netCash;
+    close(r.cumulative, running, 0.001);
   }
 });
 
-test('payback is the first month cumulative cash stays non-negative after investing', () => {
+test('payback needs an investment first and cumulative cash that stays non-negative', () => {
   const rows = [
-    { month: 1, capexTotal: 100, cumulative: -10 }, { month: 2, capexTotal: 0, cumulative: 1 },
-    { month: 3, capexTotal: 0, cumulative: -1 }, { month: 4, capexTotal: 0, cumulative: 5 },
-    { month: 5, capexTotal: 0, cumulative: 9 }
+    { month: 1, equipment: { total: 100 }, cumulative: -10 }, { month: 2, equipment: { total: 0 }, cumulative: 1 },
+    { month: 3, equipment: { total: 0 }, cumulative: -1 }, { month: 4, equipment: { total: 0 }, cumulative: 5 }
   ];
   assert.equal(paybackMonth(rows), 4);
-  assert.equal(paybackMonth([{ month: 1, capexTotal: 100, cumulative: -1 }]), null);
-  // No investment yet: month 1 at zero cash is not a payback.
-  assert.equal(paybackMonth([{ month: 1, capexTotal: 0, cumulative: 0 }, { month: 2, capexTotal: 50, cumulative: 10 }]), 2);
-  assert.equal(paybackMonth([{ month: 1, capexTotal: 0, cumulative: 0 }]), null);
+  assert.equal(paybackMonth([{ month: 1, equipment: { total: 0 }, cumulative: 0 }]), null);
 });
 
-test('breakeven hashprice zeroes run-rate operating cash, null when revenue cannot respond', () => {
-  const rows = calculate(defaults);
-  const { breakevenHashprice } = summarize(defaults, rows);
-  const atBreakeven = calculate(defaults, breakevenHashprice);
-  const run = atBreakeven.find(r => r.boxes === 4);
+test('breakeven hashprice zeroes run-rate operating cash; null when revenue cannot respond', () => {
+  const rows = calculate(defaultModel, defaultOwn);
+  const { breakevenHashprice } = summarize(defaultModel, defaultOwn, rows);
+  const run = calculate(defaultModel, defaultOwn, breakevenHashprice).find(r => r.boxes === 4);
   close(run.operatingCash, 0, 0.01);
-  const dead = { ...defaults, uptimePct: 0 };
-  assert.equal(summarize(dead, calculate(dead)).breakevenHashprice, null);
-  const allPool = { ...defaults, poolPct: 100 };
-  assert.equal(summarize(allPool, calculate(allPool)).breakevenHashprice, null);
+  const dead = { ...defaultModel, uptimePct: 0 };
+  assert.equal(summarize(dead, defaultOwn, calculate(dead, defaultOwn)).breakevenHashprice, null);
 });
 
-test('run rate is the first month at the final fleet size', () => {
-  const rows = calculate({ ...defaults, containers: 5 });   // ramp still tops out at 4
-  const s = summarize({ ...defaults, containers: 5 }, rows);
-  assert.equal(s.run.month, 3);
-  assert.equal(s.run.boxes, 4);
-  assert.equal(s.purchasedBoxes, 4);
-  const empty = { ...defaults, month1Boxes: 0, month2Boxes: 0, month3Boxes: 0 };
-  assert.equal(summarize(empty, calculate(empty)).run.month, 1);
-});
-
-test('generator rent is a per-box monthly cost', () => {
-  const inputs = { ...defaults, generatorRentPerBox: 1000, generatorCapexPerBox: 0 };
-  const rows = calculate(inputs);
-  assert.equal(rows[2].genRent, 4000);
-  assert.equal(rows[2].capexGenerators, 0);
-});
-
-test('summary totals come from the rows', () => {
-  const rows = calculate(defaults);
-  const s = summarize(defaults, rows);
-  assert.equal(s.run.month, 3);
-  close(s.year1Net, sum(rows.slice(0, 12), 'netCash'), 0.001);
-  close(s.horizonNet, rows[35].cumulative, 0.001);
+test('summary: counts containers actually bought and reports a payback within the horizon or null', () => {
+  const s = summarize(defaultModel, defaultOwn, calculate(defaultModel, defaultOwn));
+  assert.equal(s.boxesBought, 4);
+  close(s.equipment, 6458180, 1);
   assert.ok(s.paybackMonth === null || (s.paybackMonth >= 1 && s.paybackMonth <= 36));
-  assert.ok(s.powerCostPerKwh > 0 && s.operatingCostPerKwh > s.powerCostPerKwh);
+  const five = summarize({ ...defaultModel, containers: 5 }, defaultOwn, calculate({ ...defaultModel, containers: 5 }, defaultOwn));
+  assert.equal(five.boxesBought, 4);                                      // the ramp tops out at 4
+  assert.ok(s.powerCostPerKwh > 0);
 });
