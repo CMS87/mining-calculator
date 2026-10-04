@@ -140,6 +140,7 @@ section h2 { font-size: 1.2rem; color: var(--head); margin-bottom: 16px; }
 .gas-hero .section-intro { margin-bottom: 0; }
 
 .highlight { color: var(--head) !important; font-weight: 700; }
+.link-button { background: none; border: 0; padding: 0; color: var(--blue); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 .green, .stat-value.green { color: var(--green) !important; }
 .red, .stat-value.red { color: var(--red) !important; }
 

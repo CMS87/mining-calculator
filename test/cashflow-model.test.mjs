@@ -1,9 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  HORIZON_MONTHS, DAYS_PER_MONTH, defaultModel, defaultOwn, modelFromHandoff, boxesForMonth,
+  HORIZON_MONTHS, DAYS_PER_MONTH, defaultModel, defaultOwn, modelFromHandoff, ownFromHandoff, boxesForMonth,
   generatorPayment, calculate, summarize, paybackMonth, sum
 } from '../public/cashflow-model.js';
+
+test('handoff: the model\'s staff, repairs and setup become this page\'s defaults; missing ones stay', () => {
+  assert.deepEqual(ownFromHandoff({ model: { staffMonthly: 30000, minerRepairPerMiner: 5, setupPerBox: 20000 } }),
+    { staffMonthly: 30000, minerRepairPerMiner: 5, setupPerBox: 20000 });
+  assert.deepEqual(ownFromHandoff({ model: { staffMonthly: 'x', setupPerBox: null } }), {});
+  assert.deepEqual(ownFromHandoff(null), {});
+  const own = { ...defaultOwn, ...ownFromHandoff({ model: { staffMonthly: 30000 } }) };
+  assert.equal(own.staffMonthly, 30000);
+  assert.equal(own.minerRepairPerMiner, defaultOwn.minerRepairPerMiner);
+});
 
 const close = (actual, expected, tol = 0.5) =>
   assert.ok(Math.abs(actual - expected) <= tol, `${actual} ≠ ${expected} (±${tol})`);
@@ -25,6 +35,30 @@ test('handoff: the model payload maps onto the page model; a missing payload giv
   assert.equal(modelFromHandoff({ model: { containers: 2, generatorTermMonths: null } }).generatorTermMonths, null);
 });
 
+test('halving: hashprice scales from the halving month on; month 0 ignores it; month estimate from height', async () => {
+  const { halvingMonthFromHeight, NEXT_HALVING_BLOCK } = await import('../public/cashflow-model.js');
+  const own = { ...defaultOwn, month1Boxes: 4, halvingMonth: 19, hashpriceAfterHalvingPct: 50 };
+  const rows = calculate(defaultModel, own);
+  assert.equal(rows[17].hashprice, defaultModel.hashprice);           // month 18
+  assert.equal(rows[18].hashprice, defaultModel.hashprice / 2);       // month 19
+  close(rows[18].revenue, rows[17].revenue / 2, 0.01);
+  const none = calculate(defaultModel, { ...own, halvingMonth: 0 });
+  assert.equal(none[35].hashprice, defaultModel.hashprice);
+  const up = calculate(defaultModel, { ...own, hashpriceAfterHalvingPct: 150 });   // the price can more than double
+  assert.equal(up[18].hashprice, defaultModel.hashprice * 1.5);
+  const later = calculate(defaultModel, { ...own, halvingMonth: 40 });
+  assert.equal(later[35].hashprice, defaultModel.hashprice);
+  const s = summarize(defaultModel, own, rows);
+  assert.equal(s.halvingMonth, 19);
+  assert.equal(s.runIsBeforeHalving, true);
+  assert.equal(summarize(defaultModel, { ...own, halvingMonth: 40 }, later).halvingMonth, null);
+  // 1,050,000 − 971,000 = 79,000 blocks ≈ 548.6 days ≈ 18.0 months → month 19
+  assert.equal(halvingMonthFromHeight(NEXT_HALVING_BLOCK - 79000), 19);
+  assert.equal(halvingMonthFromHeight(NEXT_HALVING_BLOCK), 1);
+  assert.equal(halvingMonthFromHeight(NaN), null);
+  assert.deepEqual(ownFromHandoff({ model: { halvingMonth: 17 } }), { halvingMonth: 17 });
+});
+
 test('ramp is clamped to the model containers and never negative', () => {
   const model = { ...defaultModel, containers: 3 };
   const own = { ...defaultOwn, month1Boxes: -2, month2Boxes: 9, month3Boxes: 2.4 };
@@ -33,12 +67,24 @@ test('ramp is clamped to the model containers and never negative', () => {
   assert.equal(boxesForMonth(model, own, 7), 2);
 });
 
-test('generator payment follows the term: during, then after; no term means always the same', () => {
+test('generator payment follows the term from acquisition: 28 payments, then the post-term amount', () => {
   const rto = { ...defaultModel, generatorMonthly: 216000, generatorTermMonths: 28, generatorMonthlyAfter: 24000 };
-  assert.equal(generatorPayment(rto, 1), 216000);
-  assert.equal(generatorPayment(rto, 28), 216000);
-  assert.equal(generatorPayment(rto, 29), 24000);
+  assert.equal(generatorPayment(rto, 0), 216000);
+  assert.equal(generatorPayment(rto, 27), 216000);
+  assert.equal(generatorPayment(rto, 28), 24000);
   assert.equal(generatorPayment(defaultModel, 36), defaultModel.generatorMonthly);
+});
+
+test('generators bought with later containers pay their own term (cohorts), not the project month', () => {
+  const model = { ...defaultModel, generatorUpfront: 0, generatorMonthly: 60000, generatorTermMonths: 24, generatorMonthlyAfter: 24000 };
+  const rows = calculate(model, defaultOwn);                         // 1 → 2 → 4 containers in months 1, 2, 3
+  close(rows[2].generators, 60000, 0.01);                            // month 3: all three cohorts in term
+  close(rows[24].generators, 0.25 * 24000 + 0.75 * 60000, 0.01);     // month 25: the first container's quarter is done
+  close(rows[25].generators, 0.5 * 24000 + 0.5 * 60000, 0.01);       // month 26: the second too
+  close(rows[26].generators, 24000, 0.01);                           // month 27: all post-term
+  const allAtOnce = calculate(model, { ...defaultOwn, month1Boxes: 4 });
+  close(allAtOnce[23].generators, 60000, 0.01);
+  close(allAtOnce[24].generators, 24000, 0.01);
 });
 
 test('month 1 with one box: every line by hand', () => {
@@ -49,15 +95,15 @@ test('month 1 with one box: every line by hand', () => {
   assert.equal(m1.miners, 324);
   const ph = (324 * 234 / 1000) * 0.95;                                  // 72.0252
   close(m1.revenue, ph * 40 * DAYS_PER_MONTH, 0.01);
-  close(m1.gas, 1254.5 / 4 * 1 * DAYS_PER_MONTH, 0.01);                 // one quarter of the site's gas
-  close(m1.generators, 24000 / 4, 0.001);                                // one quarter of the fleet's upkeep
+  close(m1.gas, defaultModel.mcfPerDay / 4 * 1 * DAYS_PER_MONTH, 0.01);                 // one quarter of the site's gas
+  close(m1.generators, defaultModel.generatorMonthly / 4, 0.001);        // one quarter of the fleet's loan, maintenance and overhaul reserve
   assert.equal(m1.repairs, 324 * 7);
   assert.equal(m1.staff, 10000);
   close(m1.pool, m1.revenue * 0.02, 0.01);
   close(m1.costs, m1.gas + m1.generators + m1.repairs + m1.staff + m1.pool, 0.001);
   close(m1.operatingCash, m1.revenue - m1.costs, 0.001);
   assert.equal(m1.equipment.containers, 90000);
-  assert.equal(m1.equipment.generators, 2960000 / 4);
+  close(m1.equipment.generators, defaultModel.generatorUpfront / 4, 0.001);   // the down payment, one quarter per container
   assert.equal(m1.equipment.miners, 324 * 234 * 10);
   assert.equal(m1.equipment.setup, 26385);
   close(m1.netCash, m1.operatingCash - m1.equipment.total, 0.001);
@@ -68,8 +114,8 @@ test('rent/RTO/finance: no upfront when the model says so; term payment then pos
   const finance = { ...defaultModel, generatorUpfront: 592000, generatorMonthly: 60000, generatorTermMonths: 24, generatorMonthlyAfter: 24000 };
   const rows = calculate(finance, { ...defaultOwn, month1Boxes: 4 });
   assert.equal(rows[0].equipment.generators, 592000);
-  assert.equal(rows[23].generators, 60000);
-  assert.equal(rows[24].generators, 24000);
+  close(rows[23].generators, 60000, 0.01);
+  close(rows[24].generators, 24000, 0.01);
   const rent = { ...defaultModel, generatorUpfront: 0, generatorMonthly: 168000, generatorTermMonths: null, generatorMonthlyAfter: 168000 };
   const rentRows = calculate(rent, defaultOwn);
   assert.equal(sum(rentRows, r => r.equipment.generators), 0);
@@ -82,7 +128,7 @@ test('ramp never shrinks and equipment is bought once per container', () => {
   assert.equal(sum(rows, r => r.newBoxes), 4);
   const normal = calculate(defaultModel, defaultOwn);
   assert.deepEqual(normal.slice(0, 4).map(r => r.newBoxes), [1, 1, 2, 0]);
-  close(sum(normal, r => r.equipment.total), 4 * (90000 + 740000 + 758160 + 26385), 0.01);
+  close(sum(normal, r => r.equipment.total), 4 * (90000 + 148000 + 758160 + 26385), 0.01);   // 4,090,180 cash upfront (finance: 20% down)
   assert.equal(normal.length, HORIZON_MONTHS);
 });
 
@@ -115,7 +161,7 @@ test('breakeven hashprice zeroes run-rate operating cash; null when revenue cann
 test('summary: counts containers actually bought and reports a payback within the horizon or null', () => {
   const s = summarize(defaultModel, defaultOwn, calculate(defaultModel, defaultOwn));
   assert.equal(s.boxesBought, 4);
-  close(s.equipment, 6458180, 1);
+  close(s.equipment, 4090180, 1);
   assert.ok(s.paybackMonth === null || (s.paybackMonth >= 1 && s.paybackMonth <= 36));
   const five = summarize({ ...defaultModel, containers: 5 }, defaultOwn, calculate({ ...defaultModel, containers: 5 }, defaultOwn));
   assert.equal(five.boxesBought, 4);                                      // the ramp tops out at 4
