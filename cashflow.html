@@ -139,6 +139,17 @@
         </div>
 
         <div class="panel">
+          <h2>Halving</h2>
+          <div class="panel-body">
+            <div class="input-grid">
+              <label>Halving in month (0 = ignore)<input data-field="halvingMonth" type="number" min="0" max="120" step="1"></label>
+              <label>Hashprice after halving, % of today's<input data-field="hashpriceAfterHalvingPct" type="number" min="0" max="1000" step="1"></label>
+            </div>
+            <div class="hint" id="halvingHint"></div>
+          </div>
+        </div>
+
+        <div class="panel">
           <h2>Running costs and setup</h2>
           <div class="panel-body">
             <div class="input-grid">
@@ -146,7 +157,7 @@
               <label>Miner repairs $/miner/month<input data-field="minerRepairPerMiner" type="number" min="0" step="0.5"></label>
               <label>Setup &amp; commissioning $/container<input data-field="setupPerBox" type="number" min="0" step="100"></label>
             </div>
-            <div class="hint">Gas, generator payments, miner prices and the pool fee are taken from the model.</div>
+            <div class="hint">Prefilled from the model; edit here to test other values. Gas, generator payments, miner prices and the pool fee come from the model.</div>
           </div>
         </div>
       </aside>
@@ -164,15 +175,16 @@
 
   <script type="module">
     import {
-      HANDOFF_KEY, defaultModel, defaultOwn, modelFromHandoff, calculate, summarize, sum, generatorPayment
+      HANDOFF_KEY, defaultModel, defaultOwn, modelFromHandoff, ownFromHandoff, calculate, summarize, sum
     } from './cashflow-model.js';
 
-    const loadModel = () => {
-      try { return modelFromHandoff(JSON.parse(localStorage.getItem(HANDOFF_KEY) || 'null')) ?? defaultModel; }
-      catch { return defaultModel; }
+    const loadHandoff = () => {
+      try { return JSON.parse(localStorage.getItem(HANDOFF_KEY) || 'null'); } catch { return null; }
     };
-    const model = loadModel();
-    let own = { ...defaultOwn, month3Boxes: model.containers };
+    const handoff = loadHandoff();
+    const model = modelFromHandoff(handoff) ?? defaultModel;
+    const ownDefaults = { ...defaultOwn, month3Boxes: model.containers, ...ownFromHandoff(handoff) };
+    let own = { ...ownDefaults };
 
     const money = (value) => {
       const rounded = Math.round(value);
@@ -205,12 +217,13 @@
         ['Containers', `${model.containers}`],
         ['Miners per container', `${num(model.minersPerContainer)} (${model.minerLabel})`],
         ['Uptime', `${num(model.uptimePct, 1)}%`],
-        ['Hashprice', `$${num(model.hashprice, 1)}/PH/day`],
+        ['Hashprice (before pool fee)', `$${num(model.hashprice, 1)}/PH/day`],
         ['Pool fee', `${num(model.poolPct, 1)}%`],
         ['Gas', `${num(model.mcfPerDay)} MCF/day at $${num(model.gasPricePerMcf, 2)}`],
         ['Generators', model.generatorLabel],
         ['Generator upfront', money(model.generatorUpfront)],
         ['Generator payments', generatorLine],
+        ...(model.generatorOverhaulMonthly > 0 ? [['of which overhaul reserve', `${money(model.generatorOverhaulMonthly)}/mo`]] : []),
         ['Container & electrical', `${money(model.containerPrice)} each`],
         ['Miner price', `$${num(model.minerPricePerTh, 2)}/TH`],
         ...(model.otherOpexMonthly ? [['Other opex (model)', `${money(model.otherOpexMonthly)}/mo`]] : [])
@@ -251,11 +264,12 @@
         line('Containers online', cols, lastOf(r => r.boxes, count)),
         line('Miners online', cols, lastOf(r => r.miners, count)),
         line('Hashrate (PH/s, after uptime)', cols, lastOf(r => r.ph, v => v ? v.toFixed(1) : '-')),
+        line('Hashprice ($/PH/day, before pool fee)', cols, lastOf(r => r.hashprice, v => `$${v.toFixed(1)}`)),
         section('1 · Revenue', cols),
         line('Bitcoin mining revenue', cols, sumOf(r => r.revenue), { total: true }),
         section('2 · Running costs', cols),
         line('Gas', cols, sumOf(r => r.gas), { sub: true }),
-        line(`Generators (${model.generatorMode})`, cols, sumOf(r => r.generators), { sub: true }),
+        line(`Generators (${model.generatorMode}${model.generatorOverhaulMonthly > 0 ? ' + overhaul reserve' : ''})`, cols, sumOf(r => r.generators), { sub: true }),
         line('Miner repairs', cols, sumOf(r => r.repairs), { sub: true }),
         line('Staff & overhead', cols, sumOf(r => r.staff), { sub: true }),
         line('Pool fee', cols, sumOf(r => r.pool), { sub: true }),
@@ -277,10 +291,11 @@
     const renderKpis = (s) => {
       const payback = s.boxesBought === 0 ? 'n/a' : s.paybackMonth === null ? 'Beyond 36 mo' : `Month ${s.paybackMonth}`;
       const breakeven = s.breakevenHashprice === null ? 'n/a' : `$${s.breakevenHashprice.toFixed(1)}/PH/day`;
+      const beforeHalving = s.runIsBeforeHalving && s.halvingMonth ? ` · before the halving (month ${s.halvingMonth})` : '';
       const items = [
         ['Total equipment', compact(s.equipment), `${s.boxesBought} containers bought`],
-        ['Run-rate revenue / mo', compact(s.run.revenue), `${s.run.miners.toLocaleString()} miners · ${s.run.ph.toFixed(1)} PH/s`],
-        ['Run-rate operating cash / mo', compact(s.run.operatingCash), `after ${compact(s.run.costs)} running costs`],
+        ['Run-rate revenue / mo', compact(s.run.revenue), `${s.run.miners.toLocaleString()} miners · ${s.run.ph.toFixed(1)} PH/s${beforeHalving}`],
+        ['Run-rate operating cash / mo', compact(s.run.operatingCash), `after ${compact(s.run.costs)} running costs${beforeHalving}`],
         ['Payback', payback, 'cumulative cash turns positive'],
         ['Cash after 36 months', compact(s.horizonNet), `year 1: ${compact(s.year1Net)}`],
         ['Operating breakeven hashprice', breakeven, `excl. equipment · power ${(s.powerCostPerKwh * 100).toFixed(2)}¢/kWh`]
@@ -294,8 +309,8 @@
     const renderNotes = () => {
       document.getElementById('notes').innerHTML = `
         <div class="note"><b>Equipment:</b> each container buys its share of the generators (if the model buys or finances them), its miners, the container and electrical, and setup, the month it goes live.</div>
-        <div class="note"><b>Generators:</b> the monthly line follows the model's mode: rent or maintenance every month; RTO and finance pay the term amount for the term, then the post-term amount.</div>
-        <div class="note"><b>Payback:</b> the first month, after equipment has been bought, in which cumulative cash is zero or better and stays there. Breakeven hashprice excludes equipment.</div>`;
+        <div class="note"><b>Generators:</b> the monthly line follows the model's mode: rent or maintenance every month; RTO and finance pay the term amount for the term, then the post-term amount. When the company owns the units, the overhaul reserve (top and major overhauls spread over their life) is included.</div>
+        <div class="note"><b>Payback and halving:</b> payback is the first month, after equipment has been bought, in which cumulative cash is zero or better and stays there. Revenue from the halving month on uses the chosen share of today's hashprice. Breakeven hashprice excludes equipment.</div>`;
     };
 
     const render = () => {
@@ -305,6 +320,8 @@
       renderTable(rows);
       document.getElementById('rampHint').textContent =
         `Containers online by month, up to the model's ${model.containers}. They stay online once deployed; each one's equipment is bought the month it goes live.`;
+      document.getElementById('halvingHint').textContent =
+        `Next halving at block 1,050,000, expected around April 2028${s.halvingMonth ? ` (month ${s.halvingMonth}, counting this month as 1)` : ''}. The block subsidy drops from 3.125 to 1.5625 BTC: with BTC price, difficulty and fees unchanged, hashprice falls to about 50% of today's. Set a higher % if you expect the price to rise (above 100% means more than today's); month 0 leaves the halving out.`;
       renderNotes();
     };
 
@@ -316,14 +333,15 @@
       input.addEventListener('input', () => {
         const value = input.valueAsNumber;
         const min = input.min === '' ? -Infinity : Number(input.min);
-        const valid = Number.isFinite(value) && value >= min;
+        const max = input.max === '' ? Infinity : Number(input.max);
+        const valid = Number.isFinite(value) && value >= min && value <= max;
         input.classList.toggle('invalid', !valid);
         if (!valid) return;
         own[input.dataset.field] = value;
         render();
       });
     });
-    document.getElementById('resetBtn').addEventListener('click', () => { own = { ...defaultOwn, month3Boxes: model.containers }; syncInputs(); render(); });
+    document.getElementById('resetBtn').addEventListener('click', () => { own = { ...ownDefaults }; syncInputs(); render(); });
     document.getElementById('printBtn').addEventListener('click', () => window.print());
 
     renderFromModel();

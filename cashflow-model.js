@@ -8,9 +8,25 @@
 export const HORIZON_MONTHS = 36;
 export const DAYS_PER_MONTH = 730 / 24;   // 30.42
 export const HANDOFF_KEY = 'gas-to-btc-model';
+export const NEXT_HALVING_BLOCK = 1050000;   // subsidy 3.125 → 1.5625 BTC, expected around April 2028
 
-// What the model provides. These defaults mirror the model's own defaults so the
-// page still works when opened directly, flagged as "not from the model".
+// Month (1 = this month) in which the next halving lands, from the current block height.
+export const halvingMonthFromHeight = (height, blocksPerDay = 144) =>
+  Number.isFinite(height) && height > 0 ? Math.max(1, Math.round((NEXT_HALVING_BLOCK - height) / blocksPerDay / DAYS_PER_MONTH) + 1) : null;
+
+// Standard amortised payment; used to state the default generator loan exactly.
+export const amortisedPayment = (principal, annualRatePct, months) => {
+  const r = annualRatePct / 100 / 12;
+  if (!(months > 0)) return 0;
+  return r > 0 ? (principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1) : principal / months;
+};
+const DEFAULT_RESERVE = 11680;                                   // (one top $20k + one major $40k) × 16 over 60,000 h ÷ 8,760 h/yr ÷ 12
+const DEFAULT_LOAN = 16 * amortisedPayment(148000, 5, 60);       // $185,000 less 20% down, 5% over 60 months, 16 units
+const DEFAULT_MAINTENANCE = 16 * 1500;
+
+// What the model provides. These defaults equal the model page's own defaults
+// (test/site-model.test.mjs proves it) so the page still works when opened
+// directly, flagged as "not from the model".
 export const defaultModel = {
   fromModel: false,
   containers: 4,
@@ -19,22 +35,23 @@ export const defaultModel = {
   thPerMiner: 234,
   kwPerMiner: 3.51,
   uptimePct: 100,
-  hashprice: 36,
+  hashprice: 39.5,
   poolPct: 0,
   gasPricePerMcf: 0.5,
   gasIndexLabel: 'custom',
-  mcfPerDay: 1254.5,                // 1,296 miners × 3.51 kW × 24 h × 11,500 BTU/kWh ÷ 1,000 BTU/scf
+  mcfPerDay: 1255.51296,            // 1,296 miners × 3.51 kW × 24 h × 11,500 BTU/kWh ÷ 1,000 BTU/scf
   loadKw: 4548.96,
   otherOpexMonthly: 0,
   containerPrice: 90000,
   minerPricePerTh: 10,
-  generatorMode: 'buy',
+  generatorMode: 'finance',
   generatorCount: 16,
-  generatorLabel: '16 × 400 kW, buy',
-  generatorUpfront: 16 * 185000,
-  generatorMonthly: 16 * 1500,
-  generatorTermMonths: null,
-  generatorMonthlyAfter: 16 * 1500
+  generatorLabel: '16 × 400 kW, finance + overhaul reserve',
+  generatorOverhaulMonthly: DEFAULT_RESERVE,                     // included in the two amounts below
+  generatorUpfront: 16 * 185000 * 0.2,                           // 20% down
+  generatorMonthly: DEFAULT_LOAN + DEFAULT_MAINTENANCE + DEFAULT_RESERVE,
+  generatorTermMonths: 60,
+  generatorMonthlyAfter: DEFAULT_MAINTENANCE + DEFAULT_RESERVE
 };
 
 // What this page adds.
@@ -44,7 +61,9 @@ export const defaultOwn = {
   month3Boxes: 4,
   staffMonthly: 25000,
   minerRepairPerMiner: 7,
-  setupPerBox: 26385
+  setupPerBox: 26385,
+  halvingMonth: 19,                 // April 2028 seen from October 2026; 0 = ignore the halving
+  hashpriceAfterHalvingPct: 50      // hashprice from the halving on, as % of today's: 50 = subsidy halves, price and difficulty unchanged; may exceed 100
 };
 
 const num = (obj, key) => {
@@ -66,24 +85,39 @@ export const modelFromHandoff = (payload) => {
   return model;
 };
 
+// The model also carries defaults for this page's own inputs (staff, repairs, setup).
+export const ownFromHandoff = (payload) => {
+  const m = payload?.model;
+  const own = {};
+  if (!m) return own;
+  for (const key of ['staffMonthly', 'minerRepairPerMiner', 'setupPerBox', 'halvingMonth']) {
+    if (Number.isFinite(Number(m[key])) && m[key] !== null) own[key] = Number(m[key]);
+  }
+  return own;
+};
+
 export const boxesForMonth = (model, own, month) => {
   const cap = Math.max(0, Math.round(num(model, 'containers')));
   const raw = month === 1 ? num(own, 'month1Boxes') : month === 2 ? num(own, 'month2Boxes') : num(own, 'month3Boxes');
   return Math.max(0, Math.min(cap, Math.round(raw)));
 };
 
-// Generator payment in a given month: the term payment while the term runs
-// (rent and buy: no term, the same every month), then the post-term amount.
-export const generatorPayment = (model, month) => {
+// Generator payment for units acquired `monthsSince` months ago (0 = the month
+// they went live): the term payment while the term runs (rent and buy: no
+// term, the same every month), then the post-term amount.
+export const generatorPayment = (model, monthsSince) => {
   const term = model.generatorTermMonths;
-  return term === null || term === undefined || month <= term ? num(model, 'generatorMonthly') : num(model, 'generatorMonthlyAfter');
+  return term === null || term === undefined || monthsSince < term ? num(model, 'generatorMonthly') : num(model, 'generatorMonthlyAfter');
 };
 
 export const calculate = (model, own, overrideHashprice) => {
   const containers = Math.max(0, Math.round(num(model, 'containers')));
-  const hashprice = overrideHashprice ?? num(model, 'hashprice');
+  const baseHashprice = overrideHashprice ?? num(model, 'hashprice');
+  const halvingMonth = Math.round(num(own, 'halvingMonth'));
+  const afterHalving = Math.max(0, num(own, 'hashpriceAfterHalvingPct')) / 100;
   const minerPrice = num(model, 'thPerMiner') * num(model, 'minerPricePerTh');
   const rows = [];
+  const cohorts = [];   // { share, start }: generators bought with each batch of containers pay their own term
   let previousBoxes = 0;
   let cumulative = 0;
 
@@ -93,14 +127,17 @@ export const calculate = (model, own, overrideHashprice) => {
     const newBoxes = boxes - previousBoxes;
     previousBoxes = boxes;
     const share = containers > 0 ? boxes / containers : 0;
+    if (newBoxes > 0 && containers > 0) cohorts.push({ share: newBoxes / containers, start: month });
 
+    // From the halving on, each PH earns the chosen share of today's hashprice.
+    const hashprice = halvingMonth > 0 && month >= halvingMonth ? baseHashprice * afterHalving : baseHashprice;
     const miners = num(model, 'minersPerContainer') * boxes;
     const ph = (miners * num(model, 'thPerMiner')) / 1000 * pct(model, 'uptimePct');
     const kwh = num(model, 'loadKw') * share * 730;
     const revenue = ph * hashprice * DAYS_PER_MONTH;
 
     const gas = num(model, 'mcfPerDay') * share * num(model, 'gasPricePerMcf') * DAYS_PER_MONTH;
-    const generators = generatorPayment(model, month) * share;
+    const generators = cohorts.reduce((t, c) => t + generatorPayment(model, month - c.start) * c.share, 0);
     const repairs = miners * num(own, 'minerRepairPerMiner');
     const staff = boxes > 0 ? num(own, 'staffMonthly') + num(model, 'otherOpexMonthly') : 0;
     const pool = revenue * pct(model, 'poolPct');
@@ -118,7 +155,7 @@ export const calculate = (model, own, overrideHashprice) => {
     const netCash = operatingCash - equipment.total;
     cumulative += netCash;
     rows.push({
-      month, boxes, newBoxes, miners, ph, kwh,
+      month, boxes, newBoxes, miners, ph, kwh, hashprice,
       revenue, gas, generators, repairs, staff, pool, costs, operatingCash,
       equipment, netCash, cumulative
     });
@@ -154,8 +191,11 @@ export const breakevenHashprice = (model, rows) => {
 
 export const summarize = (model, own, rows) => {
   const run = runRateRow(rows);
+  const halvingMonth = Math.round(num(own, 'halvingMonth'));
   return {
     run,
+    halvingMonth: halvingMonth > 0 && halvingMonth <= HORIZON_MONTHS ? halvingMonth : null,
+    runIsBeforeHalving: halvingMonth > 0 && run.month < halvingMonth,
     boxesBought: sum(rows, r => r.newBoxes),
     equipment: sum(rows, r => r.equipment.total),
     paybackMonth: paybackMonth(rows),
