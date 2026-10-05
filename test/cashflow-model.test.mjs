@@ -92,19 +92,19 @@ test('month 1 with one box: every line by hand', () => {
   const own = { ...defaultOwn, staffMonthly: 10000 };
   const [m1] = calculate(model, own);
   assert.equal(m1.boxes, 1);
-  assert.equal(m1.miners, 324);
-  const ph = (324 * 234 / 1000) * 0.95;                                  // 72.0252
+  assert.equal(m1.miners, 387);                                          // round(387.25 × 1)
+  const ph = (387 * 234 / 1000) * 0.95;                                  // 86.03
   close(m1.revenue, ph * 40 * DAYS_PER_MONTH, 0.01);
   close(m1.gas, defaultModel.mcfPerDay / 4 * 1 * DAYS_PER_MONTH, 0.01);                 // one quarter of the site's gas
   close(m1.generators, defaultModel.generatorMonthly / 4, 0.001);        // one quarter of the fleet's loan, maintenance and overhaul reserve
-  assert.equal(m1.repairs, 324 * 7);
+  assert.equal(m1.repairs, 387 * 7);
   assert.equal(m1.staff, 10000);
   close(m1.pool, m1.revenue * 0.02, 0.01);
   close(m1.costs, m1.gas + m1.generators + m1.repairs + m1.staff + m1.pool, 0.001);
   close(m1.operatingCash, m1.revenue - m1.costs, 0.001);
   assert.equal(m1.equipment.containers, 90000);
   close(m1.equipment.generators, defaultModel.generatorUpfront / 4, 0.001);   // the down payment, one quarter per container
-  assert.equal(m1.equipment.miners, 324 * 234 * 10);
+  assert.equal(m1.equipment.miners, 387 * 234 * 10);
   assert.equal(m1.equipment.setup, 26385);
   close(m1.netCash, m1.operatingCash - m1.equipment.total, 0.001);
   assert.equal(m1.cumulative, m1.netCash);
@@ -128,7 +128,8 @@ test('ramp never shrinks and equipment is bought once per container', () => {
   assert.equal(sum(rows, r => r.newBoxes), 4);
   const normal = calculate(defaultModel, defaultOwn);
   assert.deepEqual(normal.slice(0, 4).map(r => r.newBoxes), [1, 1, 2, 0]);
-  close(sum(normal, r => r.equipment.total), 4 * (90000 + 148000 + 758160 + 26385), 0.01);   // 4,090,180 cash upfront (finance: 20% down)
+  close(sum(normal, r => r.equipment.total), 4 * (90000 + 148000 + 26385) + 1549 * 234 * 10, 0.01);   // 4,682,200 cash upfront (finance: 20% down)
+  assert.deepEqual(normal.slice(0, 4).map(r => r.miners), [387, 775, 1549, 1549]);   // whole miners; the batches sum to the model's 1,549
   assert.equal(normal.length, HORIZON_MONTHS);
 });
 
@@ -161,7 +162,7 @@ test('breakeven hashprice zeroes run-rate operating cash; null when revenue cann
 test('summary: counts containers actually bought and reports a payback within the horizon or null', () => {
   const s = summarize(defaultModel, defaultOwn, calculate(defaultModel, defaultOwn));
   assert.equal(s.boxesBought, 4);
-  close(s.equipment, 4090180, 1);
+  close(s.equipment, 4682200, 1);
   assert.ok(s.paybackMonth === null || (s.paybackMonth >= 1 && s.paybackMonth <= 36));
   const five = summarize({ ...defaultModel, containers: 5 }, defaultOwn, calculate({ ...defaultModel, containers: 5 }, defaultOwn));
   assert.equal(five.boxesBought, 4);                                      // the ramp tops out at 4

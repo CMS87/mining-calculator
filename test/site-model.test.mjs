@@ -10,7 +10,7 @@ const close = (actual, expected, tol = 0.5, msg = '') =>
 
 // The page's defaults (Reset to defaults), gas at a custom $0.50/MCF.
 export const defaults = {
-  containerCount: 4, containerCostPerUnit: 90000, setupPerContainer: 26385, minersPerContainer: 324,
+  containerCount: 4, containerCostPerUnit: 90000, setupPerContainer: 26385,
   selectedMinerPreset: 's21pro234', hashratePerUnit: 234, minerPowerKW: 3.51, pricePerTh: 10,
   generatorCount: 16, generatorSizeKw: 400, generatorLoadPct: 0.85, heatRate: 11500, hhv: 1000,
   generatorMode: 'finance', generatorBuyPrice: 185000, generatorBuyMaintenance: 1500, generatorRentMonthly: 10500,
@@ -24,24 +24,40 @@ export const defaults = {
 // Hand figures for the defaults
 const RESERVE = (20000 + 40000) * 16 / (60000 / 8760) / 12;   // one top (20k h) + one major (40k h) per unit over 6.85 years = 11,679/month
 
-test('power and miners: 16 × 400 kW at 85% runs 1,296 slot-limited miners drawing 4.55 MW', () => {
+test('power and miners: a container holds 398 miners by capacity; 16 × 400 kW at 85% powers 1,549 of them', () => {
   const r = computeSite(defaults);
   close(r.fleetCapacityMw, 6.4, 1e-9);
   close(r.availableMw, 5.44, 1e-9);
-  assert.equal(r.minersByPower, Math.floor(5440 / 3.51));   // 1,549
-  assert.equal(r.minersByPdu, 1296);
-  assert.equal(r.miners, 1296);
-  close(r.loadKw, 1296 * 3.51, 1e-6);                        // 4,548.96 kW
-  close(r.phs, 303.264, 1e-9);
+  assert.equal(r.minersPerContainer, Math.floor(1400 / 3.51));      // 398
+  assert.equal(r.minersByContainerKw, 398 * 4);                     // 1,592
+  assert.equal(r.minersByPower, Math.floor(5440 / 3.51));           // 1,549
+  assert.equal(r.miners, 1549);
+  assert.equal(r.limitedBy, 'generator power');
+  close(r.loadKw, 1549 * 3.51, 1e-6);                                // 5,436.99 kW = 85% of nameplate
+  close(r.loadKw / 6400, 0.85, 0.001);
+  close(r.phs, 362.466, 1e-9);
 });
 
-test('gas: burned for the load drawn, 1,255.5 MCF/day at 11,500 BTU/kWh and 1,000 BTU/scf', () => {
+test('site: with enough generators the containers\' electrical capacity is the limit (hydro miners at 7.2 kW)', () => {
+  const r = computeSite({ ...defaults, minerPowerKW: 7.2, hashratePerUnit: 390, generatorCount: 40 });
+  assert.equal(r.minersPerContainer, Math.floor(1400 / 7.2));          // 194
+  assert.equal(r.minersByContainerKw, 194 * 4);                         // 776
+  assert.equal(r.miners, 776);
+  assert.equal(r.limitedBy, 'container capacity');
+  assert.ok(r.loadKw <= 4 * 1400);
+  assert.equal(computeSite({ ...defaults, generatorCount: 20 }).miners, 1592);   // 20 gens: capacity-limited at 398 × 4
+  assert.equal(computeSite({ ...defaults, generatorCount: 20 }).limitedBy, 'container capacity');
+  assert.equal(computeSite({ ...defaults, generatorCount: 8 }).miners, Math.floor(2720 / 3.51));   // 774, generator power
+  assert.equal(computeSite({ ...defaults, containerKw: 0 }).miners, 1549);      // blank → 1,400 kW default
+});
+
+test('gas: burned for the load drawn, 1,500.6 MCF/day at 11,500 BTU/kWh and 1,000 BTU/scf', () => {
   const r = computeSite(defaults);
-  close(r.mcfPerDay, (4548.96 * 24 * 11500) / 1e6, 0.01);    // 1,255.51
-  close(r.gasMonthly, 1255.51 * 0.5 * (730 / 24), 0.5);     // 19,094
-  assert.ok(r.mcfPerDay < 1766 * 0.72);                      // nameplate (6.4 MW) would have given 1,766
+  close(r.mcfPerDay, (5436.99 * 24 * 11500) / 1e6, 0.01);    // 1,500.61
+  close(r.gasMonthly, 1500.61 * 0.5 * (730 / 24), 0.5);     // 22,822
+  close(r.mcfPerDay / 1766.4, 0.85, 0.001);                  // nameplate (6.4 MW) would burn 1,766; the load is 85% of it
   const paid = computeSite({ ...defaults, wahaPrice: -1.25 });
-  close(paid.gasMonthly, -1255.51 * 1.25 * (730 / 24), 0.5); // negative gas = income
+  close(paid.gasMonthly, -1500.61 * 1.25 * (730 / 24), 0.5); // negative gas = income
   // a zero or blank HHV falls back to 1,000 BTU/scf instead of making gas free
   close(computeSite({ ...defaults, hhv: 0 }).mcfPerDay, r.mcfPerDay, 1e-9);
   close(computeSite({ ...defaults, hhv: 1200 }).mcfPerDay, r.mcfPerDay / 1.2, 1e-9);
@@ -119,23 +135,24 @@ test('overhauls: events before retirement, a major replaces the top due at the s
 
 test('revenue, running costs, operating cash and payback by hand (finance, gas $0.50, hashprice $36)', () => {
   const r = computeSite(defaults);
-  close(r.grossRevenue, 332074, 1);                            // 303.264 PH × $36 × 30.42
+  close(r.grossRevenue, 362.466 * 36 * (730 / 24), 1);         // 396,901
   assert.equal(r.poolMonthly, 0);
-  assert.equal(r.repairsMonthly, 1296 * 7);                    // 9,072
+  assert.equal(r.repairsMonthly, 1549 * 7);                    // 10,843
   assert.equal(r.staffMonthly, 25000);
-  close(r.totalOpex, 19094.3 + 68687.4 + RESERVE + 9072 + 25000, 3);   // 133,533
-  close(r.netMonthly, 332074 - 133533, 4);                             // 198,541
+  close(r.overhaulReserveMonthly, RESERVE, 0.01);             // 11,680/month
+  close(r.totalOpex, 22822 + 68687.4 + RESERVE + 10843 + 25000, 4);   // 139,032
+  close(r.netMonthly, r.grossRevenue - r.totalOpex, 0.001);           // ≈ 257,869
   // equipment: what it costs in full vs what is paid in cash upfront
   assert.equal(r.containerCapex, 360000);
   assert.equal(r.setupCapex, 4 * 26385);                       // 105,540
-  assert.equal(r.asicCapex, 1296 * 234 * 10);                  // 3,032,640
+  assert.equal(r.asicCapex, 1549 * 234 * 10);                  // 3,624,660
   assert.equal(r.generatorFullPrice, 2960000);
-  close(r.equipmentCost, 360000 + 105540 + 2960000 + 3032640, 0.01);  // 6,458,180
-  close(r.cashUpfront, 360000 + 105540 + 592000 + 3032640, 0.01);     // 4,090,180
+  close(r.equipmentCost, 360000 + 105540 + 2960000 + 3624660, 0.01);  // 7,050,200
+  close(r.cashUpfront, 360000 + 105540 + 592000 + 3624660, 0.01);     // 4,682,200
   assert.equal(r.generatorFinanced, 2960000 - 592000);                // 2,368,000 in the loan
-  close(r.paybackMonths, 4090180 / r.netMonthly, 1e-6);        // cash-on-cash ≈ 20.6 months
-  close(r.powerCostPerKwh, (r.gasMonthly + r.generatorMonthly + r.overhaulReserveMonthly) / (4548.96 * 730), 1e-9);
-  close(r.breakevenHashprice, r.totalOpex / (303.264 * (730 / 24)), 1e-9);
+  close(r.paybackMonths, 4682200 / r.netMonthly, 1e-6);        // cash-on-cash ≈ 18.2 months
+  close(r.powerCostPerKwh, (r.gasMonthly + r.generatorMonthly + r.overhaulReserveMonthly) / (5436.99 * 730), 1e-9);
+  close(r.breakevenHashprice, r.totalOpex / (362.466 * (730 / 24)), 1e-9);
   const pooled = computeSite({ ...defaults, poolFee: 0.02 });
   close(pooled.poolMonthly, pooled.grossRevenue * 0.02, 0.01);
   close(pooled.monthlyRevenue, pooled.grossRevenue * 0.98, 0.01);

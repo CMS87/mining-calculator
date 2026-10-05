@@ -41,7 +41,7 @@ export const computeSite = (p) => {
   const generatorLoadPct = n(p.generatorLoadPct, 0.85)
   const generatorCount = Math.max(0, Math.round(n(p.generatorCount))), generatorSizeKw = n(p.generatorSizeKw)
   const minerPowerKW = n(p.minerPowerKW), hashratePerUnit = n(p.hashratePerUnit)
-  const minersPerContainer = Math.max(0, Math.round(n(p.minersPerContainer))), containerCount = Math.max(0, Math.round(n(p.containerCount)))
+  const containerCount = Math.max(0, Math.round(n(p.containerCount)))
   const containerKw = n(p.containerKw, 1400) > 0 ? n(p.containerKw, 1400) : 1400   // electrical capacity of one container
   const heatRate = n(p.heatRate), hhv = n(p.hhv) > 0 ? n(p.hhv) : 1000
   const poolFee = share(p.poolFee), curtailment = share(p.curtailment), hashprice = n(p.hashprice)
@@ -59,19 +59,18 @@ export const computeSite = (p) => {
 
   const cleanLoadPct = Math.min(Math.max(generatorLoadPct || 0.85, 0.1), 1.0)
 
-  // Power: nameplate, usable at the planning load; miners limited by generator
-  // power, by container slots, or by the containers' electrical capacity,
-  // whichever is smallest
+  // Power: nameplate, usable at the planning load. Each container holds as
+  // many miners as its electrical capacity allows; the site runs the smaller
+  // of that and what the generators can power.
   const fleetCapacityMw = generatorCount * generatorSizeKw / 1000
   const mwGross = fleetCapacityMw
   const availableMw = mwGross * cleanLoadPct
   const totalKw = availableMw * 1000
   const minersByPower = minerPowerKW > 0 ? Math.max(Math.floor(totalKw / minerPowerKW), 0) : 0
-  const minersByPdu = minersPerContainer * containerCount
-  const minersByContainerKw = minerPowerKW > 0 ? Math.floor(containerKw / minerPowerKW) * containerCount : 0
-  const miners = Math.min(minersByPower, minersByPdu, minersByContainerKw)
-  const limitedBy = miners === 0 ? 'none' : miners === minersByPower && minersByPower < minersByPdu && minersByPower < minersByContainerKw ? 'generator power'
-    : miners === minersByContainerKw && minersByContainerKw < minersByPdu ? 'container capacity' : 'container slots'
+  const minersPerContainer = minerPowerKW > 0 ? Math.floor(containerKw / minerPowerKW) : 0
+  const minersByContainerKw = minersPerContainer * containerCount
+  const miners = Math.min(minersByPower, minersByContainerKw)
+  const limitedBy = miners === 0 ? 'none' : minersByPower < minersByContainerKw ? 'generator power' : 'container capacity'
 
   // Gas is burned for the load the miners actually draw, not for generator nameplate
   const loadKw = miners * minerPowerKW
@@ -212,7 +211,7 @@ export const computeSite = (p) => {
   }
 
   return {
-    mcfPerDay, mwGross, availableMw, loadKw, fleetCapacityMw, containerKw, miners, minersByPower, minersByPdu, minersByContainerKw, limitedBy, phs, effectivePhs,
+    mcfPerDay, mwGross, availableMw, loadKw, fleetCapacityMw, containerKw, miners, minersPerContainer, minersByPower, minersByContainerKw, limitedBy, phs, effectivePhs,
     gasPrice, gasMonthly, generatorMonthly, generatorCapex, asicCapex, asicPricePerUnit,
     containerCapex, setupCapex, generatorFullPrice, generatorEquipment, generatorFinanced, equipmentCost, cashUpfront, totalCapex, generatorEquityBuilt,
     grossRevenue, poolMonthly, repairsMonthly, staffMonthly, otherOpexMonthly: otherOpex,

@@ -9,7 +9,7 @@ import { computeSite, buildHandoff, halvingMonthFromHeight, halvingMonthFromDate
 // a positive cost shows as "-$x", a negative cost (income, e.g. paid-to-take gas) as "+$x".
 // One source for the page's starting values; Reset to defaults applies exactly these.
 const MODEL_DEFAULTS = {
-  containerCount: 4, containerCostPerUnit: 90000, minersPerContainerOverride: 324, setupPerContainer: 26385, containerKw: 1400,
+  containerCount: 4, containerCostPerUnit: 90000, setupPerContainer: 26385, containerKw: 1400,
   selectedMinerPreset: 's21pro234', hashratePerUnit: 234, efficiency: 15.0, pricePerTh: 10,
   selectedGeneratorPreset: 'ngen400', generatorCount: 16, generatorSizeKw: 400, generatorMode: 'finance',
   generatorBuyPrice: 185000, generatorBuyMaintenance: 1500, generatorRentMonthly: 10500,
@@ -105,15 +105,11 @@ function App() {
   const [pricePerTh, setPricePerTh] = useState(MODEL_DEFAULTS.pricePerTh)              // $/TH
 
   // ====== CONTAINER PHYSICAL CAPACITY ======
-  const pdusPerContainer = 28                                    // 28 PDUs per container (confirmed from wiring docs + photos)
-  const outletsPerPdu = 12                                       // 12 C19/C20 outlets per PDU strip
-  const maxMinersPerContainer = pdusPerContainer * outletsPerPdu // 336 hard cap — PDU slots are the bottleneck
-  const [minersPerContainerOverride, setMinersPerContainerOverride] = useState(MODEL_DEFAULTS.minersPerContainerOverride) // settable by user
 
   // Derived miner values
   const minerPowerW = parseFloat(efficiency) * parseFloat(hashratePerUnit)  // Watts per miner
   const minerPowerKW = minerPowerW / 1000                                   // kW per miner
-  const minersPerContainer = Math.min(minersPerContainerOverride, maxMinersPerContainer)
+  const minersPerContainer = minerPowerKW > 0 ? Math.floor((parseFloat(containerKw) || 1400) / minerPowerKW) : 0   // by the container's electrical capacity
   const facilityMW = ((parseFloat(containerKw) || 0) * (parseInt(containerCount) || 0) / 1000).toFixed(1)
 
   // ====== MARKET ======
@@ -228,7 +224,6 @@ function App() {
       if (!i) return
       restoredRef.current = true
       setContainerCount(i.containerCount); setContainerCostPerUnit(i.containerCostPerUnit)
-      setMinersPerContainerOverride(i.minersPerContainerOverride)
       setSelectedMinerPreset(i.selectedMinerPreset); setHashratePerUnit(i.hashratePerUnit); setEfficiency(i.efficiency); setPricePerTh(i.pricePerTh)
       setSelectedGeneratorPreset(i.selectedGeneratorPreset); setGeneratorCount(i.generatorCount); setGeneratorSizeKw(i.generatorSizeKw)
       setGeneratorMode(i.generatorMode); setGeneratorRentMonthly(i.generatorRentMonthly); setGeneratorBuyPrice(i.generatorBuyPrice)
@@ -257,7 +252,7 @@ function App() {
   const openCashflow = () => {
     const payload = buildHandoff(siteInputs, gasResults, {
       inputs: {
-        containerCount, containerCostPerUnit, minersPerContainerOverride, containerKw, selectedMinerPreset, hashratePerUnit, efficiency, pricePerTh,
+        containerCount, containerCostPerUnit, containerKw, selectedMinerPreset, hashratePerUnit, efficiency, pricePerTh,
         selectedGeneratorPreset, generatorCount, generatorSizeKw, generatorMode, generatorRentMonthly, generatorBuyPrice, generatorBuyMaintenance,
         generatorRtoMonthly, generatorRtoEquityPct, generatorRtoPostMaint, financeRate, financeTerm, financeDownPct,
         heatRate, hhv, wahaPriceStr, wahaAdderStr, gasIndexKey, generatorLoadPct, poolFee, curtailment, otherOpex,
@@ -324,7 +319,7 @@ function App() {
   // ====== GAS-TO-POWER + MINING CALCULATIONS ======
   // Everything the page shows derives from src/siteModel.js (tested by hand in test/site-model.test.mjs)
   const siteInputs = {
-    generatorLoadPct, generatorCount, generatorSizeKw, minerPowerKW, hashratePerUnit, minersPerContainer, containerCount, containerKw,
+    generatorLoadPct, generatorCount, generatorSizeKw, minerPowerKW, hashratePerUnit, containerCount, containerKw,
     heatRate, hhv, poolFee, curtailment, hashprice, wahaPrice, wahaAdder,
     generatorRtoMonthly, generatorRtoEquityPct, generatorRtoPostMaint, generatorBuyPrice, generatorBuyMaintenance, generatorRentMonthly,
     financeDownPct, financeRate, financeTerm, generatorMode, selectedMinerPreset,
@@ -339,7 +334,7 @@ function App() {
     generatorSizeKw, hashratePerUnit, hashprice,
     heatRate, hhv, majorOverhaulCost, majorOverhaulHours,
     minerPowerKW, otherOpex, staffMonthly, minerRepairPerMiner, setupPerContainer, poolFee, curtailment, pricePerTh,
-    minersPerContainer, selectedMinerPreset, containerKw,
+    selectedMinerPreset, containerKw,
     topOverhaulCost, topOverhaulHours, wahaAdder, wahaPrice,
   ])
 
@@ -391,7 +386,7 @@ function App() {
 
   const resetToDefaults = () => {
     const d = MODEL_DEFAULTS
-    setContainerCount(d.containerCount); setContainerCostPerUnit(d.containerCostPerUnit); setMinersPerContainerOverride(d.minersPerContainerOverride); setSetupPerContainer(d.setupPerContainer); setContainerKw(d.containerKw)
+    setContainerCount(d.containerCount); setContainerCostPerUnit(d.containerCostPerUnit); setSetupPerContainer(d.setupPerContainer); setContainerKw(d.containerKw)
     setSelectedMinerPreset(d.selectedMinerPreset); setHashratePerUnit(d.hashratePerUnit); setEfficiency(d.efficiency); setPricePerTh(d.pricePerTh)
     setSelectedGeneratorPreset(d.selectedGeneratorPreset); setGeneratorCount(d.generatorCount); setGeneratorSizeKw(d.generatorSizeKw); setGeneratorMode(d.generatorMode)
     setGeneratorBuyPrice(d.generatorBuyPrice); setGeneratorBuyMaintenance(d.generatorBuyMaintenance); setGeneratorRentMonthly(d.generatorRentMonthly)
@@ -465,10 +460,10 @@ function App() {
                     <label>Generator Count</label>
                     <input type="number" value={generatorCount} onChange={e => { const v = parseInt(e.target.value); setGeneratorCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setGeneratorCount(1); }} />
                     {(() => {
-                      const _miners = parseInt(minersPerContainerOverride) || 324
                       const _eff = parseFloat(efficiency) || 15
                       const _th = parseFloat(hashratePerUnit) || 234
                       const _kw = (_eff * _th) / 1000
+                      const _miners = Math.floor((parseFloat(containerKw) || 1400) / _kw)   // miners a full container holds
                       const _genKw = parseFloat(generatorSizeKw) || 400
                       const _load = parseFloat(generatorLoadPct) || 0.85
                       const _containers = parseInt(containerCount) || 4
@@ -936,8 +931,8 @@ function App() {
                     <input type="number" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
                   </div>
                   <div>
-                    <label>Miners per Container</label>
-                    <input type="number" value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
+                    <label>Miners per Container (by capacity)</label>
+                    <div className="computed-value">{minersPerContainer.toLocaleString()}</div>
                   </div>
                 </div>
                 <div className="input-row two-col">
@@ -953,7 +948,7 @@ function App() {
                 <div className="input-row">
                   <label>Electrical Capacity (kW per container)</label>
                   <input type="number" step="10" value={containerKw} onChange={e => setContainerKw(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v) || v <= 0) setContainerKw(1400); }} />
-                  <span style={{fontSize:'0.7rem', color:'#64748b'}}>Miners are limited by generator power, container slots or this capacity, whichever is smallest: now {gasResults.limitedBy}.</span>
+                  <span style={{fontSize:'0.7rem', color:'#64748b'}}>Each container holds capacity ÷ kW per miner = {minersPerContainer.toLocaleString()} miners. The site runs the smaller of that and what the generators can power: now limited by {gasResults.limitedBy}.</span>
                 </div>
 
                 <div className="result-row compact" style={{marginTop:'8px', borderTop:'1px solid rgba(100,116,139,0.25)', paddingTop:'8px'}}>
@@ -1092,10 +1087,15 @@ function App() {
                   <label>Containers (53ft)</label>
                   <input type="number" value={containerCount} onChange={e => { const v = parseInt(e.target.value); setContainerCount(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setContainerCount(1); }} />
                 </div>
-                <div className="input-row" style={{marginTop: '-4px'}}>
-                  <label>Miners per Container</label>
-                  <input type="number" value={minersPerContainerOverride} onChange={e => { const v = parseInt(e.target.value); setMinersPerContainerOverride(isNaN(v) ? "" : v); }} onBlur={e => { if (!e.target.value || e.target.value < 1) setMinersPerContainerOverride(1); }} />
-                  <span style={{fontSize:'0.7rem', color:'#64748b'}}>Max {maxMinersPerContainer} ({pdusPerContainer} PDUs × {outletsPerPdu} outlets){minersPerContainerOverride > maxMinersPerContainer ? ' ⚠️ exceeds PDU cap' : ''}</span>
+                <div className="input-row two-col" style={{marginTop: '-4px'}}>
+                  <div>
+                    <label>Electrical Capacity (kW/container)</label>
+                    <input type="number" step="10" value={containerKw} onChange={e => setContainerKw(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v) || v <= 0) setContainerKw(1400); }} />
+                  </div>
+                  <div>
+                    <label>Miners per Container (by capacity)</label>
+                    <div className="computed-value">{minersPerContainer.toLocaleString()}</div>
+                  </div>
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '-8px', marginBottom: '12px', paddingLeft: '4px'}}>
                   {containerCount} × {containerKw} kW = <strong>{facilityMW} MW</strong> of container capacity
@@ -1138,8 +1138,8 @@ function App() {
                   <input type="number" value={pricePerTh} onChange={e => setPricePerTh(e.target.value)} onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v)) setPricePerTh(0); }} />
                 </div>
                 <div style={{fontSize: '0.75rem', color: '#64748b', marginTop: '4px', paddingLeft: '4px'}}>
-                  {minersPerContainer} miners/container × {containerCount} = <strong>{(containerCount * minersPerContainer).toLocaleString()}</strong> miners ({pdusPerContainer} PDUs × {outletsPerPdu} outlets cap) |
-                  Powered: <strong>{gasResults.miners.toLocaleString()}</strong> miners = {gasResults.phs.toFixed(1)} PH/s
+                  {minersPerContainer.toLocaleString()} miners/container × {containerCount} = <strong>{(containerCount * minersPerContainer).toLocaleString()}</strong> by container capacity |
+                  Running: <strong>{gasResults.miners.toLocaleString()}</strong> miners = {gasResults.phs.toFixed(1)} PH/s (limited by {gasResults.limitedBy})
                 </div>
               </div>
 
