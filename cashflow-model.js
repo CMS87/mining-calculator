@@ -30,7 +30,7 @@ const DEFAULT_MAINTENANCE = 16 * 1500;
 export const defaultModel = {
   fromModel: false,
   containers: 4,
-  minersPerContainer: 324,
+  minersPerContainer: 1549 / 4,       // 1,549 miners the generators can power (16 × 400 kW at 85%), spread over 4 containers
   minerLabel: '234 TH/s · 3.51 kW',
   thPerMiner: 234,
   kwPerMiner: 3.51,
@@ -39,8 +39,8 @@ export const defaultModel = {
   poolPct: 0,
   gasPricePerMcf: 0.5,
   gasIndexLabel: 'custom',
-  mcfPerDay: 1255.51296,            // 1,296 miners × 3.51 kW × 24 h × 11,500 BTU/kWh ÷ 1,000 BTU/scf
-  loadKw: 4548.96,
+  mcfPerDay: (1549 * 3.51 * 24 * 11500) / 1e6,   // 1,549 miners × 3.51 kW × 24 h × 11,500 BTU/kWh ÷ 1,000 BTU/scf = 1,500.6
+  loadKw: 1549 * 3.51,
   otherOpexMonthly: 0,
   containerPrice: 90000,
   minerPricePerTh: 10,
@@ -123,15 +123,18 @@ export const calculate = (model, own, overrideHashprice) => {
 
   for (let month = 1; month <= HORIZON_MONTHS; month += 1) {
     // Containers stay online once deployed, so each one's equipment is bought once.
-    const boxes = Math.max(previousBoxes, boxesForMonth(model, own, month));
-    const newBoxes = boxes - previousBoxes;
+    const prevBoxes = previousBoxes;
+    const boxes = Math.max(prevBoxes, boxesForMonth(model, own, month));
+    const newBoxes = boxes - prevBoxes;
     previousBoxes = boxes;
     const share = containers > 0 ? boxes / containers : 0;
     if (newBoxes > 0 && containers > 0) cohorts.push({ share: newBoxes / containers, start: month });
 
     // From the halving on, each PH earns the chosen share of today's hashprice.
     const hashprice = halvingMonth > 0 && month >= halvingMonth ? baseHashprice * afterHalving : baseHashprice;
-    const miners = num(model, 'minersPerContainer') * boxes;
+    // Whole miners: the model's total spread over the containers, rounded as batches go live
+    const miners = Math.round(num(model, 'minersPerContainer') * boxes);
+    const newMiners = miners - Math.round(num(model, 'minersPerContainer') * prevBoxes);
     const ph = (miners * num(model, 'thPerMiner')) / 1000 * pct(model, 'uptimePct');
     const kwh = num(model, 'loadKw') * share * 730;
     const revenue = ph * hashprice * DAYS_PER_MONTH;
@@ -147,7 +150,7 @@ export const calculate = (model, own, overrideHashprice) => {
     const equipment = {
       containers: newBoxes * num(model, 'containerPrice'),
       generators: containers > 0 ? newBoxes * num(model, 'generatorUpfront') / containers : 0,
-      miners: newBoxes * num(model, 'minersPerContainer') * minerPrice,
+      miners: newMiners * minerPrice,
       setup: newBoxes * num(own, 'setupPerBox')
     };
     equipment.total = equipment.containers + equipment.generators + equipment.miners + equipment.setup;
