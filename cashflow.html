@@ -122,7 +122,7 @@
           <h2>From the model</h2>
           <div class="panel-body">
             <dl class="facts" id="facts"></dl>
-            <div class="hint">These come from the model page. To change them, go back to the model and press “36-Month Cash Flow” again.</div>
+            <div class="hint">Everything the site is comes from the model page. To change any of it, go back to the model and press “36-Month Cash Flow” again. This page only adds the deployment ramp and the halving.</div>
           </div>
         </div>
 
@@ -149,17 +149,6 @@
           </div>
         </div>
 
-        <div class="panel">
-          <h2>Running costs and setup</h2>
-          <div class="panel-body">
-            <div class="input-grid">
-              <label>Staff &amp; overhead $/month<input data-field="staffMonthly" type="number" min="0" step="100"></label>
-              <label>Miner repairs $/miner/month<input data-field="minerRepairPerMiner" type="number" min="0" step="0.5"></label>
-              <label>Setup &amp; commissioning $/container<input data-field="setupPerBox" type="number" min="0" step="100"></label>
-            </div>
-            <div class="hint">Prefilled from the model; edit here to test other values. Gas, generator payments, miner prices and the pool fee come from the model.</div>
-          </div>
-        </div>
       </aside>
 
       <section class="results">
@@ -225,7 +214,10 @@
         ['Generator payments', generatorLine],
         ...(model.generatorOverhaulMonthly > 0 ? [['of which overhaul reserve', `${money(model.generatorOverhaulMonthly)}/mo`]] : []),
         ['Container & electrical', `${money(model.containerPrice)} each`],
+        ['Setup & commissioning', `${money(own.setupPerBox)} per container`],
         ['Miner price', `$${num(model.minerPricePerTh, 2)}/TH`],
+        ['Miner repairs', `$${num(own.minerRepairPerMiner, 2)} per miner per month`],
+        ['Staff & overhead', `${money(own.staffMonthly)}/mo`],
         ...(model.otherOpexMonthly ? [['Other opex (model)', `${money(model.otherOpexMonthly)}/mo`]] : [])
       ].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
     };
