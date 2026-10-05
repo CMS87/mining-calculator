@@ -781,7 +781,7 @@ function App() {
               <div className="calc-row head"><span>Line</span><span>How it is calculated</span><span>Per month</span></div>
               <div className="calc-row">
                 <span>Miner load</span>
-                <span>{(gasResults.loadKw / 1000).toFixed(2)} MW × 730 h · {gasResults.mwGross > 0 ? Math.round(gasResults.loadKw / 10 / gasResults.mwGross) : 0}% of generator nameplate</span>
+                <span>{(gasResults.loadKw / 1000).toFixed(2)} MW × 730 h · {gasResults.mwGross > 0 ? Math.round(gasResults.loadKw / 10 / gasResults.mwGross) : 0}% of generator nameplate, planning ceiling {Math.round(generatorLoadPct * 100)}%{gasResults.availableMw * 1000 - gasResults.loadKw > 1 ? ` · ${((gasResults.availableMw * 1000 - gasResults.loadKw) / 1000).toFixed(2)} MW of usable power unused (miners limited by ${gasResults.limitedBy})` : ''}</span>
                 <span>{Math.round(gasResults.loadKw * 730 / 1000).toLocaleString()} MWh</span>
               </div>
               <div className="calc-row">
