@@ -664,7 +664,7 @@ function App() {
 
                 <div className="result-row compact" style={{marginTop: '12px', borderTop: '1px solid rgba(100,116,139,0.25)', paddingTop: '8px'}}>
                   <span>Gas Required</span>
-                  <span className="highlight">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
+                  <span className="highlight">{Math.round(gasResults.mcfPerDay).toLocaleString()} MCF/day</span>
                 </div>
                 <div className="result-row compact">
                   <span>Net Power Output</span>
@@ -753,7 +753,7 @@ function App() {
               </div>
               <div className="stat-card">
                 <span className="stat-label">Gas Required</span>
-                <span className="stat-value">{gasResults.mcfPerDay.toFixed(0)} MCF/day</span>
+                <span className="stat-value">{Math.round(gasResults.mcfPerDay).toLocaleString()} MCF/day</span>
               </div>
               <div className="stat-card highlight-card">
                 <span className="stat-label">Cash power ¢/kWh</span>
@@ -777,38 +777,46 @@ function App() {
               </div>
             </div>
 
-            <div className="simple-table" style={{marginTop: '20px'}}>
-              <div className="table-row">
-                <span>Miner Load</span>
-                <span>{(gasResults.loadKw / 1000).toFixed(2)} MW × 730h = {(gasResults.loadKw * 730 / 1000).toFixed(0).toLocaleString()} MWh/month ({gasResults.mwGross > 0 ? Math.round(gasResults.loadKw / 10 / gasResults.mwGross) : 0}% of nameplate)</span>
+            <div className="calc-table" style={{marginTop: '20px'}}>
+              <div className="calc-row head"><span>Line</span><span>How it is calculated</span><span>Per month</span></div>
+              <div className="calc-row">
+                <span>Miner load</span>
+                <span>{(gasResults.loadKw / 1000).toFixed(2)} MW × 730 h · {gasResults.mwGross > 0 ? Math.round(gasResults.loadKw / 10 / gasResults.mwGross) : 0}% of generator nameplate</span>
+                <span>{Math.round(gasResults.loadKw * 730 / 1000).toLocaleString()} MWh</span>
               </div>
-              <div className="table-row">
-                <span>Gas Consumption</span>
-                <span>{gasResults.mcfPerDay.toFixed(0)} MCF/day × 30.42d = {(gasResults.mcfPerDay * (730 / 24)).toFixed(0).toLocaleString()} MCF/month</span>
+              <div className="calc-row">
+                <span>Gas burned</span>
+                <span>{Math.round(gasResults.mcfPerDay).toLocaleString()} MCF/day × 30.42 days</span>
+                <span>{Math.round(gasResults.mcfPerDay * (730 / 24)).toLocaleString()} MCF</span>
               </div>
-              <div className="table-row">
-                <span>Gas Cost</span>
-                <span>{(gasResults.mcfPerDay * (730 / 24)).toFixed(0).toLocaleString()} MCF × ${gasResults.gasPrice.toFixed(2)} = {formatCurrencyFull(gasResults.gasMonthly)}</span>
+              <div className="calc-row">
+                <span>Gas</span>
+                <span>{Math.round(gasResults.mcfPerDay * (730 / 24)).toLocaleString()} MCF × ${gasResults.gasPrice.toFixed(2)}/MCF</span>
+                <span>{formatCurrencyFull(gasResults.gasMonthly)}</span>
               </div>
-              <div className="table-row">
-                <span>Generator Cost ({generatorMode.toUpperCase()})</span>
+              <div className="calc-row">
+                <span>Generators ({ {rent: 'rent', buy: 'maintenance', rto: 'rent-to-own', finance: 'finance'}[generatorMode] })</span>
                 <span>
-                  {generatorMode === 'rent' && `${generatorCount} units × $${generatorRentMonthly.toLocaleString()}/mo = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
-                  {generatorMode === 'buy' && `${generatorCount} units × $${generatorBuyMaintenance.toLocaleString()}/mo (maint) = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
-                  {generatorMode === 'rto' && `${generatorCount} units × $${generatorRtoMonthly.toLocaleString()}/mo = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
-                  {generatorMode === 'finance' && `Loan ${formatCurrencyFull(gasResults.financeMonthlyPayment)} + Maint ${formatCurrencyFull(generatorBuyMaintenance * generatorCount)} = ${formatCurrencyFull(gasResults.generatorMonthly)}`}
+                  {generatorMode === 'rent' && `${generatorCount} × $${Number(generatorRentMonthly).toLocaleString()}`}
+                  {generatorMode === 'buy' && `${generatorCount} × $${Number(generatorBuyMaintenance).toLocaleString()} maintenance`}
+                  {generatorMode === 'rto' && `${generatorCount} × $${Number(generatorRtoMonthly).toLocaleString()} rent-to-own payment`}
+                  {generatorMode === 'finance' && `loan ${formatCurrencyFull(gasResults.financeMonthlyPayment)} + maintenance ${formatCurrencyFull(generatorBuyMaintenance * generatorCount)}`}
                 </span>
+                <span>{formatCurrencyFull(gasResults.generatorMonthly)}</span>
               </div>
               {gasResults.overhaulReserveMonthly > 0 && (
-                <div className="table-row">
-                  <span>Overhaul Reserve (owned generators)</span>
-                  <span>{formatCurrencyFull(gasResults.totalOverhaulCost)} over {gasResults.lifetimeYears.toFixed(1)} years = {formatCurrencyFull(gasResults.overhaulReserveMonthly)}/mo</span>
+                <div className="calc-row">
+                  <span>Overhaul reserve</span>
+                  <span>{formatCurrencyFull(gasResults.totalOverhaulCost)} of overhauls over {gasResults.lifetimeYears.toFixed(1)} years, owned generators</span>
+                  <span>{formatCurrencyFull(gasResults.overhaulReserveMonthly)}</span>
                 </div>
               )}
-              <div className="table-row total">
-                <span>Cash Power Cost <span style={{fontSize:'0.75rem', color:'#64748b', fontWeight: 400}}>(gas + generator payments + reserve; upfront purchases excluded)</span></span>
-                <span className="highlight">{formatCurrencyFull(gasResults.powerMonthly)} ÷ {Math.round(gasResults.loadKw * 730).toLocaleString()} kWh = <strong>{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢/kWh</strong></span>
+              <div className="calc-row total">
+                <span>Cash power cost</span>
+                <span>{formatCurrencyFull(gasResults.powerMonthly)} ÷ {Math.round(gasResults.loadKw * 730).toLocaleString()} kWh</span>
+                <span>{(gasResults.powerCostPerKwh * 100).toFixed(2)}¢/kWh</span>
               </div>
+              <p className="calc-note">Gas, generator payments and the overhaul reserve per kWh delivered to the miners. Upfront purchases are not included, so a mode with more cash upfront shows a lower figure.</p>
             </div>
 
 
