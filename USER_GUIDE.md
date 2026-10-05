@@ -18,7 +18,7 @@ and sells hashrate. Two pages:
 | **Gas & efficiency** | Heat rate and HHV; the gas price from a live index (Waha, Henry Hub, NYMEX) or a custom value, plus an adder. Negative Waha prices are real: you are paid to take gas. |
 | **Generator load** | Planning headroom. Usable power = nameplate × load. |
 | **Mining hardware** | Preset or custom miner (TH/s, J/TH, $/TH). |
-| **Containers** | Count, cost, setup and electrical capacity per container (1,400 kW default). A container holds capacity ÷ kW per miner; the site runs the smaller of that and what the generators can power, and says which one limits. |
+| **Containers** | Count, cost, setup and electrical capacity per container (1,400 kW default). A container holds capacity ÷ kW per miner, up to its physical places (420 default); the site runs the smaller of that and what the generators can power, and says which one limits. |
 | **Market** | Hashprice (filled live from the BTC price and network hashrate), pool fee, curtailment, other opex. |
 
 Gas is burned for the load the miners actually draw, not for generator

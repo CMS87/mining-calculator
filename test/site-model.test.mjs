@@ -51,6 +51,16 @@ test('site: with enough generators the containers\' electrical capacity is the l
   assert.equal(computeSite({ ...defaults, containerKw: 0 }).miners, 1549);      // blank → 1,400 kW default
 });
 
+test('site: a container has 420 physical places; lighter miners hit that before the electrical capacity', () => {
+  const s19 = computeSite({ ...defaults, minerPowerKW: 3.25, hashratePerUnit: 110, generatorCount: 40 });
+  assert.equal(s19.minersPerContainerByKw, Math.floor(1400 / 3.25));  // 430 by capacity
+  assert.equal(s19.minersPerContainer, 420);                           // capped by places
+  assert.equal(s19.miners, 1680);
+  assert.equal(s19.limitedBy, 'container places');
+  assert.equal(computeSite({ ...defaults, generatorCount: 40, maxMinersPerContainer: 336 }).minersPerContainer, 336);
+  assert.equal(computeSite({ ...defaults, maxMinersPerContainer: 0 }).minersPerContainer, 398);   // blank → 420 default, capacity still binds
+});
+
 test('gas: burned for the load drawn, 1,500.6 MCF/day at 11,500 BTU/kWh and 1,000 BTU/scf', () => {
   const r = computeSite(defaults);
   close(r.mcfPerDay, (5436.99 * 24 * 11500) / 1e6, 0.01);    // 1,500.61
