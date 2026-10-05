@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-05T02:28:33.206Z",
+  "fetchedAt": "2026-10-05T13:55:37.456Z",
   "indexes": {
     "waha": {
       "key": "waha",
@@ -31,7 +31,7 @@
       "source": "NYMEX via OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/natural-gas-futures",
       "status": "ok",
-      "price": 3.04,
+      "price": 3.01,
       "asOf": "2026-10-05"
     }
   }
