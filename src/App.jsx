@@ -71,7 +71,7 @@ function EquipmentTable({ r, inputs, paybackMonths }) {
       <Row label="Miners" note={`${r.miners.toLocaleString()} × ${hashratePerUnit} TH × $${pricePerTh}/TH`} value={usd(r.asicCapex)} />
       <Row label="Equipment cost" note="everything the site owns, before financing" value={usd(r.equipmentCost)} cls="highlight" total />
       <Row label="Cash upfront" note={generatorMode === 'finance' ? 'equipment cost with the generator down payment instead of the full price' : generatorMode === 'buy' ? 'same as equipment cost' : 'containers, setup and miners; generators are paid monthly'} value={usd(r.cashUpfront)} cls="highlight" />
-      <Row label="Simple payback (cash-on-cash)" note="cash upfront ÷ operating cash per month after generator payments; no ramp, no halving"
+      <Row label="Simple payback (cash-on-cash)" note="cash upfront ÷ operating cash per month after generator payments; no ramp, no halving. IRR and NPV are on the 36-month cash flow"
         value={paybackMonths === Infinity ? 'never at this operating cash' : `${paybackMonths.toFixed(1)} months`} cls="highlight" />
     </div>
   )

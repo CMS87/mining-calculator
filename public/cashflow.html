@@ -32,7 +32,7 @@
     .step { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #334155; }
     .step b { display: block; color: #12365d; font-size: 12px; margin-bottom: 3px; }
     .step span { color: var(--muted); }
-    .kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .kpis { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
     .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; box-shadow: var(--shadow); min-height: 92px; }
     .kpi .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.25; }
     .kpi .value { display: block; margin-top: 7px; color: #102a43; font-size: 21px; font-weight: 800; white-space: nowrap; }
@@ -66,7 +66,7 @@
     tr.total td.neg { color: #ffd5d5; }
     tr.sub td:first-child { padding-left: 22px; color: #475569; }
     td.neg { color: var(--red); font-weight: 700; }
-    .notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .note { background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 11px; color: #334155; font-size: 12px; line-height: 1.4; }
     .note b { color: #12365d; }
     .bottom-nav { text-align: center; margin-top: 8px; }
@@ -80,7 +80,7 @@
     }
     @media (max-width: 1180px) {
       .layout { grid-template-columns: 1fr; }
-      .kpis { grid-template-columns: repeat(3, 1fr); }
+      .kpis { grid-template-columns: repeat(4, 1fr); }
       .steps { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 760px) {
@@ -122,7 +122,7 @@
           <h2>From the model</h2>
           <div class="panel-body">
             <dl class="facts" id="facts"></dl>
-            <div class="hint">Everything the site is comes from the model page. To change any of it, go back to the model and press “36-Month Cash Flow” again. This page only adds the deployment ramp and the halving.</div>
+            <div class="hint">Everything the site is comes from the model page. To change any of it, go back to the model and press “36-Month Cash Flow” again. This page only adds the deployment ramp, the halving and the discount rate.</div>
           </div>
         </div>
 
@@ -146,6 +146,16 @@
               <label>Hashprice after halving, % of today's<input data-field="hashpriceAfterHalvingPct" type="number" min="0" max="1000" step="1"></label>
             </div>
             <div class="hint" id="halvingHint"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Return</h2>
+          <div class="panel-body">
+            <div class="input-grid">
+              <label>Discount rate, % per year<input data-field="discountRatePct" type="number" min="0" max="100" step="0.5"></label>
+            </div>
+            <div class="hint">IRR is the yearly rate at which the 36 monthly net cash flows discount to zero; NPV discounts them at the rate you set here. Month 1, when the first equipment is bought, counts as today. Both use only the 36 months in the table: no resale value for the equipment, no loan balance after month 36. IRR is n/a when the cash never pays back or when cumulative cash turns negative again (then no single rate describes it).</div>
           </div>
         </div>
 
@@ -284,11 +294,13 @@
       const payback = s.boxesBought === 0 ? 'n/a' : s.paybackMonth === null ? 'Beyond 36 mo' : `Month ${s.paybackMonth}`;
       const breakeven = s.breakevenHashprice === null ? 'n/a' : `$${s.breakevenHashprice.toFixed(1)}/PH/day`;
       const beforeHalving = s.runIsBeforeHalving && s.halvingMonth ? ` · before the halving (month ${s.halvingMonth})` : '';
+      const irr = s.irrPct === null ? 'n/a' : `${s.irrPct.toFixed(Math.abs(s.irrPct) < 10 ? 1 : 0)}%`;
       const items = [
         ['Total equipment', compact(s.equipment), `${s.boxesBought} containers bought`],
         ['Run-rate revenue / mo', compact(s.run.revenue), `${s.run.miners.toLocaleString()} miners · ${s.run.ph.toFixed(1)} PH/s${beforeHalving}`],
         ['Run-rate operating cash / mo', compact(s.run.operatingCash), `after ${compact(s.run.costs)} running costs${beforeHalving}`],
         ['Payback', payback, 'cumulative cash turns positive'],
+        ['IRR (36 months, per year)', irr, `NPV at ${num(own.discountRatePct, 1)}%: ${compact(s.npv)} · no resale value`],
         ['Cash after 36 months', compact(s.horizonNet), `year 1: ${compact(s.year1Net)}`],
         ['Operating breakeven hashprice', breakeven, `excl. equipment · power ${(s.powerCostPerKwh * 100).toFixed(2)}¢/kWh`]
       ];
@@ -302,7 +314,8 @@
       document.getElementById('notes').innerHTML = `
         <div class="note"><b>Equipment:</b> each container buys its share of the generators (if the model buys or finances them), its miners, the container and electrical, and setup, the month it goes live.</div>
         <div class="note"><b>Generators:</b> the monthly line follows the model's mode: rent or maintenance every month; RTO and finance pay the term amount for the term, then the post-term amount. When the company owns the units, the overhaul reserve (top and major overhauls spread over their life) is included.</div>
-        <div class="note"><b>Payback and halving:</b> payback is the first month, after equipment has been bought, in which cumulative cash is zero or better and stays there. Revenue from the halving month on uses the chosen share of today's hashprice. Breakeven hashprice excludes equipment.</div>`;
+        <div class="note"><b>Payback and halving:</b> payback is the first month, after equipment has been bought, in which cumulative cash is zero or better and stays there. Revenue from the halving month on uses the chosen share of today's hashprice. Breakeven hashprice excludes equipment.</div>
+        <div class="note"><b>IRR and NPV:</b> both come from the net cash line, month 1 counting as today, over the 36 months shown and nothing after: no resale value for the equipment, no loan balance after month 36. IRR is the yearly rate at which those cash flows discount to zero; NPV discounts them at your rate.</div>`;
     };
 
     const render = () => {

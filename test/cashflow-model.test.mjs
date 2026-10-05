@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   HORIZON_MONTHS, DAYS_PER_MONTH, defaultModel, defaultOwn, modelFromHandoff, ownFromHandoff, boxesForMonth,
-  generatorPayment, calculate, summarize, paybackMonth, sum
+  generatorPayment, calculate, summarize, paybackMonth, sum, npvAtMonthly, npv, irrAnnualPct
 } from '../public/cashflow-model.js';
 
 test('handoff: the model\'s staff, repairs and setup become this page\'s defaults; missing ones stay', () => {
@@ -157,6 +157,47 @@ test('breakeven hashprice zeroes run-rate operating cash; null when revenue cann
   close(run.operatingCash, 0, 0.01);
   const dead = { ...defaultModel, uptimePct: 0 };
   assert.equal(summarize(dead, defaultOwn, calculate(dead, defaultOwn)).breakevenHashprice, null);
+});
+
+test('IRR and NPV by hand: month 1 counts as today; effective annual rates', () => {
+  const tenPctAYear = (1.1 ** 12 - 1) * 100;                                  // 10%/month = 213.84%/year
+  close(npvAtMonthly(0.1, [-100, 110]), 0, 1e-9);
+  close(irrAnnualPct([-100, 110]), tenPctAYear, 1e-6);
+  close(irrAnnualPct([-100, 0, 121]), tenPctAYear, 1e-6);
+  close(irrAnnualPct([-1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1120]), 12, 1e-6);   // 12% after exactly one year
+  close(npv(0, [-100, 60, 60]), 20, 1e-9);                                     // at 0% the NPV is the sum
+  close(npv(12, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100]), 100 / 1.12, 1e-9); // $100 in month 13 = $100 one year out
+  close(npv(15, [-100, 50]), -100 + 50 / 1.15 ** (1 / 12), 1e-9);
+});
+
+test('IRR is n/a without a sign change, with nothing invested, or when two rates zero the NPV', () => {
+  assert.equal(irrAnnualPct([-100, -50]), null);
+  assert.equal(irrAnnualPct([100, 50]), null);
+  assert.equal(irrAnnualPct([0, 0]), null);
+  close(irrAnnualPct([-100, 30]), (0.3 ** 12 - 1) * 100, 1e-6);  // 30 cents back on the dollar: −70%/month ≈ −100%/year, still a number
+  // −100 + 230/(1+r) − 132/(1+r)² = 0 at r = 10% and r = 20% a month: two rates, no answer
+  close(npvAtMonthly(0.1, [-100, 230, -132]), 0, 1e-9);
+  close(npvAtMonthly(0.2, [-100, 230, -132]), 0, 1e-9);
+  assert.equal(irrAnnualPct([-100, 230, -132]), null);
+});
+
+test('summary IRR and NPV come from the net cash series: NPV at 0% is the 36-month cash, NPV at the IRR is zero', () => {
+  const rows = calculate(defaultModel, defaultOwn);
+  const flows = rows.map(r => r.netCash);
+  const s = summarize(defaultModel, defaultOwn, rows);
+  assert.ok(s.irrPct > 0, `default case should earn a positive IRR, got ${s.irrPct}`);
+  close(npv(0, flows), s.horizonNet, 0.01);
+  close(npv(s.irrPct, flows), 0, 1);
+  close(s.npv, npv(15, flows), 0.01);                                       // default discount rate 15%/year
+  assert.ok(s.npv < s.horizonNet);                                          // discounting at 15% takes value off the cash sum
+  const dearer = summarize(defaultModel, { ...defaultOwn, discountRatePct: 30 }, rows);
+  assert.ok(dearer.npv < s.npv);
+  assert.equal(dearer.irrPct, s.irrPct);                                    // the IRR does not depend on the discount rate
+  const never = { ...defaultModel, hashprice: 1 };
+  assert.equal(summarize(never, defaultOwn, calculate(never, defaultOwn)).irrPct, null);
+  const nothing = summarize(defaultModel, { ...defaultOwn, month1Boxes: 0, month2Boxes: 0, month3Boxes: 0 }, calculate(defaultModel, { ...defaultOwn, month1Boxes: 0, month2Boxes: 0, month3Boxes: 0 }));
+  assert.equal(nothing.irrPct, null);
+  assert.equal(nothing.npv, 0);
 });
 
 test('summary: counts containers actually bought and reports a payback within the horizon or null', () => {

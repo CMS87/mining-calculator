@@ -1,8 +1,8 @@
 // 36-month cash flow for the site configured in the model (index.html).
 // The model hands over the numbers that define the site (miners, hashprice,
-// gas, generator terms, prices) through localStorage; this page only adds the
-// deployment ramp, the running costs and the setup cost. One company owns
-// everything: every month is revenue − running costs − equipment.
+// gas, generator terms, prices, running costs) through localStorage; this page
+// only adds the deployment ramp, the halving and the discount rate. One company
+// owns everything: every month is revenue − running costs − equipment.
 // Pure functions only: cashflow.html and test/cashflow-model.test.mjs import this.
 
 export const HORIZON_MONTHS = 36;
@@ -63,7 +63,8 @@ export const defaultOwn = {
   minerRepairPerMiner: 7,
   setupPerBox: 26385,
   halvingMonth: 19,                 // April 2028 seen from October 2026; 0 = ignore the halving
-  hashpriceAfterHalvingPct: 50      // hashprice from the halving on, as % of today's: 50 = subsidy halves, price and difficulty unchanged; may exceed 100
+  hashpriceAfterHalvingPct: 50,     // hashprice from the halving on, as % of today's: 50 = subsidy halves, price and difficulty unchanged; may exceed 100
+  discountRatePct: 15               // per year, for the NPV
 };
 
 const num = (obj, key) => {
@@ -192,10 +193,48 @@ export const breakevenHashprice = (model, rows) => {
   return divisor > 0 ? (run.costs - run.pool) / divisor : null;
 };
 
+// Discounting: the net cash of month m is discounted m − 1 months, so month 1,
+// when the first equipment is bought, counts as today. Annual rates are
+// effective: monthly = (1 + annual)^(1/12) − 1.
+export const npvAtMonthly = (monthlyRate, flows) =>
+  flows.reduce((total, flow, i) => total + flow / Math.pow(1 + monthlyRate, i), 0);
+export const monthlyFromAnnualPct = (annualPct) => Math.pow(1 + annualPct / 100, 1 / 12) - 1;
+export const annualPctFromMonthly = (monthly) => (Math.pow(1 + monthly, 12) - 1) * 100;
+export const npv = (annualPct, flows) => npvAtMonthly(monthlyFromAnnualPct(annualPct), flows);
+
+// Annual IRR in %: the rate at which the net cash flows discount to zero.
+// Monthly rates from −99% to +100% are scanned for a sign change of the NPV,
+// then bisected. null when no rate does it (never pays back, or nothing was
+// invested) or when more than one does (cash turns negative again later):
+// then the number would mean nothing, and the page says so.
+export const irrAnnualPct = (flows) => {
+  if (!flows.some(f => f < 0) || !flows.some(f => f > 0)) return null;
+  const LO = -0.99, HI = 1, STEPS = 796;             // 0.25% steps
+  const at = (k) => LO + ((HI - LO) * k) / STEPS;
+  const brackets = [];
+  let prev = npvAtMonthly(at(0), flows);
+  for (let k = 1; k <= STEPS; k += 1) {
+    const value = npvAtMonthly(at(k), flows);
+    if ((prev < 0 && value >= 0) || (prev > 0 && value <= 0)) brackets.push([at(k - 1), at(k)]);
+    prev = value;
+  }
+  if (brackets.length !== 1) return null;
+  let [lo, hi] = brackets[0];
+  const loSign = Math.sign(npvAtMonthly(lo, flows));
+  for (let i = 0; i < 60; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (Math.sign(npvAtMonthly(mid, flows)) === loSign) lo = mid; else hi = mid;
+  }
+  return annualPctFromMonthly((lo + hi) / 2);
+};
+
 export const summarize = (model, own, rows) => {
   const run = runRateRow(rows);
   const halvingMonth = Math.round(num(own, 'halvingMonth'));
+  const flows = rows.map(r => r.netCash);
   return {
+    irrPct: irrAnnualPct(flows),
+    npv: npv(Math.max(0, num(own, 'discountRatePct')), flows),
     run,
     halvingMonth: halvingMonth > 0 && halvingMonth <= HORIZON_MONTHS ? halvingMonth : null,
     runIsBeforeHalving: halvingMonth > 0 && run.month < halvingMonth,

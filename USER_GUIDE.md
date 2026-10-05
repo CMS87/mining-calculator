@@ -32,8 +32,9 @@ generator terms, prices). You set only:
 - **Deployment** — containers online in month 1, month 2 and from month 3 on.
   Containers stay online once deployed; each one's equipment is bought the
   month it goes live.
-- **Running costs and setup** — staff and overhead per month, miner repairs per
-  miner per month, setup and commissioning per container.
+- **Halving** — the month the next halving lands (from the live block height)
+  and the hashprice from then on as a share of today's.
+- **Return** — the discount rate for the NPV.
 
 The table reads top to bottom in five steps: revenue → running costs →
 operating cash → equipment → net cash and cumulative cash. Months 1–12 are
@@ -44,6 +45,17 @@ finance pay the term amount for the term, then the post-term amount.
 **Payback** is the first month, after equipment has been bought, in which
 cumulative cash is zero or better and stays there. The breakeven hashprice is
 an operating figure (equipment excluded).
+
+**IRR and NPV** come from the net cash line. Month 1, when the first equipment
+is bought, counts as today; the net cash of month *m* is discounted *m* − 1
+months. Rates are effective yearly rates (monthly = (1 + yearly)^(1/12) − 1).
+IRR is the yearly rate at which the 36 monthly net cash flows discount to zero;
+NPV discounts them at the rate you set (default 15 %). Both use only the 36
+months in the table: no resale value for the equipment and no loan balance after
+month 36, so a financed site that keeps paying after the horizon is judged on
+its first three years only. IRR shows n/a when the cash never pays back or when
+cumulative cash turns negative again later (two rates would zero the NPV, so no
+single one describes the project).
 
 ## Where each operating cost lives
 

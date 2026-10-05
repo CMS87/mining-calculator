@@ -11,7 +11,7 @@ GitHub Pages: `https://cms87.github.io/mining-calculator/` (served from the `gh-
 ## 📋 Features
 
 - **Gas → Power**: generator fleet (rent / buy / RTO / finance), gas burned for the load actually drawn, cost per kWh.
-- **Power → BTC**: miner presets, containers, revenue, equipment, payback.
+- **Power → BTC**: miner presets, containers, revenue, equipment, payback; IRR and NPV on the cash flow.
 - **Full Model**: everything on one screen plus a gas price × hashprice sensitivity table.
 - **36-Month Cash Flow** (`public/cashflow.html`): takes the model's numbers through a localStorage hand-off, adds the deployment ramp, running costs and setup; pure model in `public/cashflow-model.js` with tests (`npm test`).
 - **Live inputs**: gas indexes (Waha, Henry Hub, NYMEX) from a build-time snapshot; hashprice from BTC price and network hashrate.
