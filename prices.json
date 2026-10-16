@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-15T23:08:32.307Z",
+  "fetchedAt": "2026-10-16T22:54:53.471Z",
   "indexes": {
     "waha": {
       "key": "waha",
@@ -9,8 +9,8 @@
       "source": "NGI daily index via OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
       "status": "ok",
-      "price": 1.73,
-      "asOf": "2026-10-15"
+      "price": 1.9,
+      "asOf": "2026-10-16"
     },
     "henryHub": {
       "key": "henryHub",
@@ -31,8 +31,8 @@
       "source": "NYMEX via OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/natural-gas-futures",
       "status": "ok",
-      "price": 3.22,
-      "asOf": "2026-10-15"
+      "price": 3.12,
+      "asOf": "2026-10-16"
     }
   }
 }
