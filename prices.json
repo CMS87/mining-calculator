@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-30T00:01:31.407Z",
+  "fetchedAt": "2026-10-30T23:55:34.174Z",
   "indexes": {
     "waha": {
       "key": "waha",
@@ -9,8 +9,8 @@
       "source": "NGI daily index via OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
       "status": "ok",
-      "price": 1.5,
-      "asOf": "2026-10-29"
+      "price": 1.27,
+      "asOf": "2026-10-30"
     },
     "henryHub": {
       "key": "henryHub",
