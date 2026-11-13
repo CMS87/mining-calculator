@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-12T01:56:53.628Z",
+  "fetchedAt": "2026-11-13T01:17:07.365Z",
   "indexes": {
     "waha": {
       "key": "waha",
@@ -10,7 +10,7 @@
       "sourceUrl": "https://www.oilpriceapi.com/live/waha-natural-gas-price",
       "status": "ok",
       "price": 1.87,
-      "asOf": "2026-11-11"
+      "asOf": "2026-11-12"
     },
     "henryHub": {
       "key": "henryHub",
@@ -20,8 +20,8 @@
       "source": "EIA daily spot via FRED",
       "sourceUrl": "https://fred.stlouisfed.org/series/DHHNGSP",
       "status": "ok",
-      "price": 2.63,
-      "asOf": "2026-11-03"
+      "price": 3,
+      "asOf": "2026-11-11"
     },
     "nymexHH": {
       "key": "nymexHH",
@@ -31,8 +31,8 @@
       "source": "NYMEX via OilPriceAPI",
       "sourceUrl": "https://www.oilpriceapi.com/live/natural-gas-futures",
       "status": "ok",
-      "price": 3.27,
-      "asOf": "2026-11-12"
+      "price": 3.36,
+      "asOf": "2026-11-13"
     }
   }
 }
